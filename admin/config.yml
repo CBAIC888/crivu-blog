@@ -2,7 +2,7 @@ backend:
   name: github
   repo: CBAIC888/crivu-blog
   branch: main
-  base_url: https://cbc688.com
+  base_url: https://crivu-blog.pages.dev
   auth_endpoint: /api/auth
   branch: main
   commit_messages:
