@@ -2,11 +2,11 @@
   "issues": [
     {
       "id": "2026Q1",
-      "title": "2026 春季刊",
-      "theme": "雜誌式寫作的起點",
+      "title": "2026 第一刊",
+      "theme": "隨記",
       "cover": "/assets/img/uploads/434a0728-fefa-4971-a28a-2e4f6ddf0401.jpeg",
       "publishDate": "2026-02-01",
-      "editorNote": "第一期為2025年12月-2026年4月",
+      "editorNote": "第一期時間為2025年12月-2026年4月",
       "posts": [
         "tuise-zhesi"
       ]
