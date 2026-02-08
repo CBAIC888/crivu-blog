@@ -15,6 +15,13 @@ const setText = (sel, value) => {
   if (el && value) el.textContent = value;
 };
 
+const applyTheme = (theme) => {
+  document.documentElement.setAttribute('data-theme', theme);
+  localStorage.setItem('theme', theme);
+  const icon = qs('#themeIcon');
+  if (icon) icon.textContent = theme === 'dark' ? '☾' : '☀';
+};
+
 const renderCard = (post) => {
   const cover = post.cover || '/assets/img/cover-01.svg';
   const issue = post.issue ? `<span class="issue-pill">${post.issue}</span>` : '';
@@ -93,18 +100,18 @@ const setupSearch = (posts) => {
   });
 };
 
-const applyTheme = () => {
+const setupTheme = () => {
   const toggle = qs('#themeToggle');
   if (!toggle) return;
-  const setTheme = (theme) => {
-    document.documentElement.setAttribute('data-theme', theme);
-    localStorage.setItem('theme', theme);
-  };
+  toggle.innerHTML = '<span id="themeIcon" class="theme-icon">☀</span>';
   const stored = localStorage.getItem('theme') || 'light';
-  setTheme(stored);
+  applyTheme(stored);
   toggle.addEventListener('click', () => {
+    toggle.classList.remove('spin');
+    void toggle.offsetWidth;
+    toggle.classList.add('spin');
     const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-    setTheme(next);
+    applyTheme(next);
   });
 };
 
@@ -166,7 +173,7 @@ const init = async () => {
   qs('#moreGrid').innerHTML = more.map(renderCard).join('');
 
   setupSearch(posts);
-  applyTheme();
+  setupTheme();
   applyProgress();
   await applySite();
 };

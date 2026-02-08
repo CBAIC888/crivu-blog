@@ -1,0 +1,33 @@
+:root {
+  --cms-accent: #d1583c;
+  --cms-ink: #1b1a17;
+  --cms-bg: #f4efe6;
+}
+
+body {
+  background: radial-gradient(circle at 10% 10%, rgba(209, 88, 60, 0.08), transparent 35%),
+              radial-gradient(circle at 90% 20%, rgba(28, 107, 106, 0.09), transparent 35%),
+              var(--cms-bg);
+}
+
+.cms-editor-visual {
+  border-radius: 14px;
+}
+
+button,
+[class*='Button'] {
+  border-radius: 10px !important;
+}
+
+a,
+[class*='Link'] {
+  color: var(--cms-accent) !important;
+}
+
+[class*='ControlLabel'] {
+  font-weight: 600 !important;
+}
+
+[class*='ToolbarContainer'] {
+  backdrop-filter: blur(8px);
+}

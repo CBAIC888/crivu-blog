@@ -2,6 +2,8 @@ const state = {
   posts: [],
   site: {},
   issues: [],
+  carouselIssues: [],
+  issueIndex: 0,
   search: '',
   currentCategory: '',
   currentTag: '',
@@ -15,7 +17,32 @@ const qsa = (sel) => Array.from(document.querySelectorAll(sel));
 
 const setText = (sel, value) => {
   const el = qs(sel);
-  if (el && value) el.textContent = value;
+  if (el && value !== undefined && value !== null && value !== '') el.textContent = value;
+};
+
+const applyTheme = (theme) => {
+  document.documentElement.setAttribute('data-theme', theme);
+  localStorage.setItem('theme', theme);
+  const icon = qs('#themeIcon');
+  if (icon) icon.textContent = theme === 'dark' ? '☾' : '☀';
+};
+
+const setupTheme = () => {
+  const toggle = qs('#themeToggle');
+  if (!toggle) return;
+
+  toggle.innerHTML = '<span id="themeIcon" class="theme-icon">☀</span>';
+
+  const stored = localStorage.getItem('theme') || 'light';
+  applyTheme(stored);
+
+  toggle.addEventListener('click', () => {
+    toggle.classList.remove('spin');
+    void toggle.offsetWidth;
+    toggle.classList.add('spin');
+    const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    applyTheme(next);
+  });
 };
 
 const loadPosts = async () => {
@@ -48,32 +75,95 @@ const loadIssues = async () => {
 
 const applySiteSettings = () => {
   const site = state.site;
-  setText('#siteName', site.siteName);
+  qsa('#siteName').forEach((el) => {
+    if (site.siteName) el.textContent = site.siteName;
+  });
+  qsa('#siteFooterText').forEach((el) => {
+    if (site.footerText) el.textContent = site.footerText;
+  });
+
   setText('#homeKicker', site.homeKicker);
   setText('#homeTitle', site.homeTitle);
   setText('#homeSubtitle', site.homeSubtitle);
   setText('#latestTitle', site.latestTitle);
-  setText('#siteFooterText', site.footerText);
   setText('#homeIssueNote', site.issueCardNote);
+  setText('#aboutTitle', site.aboutTitle);
+  setText('#aboutIntro', site.aboutIntro);
+  setText('#aboutStyle', site.aboutStyle);
+  setText('#aboutCity', site.city);
+  setText('#aboutEmail', site.email);
+  setText('#aboutTopics', site.topics);
 };
 
-const applyHomeIssue = () => {
+const buildCarouselIssues = () => {
+  const sorted = state.issues.slice().sort((a, b) => (b.publishDate || '').localeCompare(a.publishDate || ''));
+  const picked = [];
+
+  if (Array.isArray(state.site.homeIssueIds) && state.site.homeIssueIds.length > 0) {
+    state.site.homeIssueIds.forEach((id) => {
+      const item = sorted.find((issue) => issue.id === id);
+      if (item) picked.push(item);
+    });
+  }
+
+  state.carouselIssues = picked.length > 0 ? picked : sorted;
+};
+
+const renderIssueCard = () => {
   const cover = qs('#homeIssueCover');
   const caption = qs('#homeIssueCaption');
   const note = qs('#homeIssueNote');
-  if (!cover || !caption || state.issues.length === 0) return;
+  const index = qs('#issueIndex');
+  if (!cover || !caption || state.carouselIssues.length === 0) return;
 
-  const latestIssue = state.issues
-    .slice()
-    .sort((a, b) => (b.publishDate || '').localeCompare(a.publishDate || ''))[0];
+  const current = state.carouselIssues[state.issueIndex];
+  const override = state.site.homeIssueCoverOverride;
+  if (override) {
+    cover.style.backgroundImage = `url('${override}')`;
+  } else if (current.cover) {
+    cover.style.backgroundImage = `url('${current.cover}')`;
+  }
 
-  if (latestIssue.cover) {
-    cover.style.backgroundImage = `url('${latestIssue.cover}')`;
+  caption.textContent = `季刊 · ${current.id} · ${current.title}`;
+  if (note) note.textContent = current.theme || state.site.issueCardNote || '';
+  if (index) index.textContent = `${state.issueIndex + 1} / ${state.carouselIssues.length}`;
+};
+
+const setupIssueCarousel = () => {
+  if (!qs('#homeIssueCover')) return;
+  buildCarouselIssues();
+  if (state.carouselIssues.length === 0) return;
+
+  const prev = qs('#issuePrev');
+  const next = qs('#issueNext');
+
+  const step = (delta) => {
+    state.issueIndex = (state.issueIndex + delta + state.carouselIssues.length) % state.carouselIssues.length;
+    renderIssueCard();
+  };
+
+  if (prev) prev.addEventListener('click', (e) => {
+    e.preventDefault();
+    step(-1);
+  });
+  if (next) next.addEventListener('click', (e) => {
+    e.preventDefault();
+    step(1);
+  });
+
+  let startX = 0;
+  const cover = qs('#homeIssueCover');
+  if (cover) {
+    cover.addEventListener('touchstart', (e) => {
+      startX = e.changedTouches[0].clientX;
+    }, { passive: true });
+    cover.addEventListener('touchend', (e) => {
+      const dx = e.changedTouches[0].clientX - startX;
+      if (Math.abs(dx) > 40) step(dx > 0 ? -1 : 1);
+    }, { passive: true });
   }
-  caption.textContent = `季刊 · ${latestIssue.id} · ${latestIssue.title}`;
-  if (note) {
-    note.textContent = latestIssue.theme || state.site.issueCardNote || '';
-  }
+
+  renderIssueCard();
 };
 
 const renderCard = (post) => {
@@ -86,9 +176,7 @@ const renderCard = (post) => {
         <span class="pill">${post.category}</span>${issue}
         <h3><a href="/post.html?slug=${post.slug}">${post.title}</a></h3>
         <p>${post.excerpt}</p>
-        <div class="tag-row">
-          ${post.tags.map((t) => `<span class="tag">${t}</span>`).join('')}
-        </div>
+        <div class="tag-row">${post.tags.map((t) => `<span class="tag">${t}</span>`).join('')}</div>
       </div>
     </article>
   `;
@@ -127,8 +215,8 @@ const setupSearch = () => {
       results.innerHTML = '';
       return;
     }
-    const matches = state.posts.filter((p) => matchesSearch(p, query)).slice(0, 6);
 
+    const matches = state.posts.filter((p) => matchesSearch(p, query)).slice(0, 6);
     if (matches.length === 0) {
       results.classList.remove('active');
       results.innerHTML = '';
@@ -164,16 +252,12 @@ const setupSearch = () => {
   input.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
       const first = results.querySelector('.search-item');
-      if (first) {
-        window.location.href = first.getAttribute('href');
-      }
+      if (first) window.location.href = first.getAttribute('href');
     }
   });
 
   document.addEventListener('click', (e) => {
-    if (!results.contains(e.target) && e.target !== input) {
-      results.classList.remove('active');
-    }
+    if (!results.contains(e.target) && e.target !== input) results.classList.remove('active');
   });
 
   renderResults();
@@ -219,8 +303,7 @@ const setupCategoryPage = () => {
   const renderCategory = (category) => {
     state.currentCategory = category;
     qsa('.chip').forEach((btn) => btn.classList.toggle('active', btn.dataset.cat === category));
-    const filtered = state.posts.filter((p) => p.category === category);
-    renderGrid(grid, filtered.filter((p) => matchesSearch(p, state.search)));
+    renderGrid(grid, state.posts.filter((p) => p.category === category && matchesSearch(p, state.search)));
   };
 
   list.addEventListener('click', (e) => {
@@ -246,8 +329,7 @@ const setupTagPage = () => {
   const renderTag = (tag) => {
     state.currentTag = tag;
     qsa('.chip').forEach((btn) => btn.classList.toggle('active', btn.dataset.tag === tag));
-    const filtered = state.posts.filter((p) => p.tags.includes(tag) && matchesSearch(p, state.search));
-    renderGrid(grid, filtered);
+    renderGrid(grid, state.posts.filter((p) => p.tags.includes(tag) && matchesSearch(p, state.search)));
   };
 
   list.addEventListener('click', (e) => {
@@ -262,27 +344,12 @@ const setupTagPage = () => {
   };
 };
 
-const setupTheme = () => {
-  const toggle = qs('#themeToggle');
-  if (!toggle) return;
-  const applyTheme = (theme) => {
-    document.documentElement.setAttribute('data-theme', theme);
-    localStorage.setItem('theme', theme);
-  };
-  const stored = localStorage.getItem('theme') || 'light';
-  applyTheme(stored);
-  toggle.addEventListener('click', () => {
-    const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-    applyTheme(next);
-  });
-};
-
 const init = async () => {
   setupTheme();
   await Promise.all([loadPosts(), loadSite(), loadIssues()]);
-  applySiteSettings();
-  applyHomeIssue();
 
+  applySiteSettings();
+  setupIssueCarousel();
   setupSearch();
   setupFilters();
   setupCategoryPage();
