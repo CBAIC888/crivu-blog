@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>文章 · CRIVU</title>
+  <meta name="description" content="文章頁" />
+  <link rel="stylesheet" href="/assets/css/style.css" />
+</head>
+<body>
+  <div class="grain"></div>
+  <div class="progress" id="readProgress"></div>
+  <header class="site-header">
+    <div class="logo">CRIVU</div>
+    <nav class="nav">
+      <a href="/">首頁</a>
+      <a href="/issues.html">期刊</a>
+      <a href="/articles.html">文章</a>
+      <a href="/about.html">關於</a>
+    </nav>
+    <div class="header-actions">
+      <div class="search-box">
+        <input id="searchInput" class="search-input" type="search" placeholder="搜尋文章 / 標籤 / 分類" />
+        <div id="searchResults" class="search-results"></div>
+      </div>
+      <button class="theme-toggle" id="themeToggle" aria-label="切換主題">主題</button>
+    </div>
+  </header>
+
+  <main class="post-page">
+    <article id="post" class="post-article">
+      <div class="post-hero">
+        <div class="post-meta">
+          <span id="postDate"></span>
+          <span id="postCategory" class="pill"></span>
+          <span id="postIssue" class="issue-pill"></span>
+          <div id="postTags" class="tag-row"></div>
+        </div>
+        <h1 id="postTitle"></h1>
+        <p id="postExcerpt" class="post-excerpt"></p>
+        <div id="postCover" class="post-cover"></div>
+      </div>
+      <div id="postBody" class="post-body"></div>
+    </article>
+
+    <section class="more">
+      <h2>更多閱讀</h2>
+      <div id="moreGrid" class="post-grid"></div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div>© 2026 CRIVU · 以雜誌方式寫作</div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="/assets/js/post.js" type="module"></script>
+</body>
+</html>

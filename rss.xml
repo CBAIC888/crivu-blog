@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>CRIVU · 個人博客</title>
+    <link>https://your-domain.com/</link>
+    <description>雜誌式個人博客</description>
+    <language>zh-Hant</language>
+    <item>
+      <title>從零開始的雜誌式博客</title>
+      <link>https://your-domain.com/post.html?slug=magazine-blog-start</link>
+      <pubDate>Sun, 01 Feb 2026 00:00:00 +0800</pubDate>
+    </item>
+    <item>
+      <title>城市散步：把觀察變成文字</title>
+      <link>https://your-domain.com/post.html?slug=city-walk-notes</link>
+      <pubDate>Thu, 22 Jan 2026 00:00:00 +0800</pubDate>
+    </item>
+    <item>
+      <title>分類與標籤：讓內容自然歸位</title>
+      <link>https://your-domain.com/post.html?slug=taxonomy-for-blog</link>
+      <pubDate>Sat, 10 Jan 2026 00:00:00 +0800</pubDate>
+    </item>
+  </channel>
+</rss>

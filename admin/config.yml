@@ -1,0 +1,36 @@
+backend:
+  name: github
+  repo: CBAIC888/crivu-blog
+  branch: main
+  commit_messages:
+    create: "content: create {{collection}} '{{slug}}'"
+    update: "content: update {{collection}} '{{slug}}'"
+    delete: "content: delete {{collection}} '{{slug}}'"
+    uploadMedia: "media: upload '{{path}}'"
+    deleteMedia: "media: delete '{{path}}'"
+
+media_folder: "assets/img/uploads"
+public_folder: "/assets/img/uploads"
+
+collections:
+  - name: "blog"
+    label: "文章"
+    files:
+      - name: "posts"
+        label: "文章列表"
+        file: "posts/posts.json"
+        format: "json"
+        fields:
+          - label: "文章"
+            name: "items"
+            widget: "list"
+            summary: "{{fields.title}}"
+            fields:
+              - { label: "標題", name: "title", widget: "string" }
+              - { label: "日期", name: "date", widget: "datetime", format: "YYYY-MM-DD" }
+              - { label: "分類", name: "category", widget: "string" }
+              - { label: "標籤", name: "tags", widget: "list" }
+              - { label: "摘要", name: "excerpt", widget: "text" }
+              - { label: "封面", name: "cover", widget: "image", required: false }
+              - { label: "Slug", name: "slug", widget: "string" }
+              - { label: "內文", name: "body", widget: "markdown" }

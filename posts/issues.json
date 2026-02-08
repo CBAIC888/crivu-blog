@@ -1,0 +1,13 @@
+{
+  "issues": [
+    {
+      "id": "2026Q1",
+      "title": "2026 春季刊",
+      "theme": "雜誌式寫作的起點",
+      "cover": "/assets/img/cover-01.svg",
+      "publishDate": "2026-02-01",
+      "editorNote": "第一期以「建立節奏」為題，收錄三篇文章，作為這個博客的起點。",
+      "posts": ["magazine-blog-start", "city-walk-notes", "taxonomy-for-blog"]
+    }
+  ]
+}
