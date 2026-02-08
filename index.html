@@ -11,7 +11,7 @@
 <body>
   <div class="grain"></div>
   <header class="site-header">
-    <div class="logo">CRIVU</div>
+    <div class="logo" id="siteName">CRIVU</div>
     <nav class="nav">
       <a href="/">首頁</a>
       <a href="/issues.html">期刊</a>
@@ -30,19 +30,19 @@
   <main>
     <section class="hero">
       <div class="hero-text">
-        <p class="kicker">個人雜誌 · 文字與影像</p>
-        <h1>把想法做成一期一期的雜誌</h1>
-        <p class="subtitle">聚焦生活、技術、旅行與思考。每篇文章都有分類與標籤，方便歸檔與檢索。</p>
+        <p class="kicker" id="homeKicker">個人雜誌 · 文字與影像</p>
+        <h1 id="homeTitle">把想法做成一期一期的雜誌</h1>
+        <p class="subtitle" id="homeSubtitle">聚焦生活、技術、旅行與思考。每篇文章都有分類與標籤，方便歸檔與檢索。</p>
         <div class="hero-cta">
           <a class="btn" href="#latest">最新文章</a>
-          <a class="btn ghost" href="/category.html">瀏覽分類</a>
         </div>
       </div>
       <div class="hero-cover">
         <a class="cover-link" href="/issues.html" aria-label="前往期刊">
           <div class="cover-frame">
-          <div class="cover-image"></div>
-          <div class="cover-caption">季刊 · 2026Q1</div>
+          <div class="cover-image" id="homeIssueCover"></div>
+          <div class="cover-caption" id="homeIssueCaption">季刊 · 2026Q1</div>
+          <div class="cover-note" id="homeIssueNote">本期導讀</div>
           </div>
         </a>
       </div>
@@ -50,7 +50,7 @@
 
     <section id="latest" class="latest">
       <div class="section-title">
-        <h2>最新文章</h2>
+        <h2 id="latestTitle">最新文章</h2>
       <div class="filters">
         <select id="categoryFilter" aria-label="分類篩選"></select>
         <select id="tagFilter" aria-label="標籤篩選"></select>
@@ -61,7 +61,7 @@
   </main>
 
   <footer class="site-footer">
-    <div>© 2026 CRIVU · 以雜誌方式寫作</div>
+    <div id="siteFooterText">© 2026 CRIVU · 以雜誌方式寫作</div>
   </footer>
 
   <script src="/assets/js/app.js" type="module"></script>

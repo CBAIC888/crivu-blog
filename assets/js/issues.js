@@ -1,5 +1,14 @@
 const qs = (sel) => document.querySelector(sel);
 
+const state = {
+  site: {},
+};
+
+const setText = (sel, value) => {
+  const el = qs(sel);
+  if (el && value) el.textContent = value;
+};
+
 const matchesSearch = (post, query) => {
   if (!query) return true;
   const q = query.toLowerCase();
@@ -85,17 +94,42 @@ const renderIssue = (issue, posts) => {
         <h2>${issue.title}</h2>
         <p>${issue.theme}</p>
         <div class="issue-note">${issue.editorNote}</div>
+        <div class="issue-count">收錄 ${issue.posts.length} 篇文章</div>
         <div class="issue-posts">${postCards}</div>
       </div>
     </article>
   `;
 };
 
+const applyTheme = () => {
+  const toggle = qs('#themeToggle');
+  if (!toggle) return;
+  const setTheme = (theme) => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+  };
+  const stored = localStorage.getItem('theme') || 'light';
+  setTheme(stored);
+  toggle.addEventListener('click', () => {
+    const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    setTheme(next);
+  });
+};
+
+const loadSite = async () => {
+  try {
+    const res = await fetch('/posts/site.json');
+    if (!res.ok) return;
+    state.site = await res.json();
+    setText('#siteName', state.site.siteName);
+    setText('#siteFooterText', state.site.footerText);
+  } catch {
+    state.site = {};
+  }
+};
+
 const init = async () => {
-  const [issuesRes, postsRes] = await Promise.all([
-    fetch('/posts/issues.json'),
-    fetch('/posts/posts.json'),
-  ]);
+  const [issuesRes, postsRes] = await Promise.all([fetch('/posts/issues.json'), fetch('/posts/posts.json')]);
   const issuesData = await issuesRes.json();
   const postsData = await postsRes.json();
   const issues = issuesData.issues || [];
@@ -107,18 +141,8 @@ const init = async () => {
   }
 
   setupSearch(posts);
-
-  const toggle = qs('#themeToggle');
-  const applyTheme = (theme) => {
-    document.documentElement.setAttribute('data-theme', theme);
-    localStorage.setItem('theme', theme);
-  };
-  const stored = localStorage.getItem('theme') || 'light';
-  applyTheme(stored);
-  toggle.addEventListener('click', () => {
-    const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-    applyTheme(next);
-  });
+  applyTheme();
+  await loadSite();
 };
 
 init();

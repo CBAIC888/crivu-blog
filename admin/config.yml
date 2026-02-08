@@ -69,6 +69,12 @@ collections:
         format: "json"
         fields:
           - { label: "站名", name: "siteName", widget: "string" }
+          - { label: "首頁小標", name: "homeKicker", widget: "string" }
+          - { label: "首頁主標", name: "homeTitle", widget: "string" }
+          - { label: "首頁副標", name: "homeSubtitle", widget: "text" }
+          - { label: "最新文章標題", name: "latestTitle", widget: "string" }
+          - { label: "期刊區說明字", name: "issueCardNote", widget: "string", required: false }
+          - { label: "底部文案", name: "footerText", widget: "string" }
           - { label: "關於標題", name: "aboutTitle", widget: "string" }
           - { label: "關於段落 1", name: "aboutIntro", widget: "text" }
           - { label: "關於段落 2", name: "aboutStyle", widget: "text" }

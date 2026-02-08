@@ -10,6 +10,11 @@ const formatDate = (iso) => {
   return `${y}/${m}/${d}`;
 };
 
+const setText = (sel, value) => {
+  const el = qs(sel);
+  if (el && value) el.textContent = value;
+};
+
 const renderCard = (post) => {
   const cover = post.cover || '/assets/img/cover-01.svg';
   const issue = post.issue ? `<span class="issue-pill">${post.issue}</span>` : '';
@@ -88,6 +93,48 @@ const setupSearch = (posts) => {
   });
 };
 
+const applyTheme = () => {
+  const toggle = qs('#themeToggle');
+  if (!toggle) return;
+  const setTheme = (theme) => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+  };
+  const stored = localStorage.getItem('theme') || 'light';
+  setTheme(stored);
+  toggle.addEventListener('click', () => {
+    const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    setTheme(next);
+  });
+};
+
+const applyProgress = () => {
+  const progress = qs('#readProgress');
+  if (!progress) return;
+
+  const onScroll = () => {
+    const doc = document.documentElement;
+    const total = doc.scrollHeight - doc.clientHeight;
+    const pct = total > 0 ? (doc.scrollTop / total) * 100 : 0;
+    progress.style.width = `${pct}%`;
+  };
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+};
+
+const applySite = async () => {
+  try {
+    const res = await fetch('/posts/site.json');
+    if (!res.ok) return;
+    const site = await res.json();
+    setText('#siteName', site.siteName);
+    setText('#siteFooterText', site.footerText);
+  } catch {
+    // keep fallback text
+  }
+};
+
 const init = async () => {
   const slug = getSlug();
   const res = await fetch('/posts/posts.json');
@@ -98,11 +145,13 @@ const init = async () => {
   qs('#postTitle').textContent = post.title;
   qs('#postDate').textContent = formatDate(post.date);
   qs('#postCategory').textContent = post.category;
+
   const issue = qs('#postIssue');
   if (issue) {
     issue.textContent = post.issue || '';
     issue.style.display = post.issue ? 'inline-block' : 'none';
   }
+
   qs('#postExcerpt').textContent = post.excerpt;
 
   const tags = qs('#postTags');
@@ -113,34 +162,13 @@ const init = async () => {
 
   qs('#postBody').innerHTML = marked.parse(post.body || '');
 
-  const more = posts.filter((p) => p.slug !== post.slug).slice(0, 3);
+  const more = posts.filter((p) => p.slug !== post.slug).slice(0, 4);
   qs('#moreGrid').innerHTML = more.map(renderCard).join('');
 
   setupSearch(posts);
-
-  const toggle = qs('#themeToggle');
-  const applyTheme = (theme) => {
-    document.documentElement.setAttribute('data-theme', theme);
-    localStorage.setItem('theme', theme);
-  };
-  const stored = localStorage.getItem('theme') || 'light';
-  applyTheme(stored);
-  toggle.addEventListener('click', () => {
-    const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-    applyTheme(next);
-  });
-
-  const progress = qs('#readProgress');
-  if (progress) {
-    const onScroll = () => {
-      const doc = document.documentElement;
-      const total = doc.scrollHeight - doc.clientHeight;
-      const pct = total > 0 ? (doc.scrollTop / total) * 100 : 0;
-      progress.style.width = `${pct}%`;
-    };
-    window.addEventListener('scroll', onScroll, { passive: true });
-    onScroll();
-  }
+  applyTheme();
+  applyProgress();
+  await applySite();
 };
 
 init();

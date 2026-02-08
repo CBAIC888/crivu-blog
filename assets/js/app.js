@@ -1,5 +1,7 @@
 const state = {
   posts: [],
+  site: {},
+  issues: [],
   search: '',
   currentCategory: '',
   currentTag: '',
@@ -11,11 +13,67 @@ const state = {
 const qs = (sel) => document.querySelector(sel);
 const qsa = (sel) => Array.from(document.querySelectorAll(sel));
 
+const setText = (sel, value) => {
+  const el = qs(sel);
+  if (el && value) el.textContent = value;
+};
+
 const loadPosts = async () => {
   const res = await fetch('/posts/posts.json');
   const data = await res.json();
   state.posts = (data.items || data).slice();
   state.posts.sort((a, b) => b.date.localeCompare(a.date));
+};
+
+const loadSite = async () => {
+  try {
+    const res = await fetch('/posts/site.json');
+    if (!res.ok) return;
+    state.site = await res.json();
+  } catch {
+    state.site = {};
+  }
+};
+
+const loadIssues = async () => {
+  try {
+    const res = await fetch('/posts/issues.json');
+    if (!res.ok) return;
+    const data = await res.json();
+    state.issues = data.issues || [];
+  } catch {
+    state.issues = [];
+  }
+};
+
+const applySiteSettings = () => {
+  const site = state.site;
+  setText('#siteName', site.siteName);
+  setText('#homeKicker', site.homeKicker);
+  setText('#homeTitle', site.homeTitle);
+  setText('#homeSubtitle', site.homeSubtitle);
+  setText('#latestTitle', site.latestTitle);
+  setText('#siteFooterText', site.footerText);
+  setText('#homeIssueNote', site.issueCardNote);
+};
+
+const applyHomeIssue = () => {
+  const cover = qs('#homeIssueCover');
+  const caption = qs('#homeIssueCaption');
+  const note = qs('#homeIssueNote');
+  if (!cover || !caption || state.issues.length === 0) return;
+
+  const latestIssue = state.issues
+    .slice()
+    .sort((a, b) => (b.publishDate || '').localeCompare(a.publishDate || ''))[0];
+
+  if (latestIssue.cover) {
+    cover.style.backgroundImage = `url('${latestIssue.cover}')`;
+  }
+  caption.textContent = `季刊 · ${latestIssue.id} · ${latestIssue.title}`;
+  if (note) {
+    note.textContent = latestIssue.theme || state.site.issueCardNote || '';
+  }
 };
 
 const renderCard = (post) => {
@@ -69,9 +127,7 @@ const setupSearch = () => {
       results.innerHTML = '';
       return;
     }
-    const matches = state.posts
-      .filter((p) => matchesSearch(p, query))
-      .slice(0, 6);
+    const matches = state.posts.filter((p) => matchesSearch(p, query)).slice(0, 6);
 
     if (matches.length === 0) {
       results.classList.remove('active');
@@ -132,13 +188,8 @@ const setupFilters = () => {
   const categories = Array.from(new Set(state.posts.map((p) => p.category)));
   const tags = Array.from(new Set(state.posts.flatMap((p) => p.tags)));
 
-  categoryFilter.innerHTML = ['全部分類', ...categories]
-    .map((c) => `<option value="${c}">${c}</option>`)
-    .join('');
-
-  tagFilter.innerHTML = ['全部標籤', ...tags]
-    .map((t) => `<option value="${t}">${t}</option>`)
-    .join('');
+  categoryFilter.innerHTML = ['全部分類', ...categories].map((c) => `<option value="${c}">${c}</option>`).join('');
+  tagFilter.innerHTML = ['全部標籤', ...tags].map((t) => `<option value="${t}">${t}</option>`).join('');
 
   const apply = () => {
     const cat = categoryFilter.value;
@@ -178,9 +229,7 @@ const setupCategoryPage = () => {
     renderCategory(btn.dataset.cat);
   });
 
-  if (categories.length > 0) {
-    renderCategory(categories[0]);
-  }
+  if (categories.length > 0) renderCategory(categories[0]);
   state.applyCategory = () => {
     if (state.currentCategory) renderCategory(state.currentCategory);
   };
@@ -207,9 +256,7 @@ const setupTagPage = () => {
     renderTag(btn.dataset.tag);
   });
 
-  if (tags.length > 0) {
-    renderTag(tags[0]);
-  }
+  if (tags.length > 0) renderTag(tags[0]);
   state.applyTag = () => {
     if (state.currentTag) renderTag(state.currentTag);
   };
@@ -232,7 +279,10 @@ const setupTheme = () => {
 
 const init = async () => {
   setupTheme();
-  await loadPosts();
+  await Promise.all([loadPosts(), loadSite(), loadIssues()]);
+  applySiteSettings();
+  applyHomeIssue();
+
   setupSearch();
   setupFilters();
   setupCategoryPage();

@@ -12,6 +12,7 @@ const init = async () => {
     const site = await res.json();
 
     setText('#siteName', site.siteName);
+    setText('#siteFooterText', site.footerText);
     setText('#aboutTitle', site.aboutTitle);
     setText('#aboutIntro', site.aboutIntro);
     setText('#aboutStyle', site.aboutStyle);
