@@ -42,30 +42,51 @@ export async function onRequest(context) {
 
   if (!tokenJson.access_token) {
     const message = tokenJson.error_description || tokenJson.error || 'No access token';
-    return new Response(`No access token: ${message}`, { status: 400 });
+    return new Response(
+      `<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>OAuth Error</title></head>
+<body style="font-family: sans-serif; padding: 24px;">
+  <h1>OAuth Error</h1>
+  <p>No access token: ${message}</p>
+  <p>You can close this window and try login again.</p>
+</body>
+</html>`,
+      { status: 400, headers: { 'Content-Type': 'text/html; charset=utf-8' } }
+    );
   }
 
   const token = tokenJson.access_token;
+  const payload = JSON.stringify({ token, provider: 'github' });
   const response = `<!doctype html>
 <html lang="en">
 <head><meta charset="utf-8"></head>
 <body>
 <script>
   (function() {
-    function receiveMessage(e) {
-      if (!e.data || e.data.type !== 'authorization:github') return;
-      const code = '${token}';
-      const message = {
-        type: 'authorization:github',
-        token: code,
-      };
-      if (e.source) {
-        e.source.postMessage(message, e.origin);
-      }
-      window.removeEventListener('message', receiveMessage, false);
+    var content = ${payload};
+
+    function finish(origin) {
+      if (!window.opener) return;
+      window.opener.postMessage(
+        "authorization:github:success:" + JSON.stringify(content),
+        origin || "*"
+      );
+      setTimeout(function() { window.close(); }, 100);
     }
-    window.addEventListener('message', receiveMessage, false);
-    window.opener.postMessage('authorizing:github', '*');
+
+    function receiveMessage(message) {
+      finish(message.origin);
+      window.removeEventListener("message", receiveMessage, false);
+    }
+
+    if (!window.opener) {
+      document.body.innerHTML = "<p style='font-family:sans-serif;padding:24px;'>Login completed. You can close this tab.</p>";
+      return;
+    }
+
+    window.addEventListener("message", receiveMessage, false);
+    window.opener.postMessage("authorizing:github", "*");
   })();
 </script>
 </body>
