@@ -2,6 +2,9 @@ backend:
   name: github
   repo: CBAIC888/crivu-blog
   branch: main
+  base_url: https://cbc688.com
+  auth_endpoint: /api/auth
+  branch: main
   commit_messages:
     create: "content: create {{collection}} '{{slug}}'"
     update: "content: update {{collection}} '{{slug}}'"
