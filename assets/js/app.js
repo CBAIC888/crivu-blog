@@ -1,9 +1,6 @@
 const state = {
   posts: [],
   site: {},
-  issues: [],
-  carouselIssues: [],
-  issueIndex: 0,
   search: '',
   currentCategory: '',
   currentTag: '',
@@ -62,17 +59,6 @@ const loadSite = async () => {
   }
 };
 
-const loadIssues = async () => {
-  try {
-    const res = await fetch('/posts/issues.json');
-    if (!res.ok) return;
-    const data = await res.json();
-    state.issues = data.issues || [];
-  } catch {
-    state.issues = [];
-  }
-};
-
 const applySiteSettings = () => {
   const site = state.site;
   qsa('#siteName').forEach((el) => {
@@ -86,7 +72,6 @@ const applySiteSettings = () => {
   setText('#homeTitle', site.homeTitle);
   setText('#homeSubtitle', site.homeSubtitle);
   setText('#latestTitle', site.latestTitle);
-  setText('#homeIssueNote', site.issueCardNote);
   setText('#aboutTitle', site.aboutTitle);
   setText('#aboutIntro', site.aboutIntro);
   setText('#aboutStyle', site.aboutStyle);
@@ -95,75 +80,35 @@ const applySiteSettings = () => {
   setText('#aboutTopics', site.topics);
 };
 
-const buildCarouselIssues = () => {
-  const sorted = state.issues.slice().sort((a, b) => (b.publishDate || '').localeCompare(a.publishDate || ''));
-  const picked = [];
+const applyNavigation = (site) => {
+  const nav = qs('.nav');
+  if (!nav || !Array.isArray(site.nav) || site.nav.length === 0) return;
 
-  if (Array.isArray(state.site.homeIssueIds) && state.site.homeIssueIds.length > 0) {
-    state.site.homeIssueIds.forEach((id) => {
-      const item = sorted.find((issue) => issue.id === id);
-      if (item) picked.push(item);
+  const currentPath = window.location.pathname.replace(/\/index\.html$/, '/') || '/';
+  const items = site.nav
+    .filter((item) => item && item.label && item.href)
+    .map((item) => {
+      const href = item.href;
+      const normalized = href.replace(/\/index\.html$/, '/') || '/';
+      const isHome = normalized === '/';
+      const isActive = isHome ? currentPath === '/' : currentPath.startsWith(normalized);
+      return `<a href="${href}"${isActive ? ' class="active"' : ''}>${item.label}</a>`;
     });
-  }
 
-  state.carouselIssues = picked.length > 0 ? picked : sorted;
+  if (items.length > 0) nav.innerHTML = items.join('');
 };
 
-const renderIssueCard = () => {
-  const cover = qs('#homeIssueCover');
-  const caption = qs('#homeIssueCaption');
-  const note = qs('#homeIssueNote');
-  const index = qs('#issueIndex');
-  if (!cover || !caption || state.carouselIssues.length === 0) return;
+const setupHeaderOffset = () => {
+  const header = qs('.site-header');
+  if (!header) return;
 
-  const current = state.carouselIssues[state.issueIndex];
-  const override = state.site.homeIssueCoverOverride;
-  if (override) {
-    cover.style.backgroundImage = `url('${override}')`;
-  } else if (current.cover) {
-    cover.style.backgroundImage = `url('${current.cover}')`;
-  }
-
-  caption.textContent = `季刊 · ${current.id} · ${current.title}`;
-  if (note) note.textContent = current.theme || state.site.issueCardNote || '';
-  if (index) index.textContent = `${state.issueIndex + 1} / ${state.carouselIssues.length}`;
-};
-
-const setupIssueCarousel = () => {
-  if (!qs('#homeIssueCover')) return;
-  buildCarouselIssues();
-  if (state.carouselIssues.length === 0) return;
-
-  const prev = qs('#issuePrev');
-  const next = qs('#issueNext');
-
-  const step = (delta) => {
-    state.issueIndex = (state.issueIndex + delta + state.carouselIssues.length) % state.carouselIssues.length;
-    renderIssueCard();
+  const apply = () => {
+    const height = header.getBoundingClientRect().height;
+    document.documentElement.style.setProperty('--header-height', `${height}px`);
   };
 
-  if (prev) prev.addEventListener('click', (e) => {
-    e.preventDefault();
-    step(-1);
-  });
-  if (next) next.addEventListener('click', (e) => {
-    e.preventDefault();
-    step(1);
-  });
-
-  let startX = 0;
-  const cover = qs('#homeIssueCover');
-  if (cover) {
-    cover.addEventListener('touchstart', (e) => {
-      startX = e.changedTouches[0].clientX;
-    }, { passive: true });
-    cover.addEventListener('touchend', (e) => {
-      const dx = e.changedTouches[0].clientX - startX;
-      if (Math.abs(dx) > 40) step(dx > 0 ? -1 : 1);
-    }, { passive: true });
-  }
-
-  renderIssueCard();
+  apply();
+  window.addEventListener('resize', apply);
 };
 
 const renderCard = (post) => {
@@ -346,14 +291,15 @@ const setupTagPage = () => {
 
 const init = async () => {
   setupTheme();
-  await Promise.all([loadPosts(), loadSite(), loadIssues()]);
+  await Promise.all([loadPosts(), loadSite()]);
 
   applySiteSettings();
-  setupIssueCarousel();
+  applyNavigation(state.site);
   setupSearch();
   setupFilters();
   setupCategoryPage();
   setupTagPage();
+  setupHeaderOffset();
 
   const grid = qs('#postGrid');
   if (grid && grid.childElementCount === 0) {

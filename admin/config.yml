@@ -16,8 +16,8 @@ public_folder: "/assets/img/uploads"
 publish_mode: editorial_workflow
 
 collections:
-  - name: "content"
-    label: "內容中心"
+  - name: "posts"
+    label: "文章"
     files:
       - name: "posts"
         label: "文章列表"
@@ -43,6 +43,9 @@ collections:
               - { label: "Slug", name: "slug", widget: "string", hint: "只用英文小寫、數字、-，例如 city-walk-notes" }
               - { label: "內文", name: "body", widget: "markdown", hint: "可在游標位置插入圖片元件；建議文內圖 1200x800，直圖 1080x1350" }
 
+  - name: "issues"
+    label: "期刊"
+    files:
       - name: "issues"
         label: "期刊列表"
         file: "posts/issues.json"
@@ -64,23 +67,27 @@ collections:
                 widget: "list"
                 hint: "輸入文章 slug（例如 city-walk-notes）"
 
+  - name: "site"
+    label: "站點設定"
+    files:
       - name: "site"
         label: "站點資訊"
         file: "posts/site.json"
         format: "json"
         fields:
           - { label: "站名", name: "siteName", widget: "string" }
+          - label: "導航"
+            name: "nav"
+            widget: "list"
+            required: false
+            summary: "{{fields.label}} → {{fields.href}}"
+            fields:
+              - { label: "名稱", name: "label", widget: "string" }
+              - { label: "連結", name: "href", widget: "string" }
           - { label: "首頁小標", name: "homeKicker", widget: "string" }
           - { label: "首頁主標", name: "homeTitle", widget: "string" }
           - { label: "首頁副標", name: "homeSubtitle", widget: "text" }
           - { label: "最新文章標題", name: "latestTitle", widget: "string" }
-          - { label: "期刊區說明字", name: "issueCardNote", widget: "string", required: false }
-          - { label: "首頁期刊封面覆蓋", name: "homeIssueCoverOverride", widget: "image", required: false, hint: "如需固定首頁封面，直接上傳；不填則使用最新一期封面" }
-          - label: "首頁輪播期刊 ID"
-            name: "homeIssueIds"
-            widget: "list"
-            required: false
-            hint: "可填多個，例如 2026Q1, 2026Q2；不填則自動按發布日期顯示全部"
           - { label: "底部文案", name: "footerText", widget: "string" }
           - { label: "關於標題", name: "aboutTitle", widget: "string" }
           - { label: "關於段落 1", name: "aboutIntro", widget: "text" }

@@ -23,7 +23,9 @@
         <input id="searchInput" class="search-input" type="search" placeholder="搜尋文章 / 標籤 / 分類" />
         <div id="searchResults" class="search-results"></div>
       </div>
-      <button class="theme-toggle" id="themeToggle" aria-label="切換主題">主題</button>
+      <button class="theme-toggle" id="themeToggle" aria-label="切換主題">
+        <span id="themeIcon" class="theme-icon">☀</span>
+      </button>
     </div>
   </header>
 
@@ -37,30 +39,16 @@
           <a class="btn" href="#latest">最新文章</a>
         </div>
       </div>
-      <div class="hero-cover">
-        <a class="cover-link" href="/issues.html" aria-label="前往期刊">
-          <div class="cover-frame">
-            <div class="cover-toolbar">
-              <button id="issuePrev" class="cover-nav" aria-label="上一期">‹</button>
-              <div id="issueIndex" class="cover-index">1 / 1</div>
-              <button id="issueNext" class="cover-nav" aria-label="下一期">›</button>
-            </div>
-            <div class="cover-image" id="homeIssueCover"></div>
-            <div class="cover-caption" id="homeIssueCaption">季刊 · 2026Q1</div>
-            <div class="cover-note" id="homeIssueNote">本期導讀</div>
-          </div>
-        </a>
-      </div>
     </section>
 
     <section id="latest" class="latest">
       <div class="section-title">
         <h2 id="latestTitle">最新文章</h2>
-      <div class="filters">
-        <select id="categoryFilter" aria-label="分類篩選"></select>
-        <select id="tagFilter" aria-label="標籤篩選"></select>
+        <div class="filters">
+          <select id="categoryFilter" aria-label="分類篩選"></select>
+          <select id="tagFilter" aria-label="標籤篩選"></select>
+        </div>
       </div>
-    </div>
       <div id="postGrid" class="post-grid list-mode"></div>
     </section>
   </main>

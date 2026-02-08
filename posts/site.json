@@ -1,17 +1,32 @@
 {
-  "topics": "寫作、閱讀、戲曲、指南",
-  "aboutStyle": "我是CRIVU。這個網站是我的個人資料庫：把日常裡的靈感、技術實作、旅途見聞與閱讀思考等，整理成一期一期的內容。\n\n如果你也在練習更清晰地生活、更扎實地學習、更誠實地思考，希望這裡能對你有用。文章會用分類與標籤整理，方便檢索與回看；每一季會做一次「本期導讀」，把脈絡串起來。",
-  "footerText": "© 2026 CRIVU · 本站部分資訊來源於網絡",
-  "homeIssueCoverOverride": "/assets/img/uploads/434a0728-fefa-4971-a28a-2e4f6ddf0401.jpeg",
-  "city": "China",
-  "aboutTitle": "關於",
-  "latestTitle": "最新文章",
   "siteName": "CRIVU",
+  "nav": [
+    {
+      "label": "首頁",
+      "href": "/"
+    },
+    {
+      "label": "期刊",
+      "href": "/issues.html"
+    },
+    {
+      "label": "文章",
+      "href": "/articles.html"
+    },
+    {
+      "label": "關於",
+      "href": "/about.html"
+    }
+  ],
   "homeKicker": "資料庫",
-  "homeSubtitle": "此刊上傳的內容為2025年12月-2026年4月時間範圍內。",
   "homeTitle": "2026第一刊發佈",
-  "issueCardNote": "本期導讀",
+  "homeSubtitle": "此刊上傳的內容為2025年12月-2026年4月時間範圍內。",
+  "latestTitle": "最新文章",
+  "footerText": "© 2026 CRIVU · 本站部分資訊來源於網絡",
+  "aboutTitle": "關於",
+  "aboutIntro": "2026年2月8日建立。",
+  "aboutStyle": "我是CRIVU。這個網站是我的個人資料庫：把日常裡的靈感、技術實作、旅途見聞與閱讀思考等，整理成一期一期的內容。\n\n如果你也在練習更清晰地生活、更扎實地學習、更誠實地思考，希望這裡能對你有用。文章會用分類與標籤整理，方便檢索與回看；每一季會做一次「本期導讀」，把脈絡串起來。",
+  "city": "China",
   "email": "cbc88898@gmail.com",
-  "homeIssueIds": [],
-  "aboutIntro": "2026年2月8日建立。"
+  "topics": "寫作、閱讀、戲曲、指南"
 }

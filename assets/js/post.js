@@ -22,18 +22,18 @@ const applyTheme = (theme) => {
   if (icon) icon.textContent = theme === 'dark' ? '☾' : '☀';
 };
 
-const renderCard = (post) => {
+const renderMoreItem = (post) => {
   const cover = post.cover || '/assets/img/cover-01.svg';
   const issue = post.issue ? `<span class="issue-pill">${post.issue}</span>` : '';
   return `
-    <article class="post-card">
-      <a class="image" href="/post.html?slug=${post.slug}" style="background-image: url('${cover}');"></a>
-      <div class="content">
+    <a class="more-item" href="/post.html?slug=${post.slug}">
+      <div class="more-thumb" style="background-image: url('${cover}');"></div>
+      <div class="more-info">
         <span class="pill">${post.category}</span>${issue}
-        <h3><a href="/post.html?slug=${post.slug}">${post.title}</a></h3>
+        <h3>${post.title}</h3>
         <p>${post.excerpt}</p>
       </div>
-    </article>
+    </a>
   `;
 };
 
@@ -130,6 +130,19 @@ const applyProgress = () => {
   onScroll();
 };
 
+const setupHeaderOffset = () => {
+  const header = qs('.site-header');
+  if (!header) return;
+
+  const apply = () => {
+    const height = header.getBoundingClientRect().height;
+    document.documentElement.style.setProperty('--header-height', `${height}px`);
+  };
+
+  apply();
+  window.addEventListener('resize', apply);
+};
+
 const applySite = async () => {
   try {
     const res = await fetch('/posts/site.json');
@@ -137,6 +150,21 @@ const applySite = async () => {
     const site = await res.json();
     setText('#siteName', site.siteName);
     setText('#siteFooterText', site.footerText);
+
+    const nav = qs('.nav');
+    if (nav && Array.isArray(site.nav) && site.nav.length > 0) {
+      const currentPath = window.location.pathname.replace(/\/index\.html$/, '/') || '/';
+      const items = site.nav
+        .filter((item) => item && item.label && item.href)
+        .map((item) => {
+          const href = item.href;
+          const normalized = href.replace(/\/index\.html$/, '/') || '/';
+          const isHome = normalized === '/';
+          const isActive = isHome ? currentPath === '/' : currentPath.startsWith(normalized);
+          return `<a href="${href}"${isActive ? ' class="active"' : ''}>${item.label}</a>`;
+        });
+      if (items.length > 0) nav.innerHTML = items.join('');
+    }
   } catch {
     // keep fallback text
   }
@@ -170,12 +198,14 @@ const init = async () => {
   qs('#postBody').innerHTML = marked.parse(post.body || '');
 
   const more = posts.filter((p) => p.slug !== post.slug).slice(0, 4);
-  qs('#moreGrid').innerHTML = more.map(renderCard).join('');
+  const moreList = qs('#moreList');
+  if (moreList) moreList.innerHTML = more.map(renderMoreItem).join('');
 
   setupSearch(posts);
   setupTheme();
-  applyProgress();
   await applySite();
+  setupHeaderOffset();
+  applyProgress();
 };
 
 init();

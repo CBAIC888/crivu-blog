@@ -1,22 +1,31 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Space+Grotesk:wght@400;500;600&display=swap');
+
 :root {
   --cms-accent: #d1583c;
+  --cms-accent-2: #1c6b6a;
   --cms-ink: #1b1a17;
   --cms-bg: #f4efe6;
+  --cms-card: #ffffff;
+  --cms-shadow: 0 18px 40px rgba(0, 0, 0, 0.08);
 }
 
 body {
+  font-family: 'Space Grotesk', sans-serif !important;
+  color: var(--cms-ink);
   background: radial-gradient(circle at 10% 10%, rgba(209, 88, 60, 0.08), transparent 35%),
               radial-gradient(circle at 90% 20%, rgba(28, 107, 106, 0.09), transparent 35%),
               var(--cms-bg);
 }
 
 .cms-editor-visual {
-  border-radius: 14px;
+  border-radius: 16px;
+  box-shadow: var(--cms-shadow);
 }
 
 button,
 [class*='Button'] {
-  border-radius: 10px !important;
+  border-radius: 12px !important;
+  font-family: 'Space Grotesk', sans-serif !important;
 }
 
 a,
@@ -26,8 +35,25 @@ a,
 
 [class*='ControlLabel'] {
   font-weight: 600 !important;
+  letter-spacing: 0.2px;
 }
 
-[class*='ToolbarContainer'] {
-  backdrop-filter: blur(8px);
+[class*='ToolbarContainer'],
+[class*='AppHeader'] {
+  backdrop-filter: blur(10px);
+  background: rgba(244, 239, 230, 0.85) !important;
+  border-bottom: 1px solid rgba(0,0,0,0.08);
+}
+
+[class*='SidebarContainer'],
+[class*='Sidebar'] {
+  background: rgba(255, 255, 255, 0.75) !important;
+}
+
+[class*='Card'],
+[class*='ListCard'],
+[class*='Collection'] {
+  border-radius: 16px !important;
+  box-shadow: var(--cms-shadow);
+  background: var(--cms-card) !important;
 }

@@ -16,6 +16,19 @@ const applyTheme = (theme) => {
   if (icon) icon.textContent = theme === 'dark' ? '☾' : '☀';
 };
 
+const setupHeaderOffset = () => {
+  const header = qs('.site-header');
+  if (!header) return;
+
+  const apply = () => {
+    const height = header.getBoundingClientRect().height;
+    document.documentElement.style.setProperty('--header-height', `${height}px`);
+  };
+
+  apply();
+  window.addEventListener('resize', apply);
+};
+
 const matchesSearch = (post, query) => {
   if (!query) return true;
   const q = query.toLowerCase();
@@ -130,6 +143,21 @@ const loadSite = async () => {
     state.site = await res.json();
     setText('#siteName', state.site.siteName);
     setText('#siteFooterText', state.site.footerText);
+
+    const nav = qs('.nav');
+    if (nav && Array.isArray(state.site.nav) && state.site.nav.length > 0) {
+      const currentPath = window.location.pathname.replace(/\/index\.html$/, '/') || '/';
+      const items = state.site.nav
+        .filter((item) => item && item.label && item.href)
+        .map((item) => {
+          const href = item.href;
+          const normalized = href.replace(/\/index\.html$/, '/') || '/';
+          const isHome = normalized === '/';
+          const isActive = isHome ? currentPath === '/' : currentPath.startsWith(normalized);
+          return `<a href="${href}"${isActive ? ' class="active"' : ''}>${item.label}</a>`;
+        });
+      if (items.length > 0) nav.innerHTML = items.join('');
+    }
   } catch {
     state.site = {};
   }
@@ -150,6 +178,7 @@ const init = async () => {
   setupSearch(posts);
   setupTheme();
   await loadSite();
+  setupHeaderOffset();
 };
 
 init();
