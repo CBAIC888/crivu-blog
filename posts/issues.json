@@ -4,10 +4,12 @@
       "id": "2026Q1",
       "title": "2026 春季刊",
       "theme": "雜誌式寫作的起點",
-      "cover": "/assets/img/cover-01.svg",
+      "cover": "/assets/img/uploads/434a0728-fefa-4971-a28a-2e4f6ddf0401.jpeg",
       "publishDate": "2026-02-01",
-      "editorNote": "第一期以「建立節奏」為題，收錄三篇文章，作為這個博客的起點。",
-      "posts": ["magazine-blog-start", "city-walk-notes", "taxonomy-for-blog"]
+      "editorNote": "第一期為2025年12月-2026年4月",
+      "posts": [
+        "tuise-zhesi"
+      ]
     }
   ]
 }
