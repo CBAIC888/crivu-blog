@@ -16,22 +16,33 @@ export async function onRequest(context) {
     return new Response('Missing GitHub OAuth env vars', { status: 500 });
   }
 
+  const redirectUri = `${url.origin}/api/callback`;
+  const params = new URLSearchParams({
+    client_id: clientId,
+    client_secret: clientSecret,
+    code,
+    redirect_uri: redirectUri,
+  });
+
   const tokenRes = await fetch('https://github.com/login/oauth/access_token', {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/json',
+      'Content-Type': 'application/x-www-form-urlencoded',
       Accept: 'application/json',
     },
-    body: JSON.stringify({
-      client_id: clientId,
-      client_secret: clientSecret,
-      code,
-    }),
+    body: params.toString(),
   });
 
-  const tokenJson = await tokenRes.json();
+  let tokenJson;
+  try {
+    tokenJson = await tokenRes.json();
+  } catch {
+    return new Response('Invalid token response from GitHub', { status: 502 });
+  }
+
   if (!tokenJson.access_token) {
-    return new Response('No access token', { status: 400 });
+    const message = tokenJson.error_description || tokenJson.error || 'No access token';
+    return new Response(`No access token: ${message}`, { status: 400 });
   }
 
   const token = tokenJson.access_token;
