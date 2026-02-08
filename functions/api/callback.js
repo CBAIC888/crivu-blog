@@ -16,12 +16,10 @@ export async function onRequest(context) {
     return new Response('Missing GitHub OAuth env vars', { status: 500 });
   }
 
-  const redirectUri = `${url.origin}/api/callback`;
   const params = new URLSearchParams({
     client_id: clientId,
     client_secret: clientSecret,
     code,
-    redirect_uri: redirectUri,
   });
 
   const tokenRes = await fetch('https://github.com/login/oauth/access_token', {
@@ -29,6 +27,7 @@ export async function onRequest(context) {
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
       Accept: 'application/json',
+      'User-Agent': 'crivu-cms-oauth',
     },
     body: params.toString(),
   });
@@ -49,6 +48,8 @@ export async function onRequest(context) {
 <body style="font-family: sans-serif; padding: 24px;">
   <h1>OAuth Error</h1>
   <p>No access token: ${message}</p>
+  <p>Current origin: ${url.origin}</p>
+  <p>Expected callback path: /api/callback</p>
   <p>You can close this window and try login again.</p>
 </body>
 </html>`,
