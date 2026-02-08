@@ -10,7 +10,7 @@
 <body>
   <div class="grain"></div>
   <header class="site-header">
-    <div class="logo">CRIVU</div>
+    <div class="logo" id="siteName">CRIVU</div>
     <nav class="nav">
       <a href="/">首頁</a>
       <a href="/issues.html">期刊</a>
@@ -28,21 +28,21 @@
 
   <main class="about">
     <div class="about-card">
-      <h1>關於我</h1>
-      <p>這裡是你的個人博客。你可以寫生活、技術、旅行，或任何你關心的主題。</p>
-      <p>這個網站以「雜誌風」為核心：高可讀的排版、強調內容的主視覺，以及清晰的分類與標籤。</p>
+      <h1 id="aboutTitle">關於我</h1>
+      <p id="aboutIntro">這裡是你的個人博客。你可以寫生活、技術、旅行，或任何你關心的主題。</p>
+      <p id="aboutStyle">這個網站以「雜誌風」為核心：高可讀的排版、強調內容的主視覺，以及清晰的分類與標籤。</p>
       <div class="about-meta">
         <div>
           <div class="meta-label">城市</div>
-          <div class="meta-value">台北 / 你的城市</div>
+          <div class="meta-value" id="aboutCity">台北 / 你的城市</div>
         </div>
         <div>
           <div class="meta-label">Email</div>
-          <div class="meta-value">hello@yourname.com</div>
+          <div class="meta-value" id="aboutEmail">hello@yourname.com</div>
         </div>
         <div>
           <div class="meta-label">主題</div>
-          <div class="meta-value">生活 · 技術 · 旅行</div>
+          <div class="meta-value" id="aboutTopics">生活 · 技術 · 旅行</div>
         </div>
       </div>
     </div>
@@ -53,5 +53,6 @@
   </footer>
 
   <script src="/assets/js/app.js" type="module"></script>
+  <script src="/assets/js/about.js" type="module"></script>
 </body>
 </html>

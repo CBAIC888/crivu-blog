@@ -15,8 +15,8 @@ media_folder: "assets/img/uploads"
 public_folder: "/assets/img/uploads"
 
 collections:
-  - name: "blog"
-    label: "文章"
+  - name: "content"
+    label: "內容中心"
     files:
       - name: "posts"
         label: "文章列表"
@@ -26,13 +26,52 @@ collections:
           - label: "文章"
             name: "items"
             widget: "list"
-            summary: "{{fields.title}}"
+            summary: "{{fields.date}} · {{fields.title}}"
+            hint: "封面可上傳圖片，內文為 Markdown（支援圖片）。"
             fields:
               - { label: "標題", name: "title", widget: "string" }
-              - { label: "日期", name: "date", widget: "datetime", format: "YYYY-MM-DD" }
+              - { label: "日期", name: "date", widget: "datetime", format: "YYYY-MM-DD", time_format: false }
               - { label: "分類", name: "category", widget: "string" }
-              - { label: "標籤", name: "tags", widget: "list" }
+              - label: "標籤"
+                name: "tags"
+                widget: "list"
+                allow_add: true
               - { label: "摘要", name: "excerpt", widget: "text" }
+              - { label: "封面", name: "cover", widget: "image", required: false, hint: "可直接上傳新圖片" }
+              - { label: "期刊 ID", name: "issue", widget: "string", required: false, hint: "例如 2026Q1" }
+              - { label: "Slug", name: "slug", widget: "string", hint: "只用英文小寫、數字、-，例如 city-walk-notes" }
+              - { label: "內文", name: "body", widget: "markdown", hint: "在編輯器點圖片圖示可插入圖片；或用 ![描述](/assets/img/uploads/xxx.jpg)" }
+
+      - name: "issues"
+        label: "期刊列表"
+        file: "posts/issues.json"
+        format: "json"
+        fields:
+          - label: "期刊"
+            name: "issues"
+            widget: "list"
+            summary: "{{fields.id}} · {{fields.title}}"
+            fields:
+              - { label: "期刊 ID", name: "id", widget: "string", hint: "例如 2026Q1" }
+              - { label: "標題", name: "title", widget: "string" }
+              - { label: "主題", name: "theme", widget: "string" }
               - { label: "封面", name: "cover", widget: "image", required: false }
-              - { label: "Slug", name: "slug", widget: "string" }
-              - { label: "內文", name: "body", widget: "markdown" }
+              - { label: "發布日期", name: "publishDate", widget: "datetime", format: "YYYY-MM-DD", time_format: false }
+              - { label: "編者語", name: "editorNote", widget: "text" }
+              - label: "收錄文章 Slug"
+                name: "posts"
+                widget: "list"
+                hint: "輸入文章 slug（例如 city-walk-notes）"
+
+      - name: "site"
+        label: "站點資訊"
+        file: "posts/site.json"
+        format: "json"
+        fields:
+          - { label: "站名", name: "siteName", widget: "string" }
+          - { label: "關於標題", name: "aboutTitle", widget: "string" }
+          - { label: "關於段落 1", name: "aboutIntro", widget: "text" }
+          - { label: "關於段落 2", name: "aboutStyle", widget: "text" }
+          - { label: "城市", name: "city", widget: "string" }
+          - { label: "Email", name: "email", widget: "string" }
+          - { label: "主題", name: "topics", widget: "string" }
