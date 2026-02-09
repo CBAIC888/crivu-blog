@@ -30,6 +30,37 @@ const setupHeaderOffset = () => {
   window.addEventListener('resize', apply);
 };
 
+const initLazyBackgrounds = (root = document) => {
+  const nodes = Array.from(root.querySelectorAll('[data-bg]'));
+  if (nodes.length === 0) return;
+
+  const applyBg = (node) => {
+    if (node.dataset.bgLoaded === '1') return;
+    const src = node.getAttribute('data-bg');
+    if (!src) return;
+    node.style.backgroundImage = `url('${src}')`;
+    node.dataset.bgLoaded = '1';
+  };
+
+  if (!('IntersectionObserver' in window)) {
+    nodes.forEach(applyBg);
+    return;
+  }
+
+  const io = new IntersectionObserver(
+    (entries, observer) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        applyBg(entry.target);
+        observer.unobserve(entry.target);
+      });
+    },
+    { rootMargin: '280px 0px' }
+  );
+
+  nodes.forEach((node) => io.observe(node));
+};
+
 const setupMobileSearch = () => {
   const btn = qs('#mobileSearchBtn');
   const header = qs('.site-header');
@@ -130,6 +161,7 @@ const setupSearch = (posts) => {
 };
 
 const renderIssue = (issue, posts) => {
+  const cover = issue.cover || '/assets/img/cover-01.svg';
   const expandLabel = state.site.issueExpandLabel || '展開本期詳情';
   const emptyText = state.site.issueEmptyText || '暫無文章';
   const countTemplate = state.site.issueCountTemplate || '收錄 {count} 篇文章';
@@ -159,7 +191,7 @@ const renderIssue = (issue, posts) => {
 
   return `
     <article class="issue-card">
-      <div class="issue-cover" style="background-image: url('${issue.cover}');"></div>
+      <div class="issue-cover lazy-bg" data-bg="${cover}"></div>
       <div class="issue-body">
         <div class="issue-meta">
           <span class="pill">${issue.id}</span>
@@ -248,6 +280,7 @@ const init = async () => {
   const grid = qs('#issuesGrid');
   if (grid) {
     grid.innerHTML = issues.map((issue) => renderIssue(issue, posts)).join('');
+    initLazyBackgrounds(grid);
   }
 
   setupSearch(posts);

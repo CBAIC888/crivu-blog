@@ -150,6 +150,37 @@ const setupHeaderOffset = () => {
   window.addEventListener('resize', apply);
 };
 
+const initLazyBackgrounds = (root = document) => {
+  const nodes = Array.from(root.querySelectorAll('[data-bg]'));
+  if (nodes.length === 0) return;
+
+  const applyBg = (node) => {
+    if (node.dataset.bgLoaded === '1') return;
+    const src = node.getAttribute('data-bg');
+    if (!src) return;
+    node.style.backgroundImage = `url('${src}')`;
+    node.dataset.bgLoaded = '1';
+  };
+
+  if (!('IntersectionObserver' in window)) {
+    nodes.forEach(applyBg);
+    return;
+  }
+
+  const io = new IntersectionObserver(
+    (entries, observer) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        applyBg(entry.target);
+        observer.unobserve(entry.target);
+      });
+    },
+    { rootMargin: '280px 0px' }
+  );
+
+  nodes.forEach((node) => io.observe(node));
+};
+
 const setupMobileSearch = () => {
   const btn = qs('#mobileSearchBtn');
   const header = qs('.site-header');
@@ -197,7 +228,7 @@ const renderCard = (post) => {
   const safeTags = Array.isArray(post.tags) ? post.tags.slice(0, maxTags) : [];
   return `
     <article class="post-card">
-      <a class="image" href="/post.html?slug=${post.slug}" style="background-image: url('${cover}');"></a>
+      <a class="image lazy-bg" href="/post.html?slug=${post.slug}" data-bg="${cover}"></a>
       <div class="content">
         <div class="card-meta"><span class="pill">${post.category}</span>${issue}${date}</div>
         <h3><a href="/post.html?slug=${post.slug}">${post.title}</a></h3>
@@ -211,6 +242,7 @@ const renderCard = (post) => {
 const renderGrid = (el, posts) => {
   if (!el) return;
   el.innerHTML = posts.map(renderCard).join('');
+  initLazyBackgrounds(el);
 };
 
 const matchesSearch = (post, query) => {

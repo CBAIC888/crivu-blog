@@ -10,6 +10,119 @@ const formatDate = (iso) => {
   return `${y}/${m}/${d}`;
 };
 
+const escapeHtml = (input) =>
+  String(input || '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
+
+const inlineMarkdown = (text) => {
+  const escaped = escapeHtml(text);
+  return escaped
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    .replace(/`([^`]+?)`/g, '<code>$1</code>')
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+};
+
+const simpleMarkdown = (raw) => {
+  const src = String(raw || '').replace(/\r\n/g, '\n');
+  const lines = src.split('\n');
+  const out = [];
+  let inList = false;
+  let paragraph = [];
+
+  const flushParagraph = () => {
+    if (paragraph.length === 0) return;
+    out.push(`<p>${inlineMarkdown(paragraph.join(' '))}</p>`);
+    paragraph = [];
+  };
+
+  const closeList = () => {
+    if (!inList) return;
+    out.push('</ul>');
+    inList = false;
+  };
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed) {
+      flushParagraph();
+      closeList();
+      continue;
+    }
+
+    if (/^###\s+/.test(trimmed)) {
+      flushParagraph();
+      closeList();
+      out.push(`<h3>${inlineMarkdown(trimmed.replace(/^###\s+/, ''))}</h3>`);
+      continue;
+    }
+    if (/^##\s+/.test(trimmed)) {
+      flushParagraph();
+      closeList();
+      out.push(`<h2>${inlineMarkdown(trimmed.replace(/^##\s+/, ''))}</h2>`);
+      continue;
+    }
+    if (/^#\s+/.test(trimmed)) {
+      flushParagraph();
+      closeList();
+      out.push(`<h1>${inlineMarkdown(trimmed.replace(/^#\s+/, ''))}</h1>`);
+      continue;
+    }
+
+    if (/^[-*]\s+/.test(trimmed) || /^\d+\.\s+/.test(trimmed)) {
+      flushParagraph();
+      if (!inList) {
+        out.push('<ul>');
+        inList = true;
+      }
+      out.push(`<li>${inlineMarkdown(trimmed.replace(/^([-*]|\d+\.)\s+/, ''))}</li>`);
+      continue;
+    }
+
+    closeList();
+    paragraph.push(trimmed);
+  }
+
+  flushParagraph();
+  closeList();
+  return out.join('\n');
+};
+
+const initLazyBackgrounds = (root = document) => {
+  const nodes = Array.from(root.querySelectorAll('[data-bg]'));
+  if (nodes.length === 0) return;
+
+  const applyBg = (node) => {
+    if (node.dataset.bgLoaded === '1') return;
+    const src = node.getAttribute('data-bg');
+    if (!src) return;
+    node.style.backgroundImage = `url('${src}')`;
+    node.dataset.bgLoaded = '1';
+  };
+
+  if (!('IntersectionObserver' in window)) {
+    nodes.forEach(applyBg);
+    return;
+  }
+
+  const io = new IntersectionObserver(
+    (entries, observer) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        applyBg(entry.target);
+        observer.unobserve(entry.target);
+      });
+    },
+    { rootMargin: '280px 0px' }
+  );
+
+  nodes.forEach((node) => io.observe(node));
+};
+
 const setText = (sel, value) => {
   const el = qs(sel);
   if (el && value) el.textContent = value;
@@ -35,7 +148,7 @@ const renderMoreItem = (post) => {
   const date = post.date ? `<small>${post.date}</small>` : '';
   return `
     <a class="more-item" href="/post.html?slug=${post.slug}">
-      <div class="more-thumb" style="background-image: url('${cover}');"></div>
+      <div class="more-thumb lazy-bg" data-bg="${cover}"></div>
       <div class="more-info">
         <span class="pill">${post.category}</span>${issue}${date}
         <h3>${post.title}</h3>
@@ -262,13 +375,16 @@ const init = async () => {
   const cover = qs('#postCover');
   cover.style.backgroundImage = `url('${post.cover || '/assets/img/cover-01.svg'}')`;
 
-  qs('#postBody').innerHTML = marked.parse(post.body || '');
+  qs('#postBody').innerHTML = simpleMarkdown(post.body || '');
 
   const site = await applySite();
   const moreLimit = toInt(site.moreReadingLimit, 4, 1, 12);
   const more = posts.filter((p) => p.slug !== post.slug).slice(0, moreLimit);
   const moreList = qs('#moreList');
-  if (moreList) moreList.innerHTML = more.map(renderMoreItem).join('');
+  if (moreList) {
+    moreList.innerHTML = more.map(renderMoreItem).join('');
+    initLazyBackgrounds(moreList);
+  }
 
   setupSearch(posts);
   setupTheme();
