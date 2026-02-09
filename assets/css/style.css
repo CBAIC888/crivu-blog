@@ -937,6 +937,11 @@ select {
     grid-template-columns: 1fr;
   }
 
+  #latest #postGrid.post-grid,
+  #latest #postGrid.post-grid.list-mode {
+    grid-template-columns: 1fr;
+  }
+
   .post-grid.list-mode {
     grid-template-columns: 1fr;
   }
