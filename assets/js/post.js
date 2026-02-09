@@ -150,6 +150,18 @@ const setupHeaderOffset = () => {
   window.addEventListener('resize', apply);
 };
 
+const setupMobileSearch = () => {
+  const btn = qs('#mobileSearchBtn');
+  const header = qs('.site-header');
+  const input = qs('#searchInput');
+  if (!btn || !header || !input) return;
+
+  btn.addEventListener('click', () => {
+    header.classList.toggle('mobile-search-open');
+    if (header.classList.contains('mobile-search-open')) input.focus();
+  });
+};
+
 const applySite = async () => {
   try {
     const res = await fetch('/posts/site.json');
@@ -221,6 +233,7 @@ const init = async () => {
   setupSearch(posts);
   setupTheme();
   setupHeaderOffset();
+  setupMobileSearch();
   applyProgress();
 };
 

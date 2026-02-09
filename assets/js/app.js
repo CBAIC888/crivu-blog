@@ -136,6 +136,18 @@ const setupHeaderOffset = () => {
   window.addEventListener('resize', apply);
 };
 
+const setupMobileSearch = () => {
+  const btn = qs('#mobileSearchBtn');
+  const header = qs('.site-header');
+  const input = qs('#searchInput');
+  if (!btn || !header || !input) return;
+
+  btn.addEventListener('click', () => {
+    header.classList.toggle('mobile-search-open');
+    if (header.classList.contains('mobile-search-open')) input.focus();
+  });
+};
+
 const renderCard = (post) => {
   const cover = post.cover || '/assets/img/cover-01.svg';
   const issue = post.issue ? `<span class="issue-pill">${post.issue}</span>` : '';
@@ -330,6 +342,7 @@ const init = async () => {
   setupCategoryPage();
   setupTagPage();
   setupHeaderOffset();
+  setupMobileSearch();
 
   const grid = qs('#postGrid');
   if (grid && grid.childElementCount === 0) {

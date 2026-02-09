@@ -109,6 +109,21 @@ main {
   position: relative;
 }
 
+.mobile-search-toggle {
+  display: none;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border-radius: 999px;
+  cursor: pointer;
+  color: var(--ink);
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+}
+
 .search-box {
   position: relative;
 }
@@ -342,32 +357,6 @@ select {
 .latest .post-grid {
   grid-template-columns: repeat(var(--home-cols, 3), minmax(0, 1fr));
   gap: 20px;
-}
-
-.latest .post-card {
-  min-height: 390px;
-  border: 0;
-  box-shadow: none;
-  background: linear-gradient(155deg, rgba(209, 88, 60, 0.1), rgba(28, 107, 106, 0.08));
-  position: relative;
-}
-
-.latest .post-card::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: var(--radius);
-  border: 1px solid rgba(209, 88, 60, 0.2);
-  pointer-events: none;
-}
-
-.latest .post-card .image {
-  height: 200px;
-  min-height: 200px;
-}
-
-.latest .post-card .content {
-  padding: 18px;
 }
 
 .pill {
@@ -869,21 +858,26 @@ select {
   .site-header {
     padding: 8px 3.5vw;
     gap: 8px;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
   }
 
   .logo {
     font-size: 19px;
+    flex: 0 0 auto;
   }
 
   .nav {
-    width: 100%;
+    width: auto;
+    flex: 1 1 auto;
     justify-content: flex-start;
     flex-wrap: nowrap;
     overflow-x: auto;
-    gap: 6px;
+    gap: 4px;
     padding-bottom: 2px;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
+    min-width: 0;
   }
 
   .nav::-webkit-scrollbar {
@@ -893,12 +887,13 @@ select {
   .nav a {
     white-space: nowrap;
     font-size: 13px;
-    padding: 6px 9px;
+    padding: 6px 8px;
   }
 
   .header-actions {
     width: auto;
     margin-left: auto;
+    flex: 0 0 auto;
   }
 
   .search-input {
@@ -952,14 +947,55 @@ select {
 @media (max-width: 600px) {
   .site-header {
     padding: 7px 3vw;
+    gap: 6px;
   }
 
   .logo {
-    font-size: 17px;
+    display: none;
+  }
+
+  .nav {
+    flex: 1 1 auto;
+    justify-content: space-between;
+    overflow: visible;
+    gap: 2px;
+  }
+
+  .nav a {
+    font-size: 12px;
+    padding: 5px 6px;
+    border-radius: 8px;
   }
 
   .search-box {
     display: none;
+  }
+
+  .mobile-search-toggle {
+    display: inline-flex;
+    width: 34px;
+    height: 34px;
+    font-size: 14px;
+  }
+
+  .site-header.mobile-search-open .search-box {
+    display: block;
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 3vw;
+    left: 3vw;
+    z-index: 80;
+  }
+
+  .site-header.mobile-search-open .search-input {
+    width: 100%;
+    min-width: 0;
+    background: var(--surface);
+  }
+
+  .site-header.mobile-search-open .search-results {
+    width: 100%;
+    min-width: 0;
   }
 
   .theme-toggle {

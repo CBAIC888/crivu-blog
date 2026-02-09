@@ -29,6 +29,18 @@ const setupHeaderOffset = () => {
   window.addEventListener('resize', apply);
 };
 
+const setupMobileSearch = () => {
+  const btn = qs('#mobileSearchBtn');
+  const header = qs('.site-header');
+  const input = qs('#searchInput');
+  if (!btn || !header || !input) return;
+
+  btn.addEventListener('click', () => {
+    header.classList.toggle('mobile-search-open');
+    if (header.classList.contains('mobile-search-open')) input.focus();
+  });
+};
+
 const matchesSearch = (post, query) => {
   if (!query) return true;
   const q = query.toLowerCase();
@@ -95,7 +107,15 @@ const renderIssue = (issue, posts) => {
   const countTemplate = state.site.issueCountTemplate || '收錄 {count} 篇文章';
   const countText = countTemplate.replace('{count}', String((issue.posts || []).length));
   const detailsOpen = state.site.issueDetailsOpen ? ' open' : '';
-  const linkedPosts = Array.isArray(issue.posts) ? issue.posts : [];
+  const linkedPosts = Array.isArray(issue.posts)
+    ? issue.posts
+        .map((item) => {
+          if (typeof item === 'string') return item;
+          if (item && typeof item.slug === 'string') return item.slug;
+          return '';
+        })
+        .filter(Boolean)
+    : [];
   const postCards = linkedPosts
     .map((slug) => posts.find((p) => p.slug === slug))
     .filter(Boolean)
@@ -193,6 +213,7 @@ const init = async () => {
   setupSearch(posts);
   setupTheme();
   setupHeaderOffset();
+  setupMobileSearch();
 };
 
 init();

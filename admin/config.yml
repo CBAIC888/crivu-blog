@@ -69,6 +69,13 @@ collections:
               - label: "收錄文章 Slug"
                 name: "posts"
                 widget: "list"
+                allow_add: true
+                collapsed: false
+                summary: "{{fields.slug}}"
+                field:
+                  label: "文章 Slug"
+                  name: "slug"
+                  widget: "string"
                 hint: "輸入文章 slug（例如 city-walk-notes）"
 
   - name: "site"
