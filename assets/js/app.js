@@ -17,6 +17,12 @@ const setText = (sel, value) => {
   if (el && value !== undefined && value !== null && value !== '') el.textContent = value;
 };
 
+const toInt = (value, fallback, min, max) => {
+  const num = Number.parseInt(value, 10);
+  if (Number.isNaN(num)) return fallback;
+  return Math.max(min, Math.min(max, num));
+};
+
 const applyTheme = (theme) => {
   document.documentElement.setAttribute('data-theme', theme);
   localStorage.setItem('theme', theme);
@@ -71,13 +77,32 @@ const applySiteSettings = () => {
   setText('#homeKicker', site.homeKicker);
   setText('#homeTitle', site.homeTitle);
   setText('#homeSubtitle', site.homeSubtitle);
+  setText('#homeLatestButton', site.homeLatestButtonText);
   setText('#latestTitle', site.latestTitle);
+  setText('#articlesPageTitle', site.articlesPageTitle);
+  setText('#issuesPageTitle', site.issuesPageTitle);
+  setText('#aboutKicker', site.aboutKicker);
   setText('#aboutTitle', site.aboutTitle);
   setText('#aboutIntro', site.aboutIntro);
   setText('#aboutStyle', site.aboutStyle);
+  setText('#aboutInfoTitle', site.aboutInfoTitle);
+  setText('#aboutMailLink', site.aboutMailLabel);
   setText('#aboutCity', site.city);
   setText('#aboutEmail', site.email);
   setText('#aboutTopics', site.topics);
+
+  const mailLink = qs('#aboutMailLink');
+  if (mailLink && site.email) {
+    mailLink.setAttribute('href', `mailto:${site.email}`);
+  }
+
+  qsa('#searchInput').forEach((input) => {
+    if (site.searchPlaceholder) input.setAttribute('placeholder', site.searchPlaceholder);
+  });
+
+  const root = document.documentElement;
+  root.style.setProperty('--home-cols', String(toInt(site.homeCardsDesktop, 3, 1, 4)));
+  root.style.setProperty('--list-cols', String(toInt(site.articleCardsDesktop, 3, 1, 4)));
 };
 
 const applyNavigation = (site) => {
@@ -114,14 +139,17 @@ const setupHeaderOffset = () => {
 const renderCard = (post) => {
   const cover = post.cover || '/assets/img/cover-01.svg';
   const issue = post.issue ? `<span class="issue-pill">${post.issue}</span>` : '';
+  const date = post.date ? `<small>${post.date}</small>` : '';
+  const maxTags = toInt(state.site.maxTagsPerCard, 3, 1, 10);
+  const safeTags = Array.isArray(post.tags) ? post.tags.slice(0, maxTags) : [];
   return `
     <article class="post-card">
       <a class="image" href="/post.html?slug=${post.slug}" style="background-image: url('${cover}');"></a>
       <div class="content">
-        <span class="pill">${post.category}</span>${issue}
+        <div class="card-meta"><span class="pill">${post.category}</span>${issue}${date}</div>
         <h3><a href="/post.html?slug=${post.slug}">${post.title}</a></h3>
         <p>${post.excerpt}</p>
-        <div class="tag-row">${post.tags.map((t) => `<span class="tag">${t}</span>`).join('')}</div>
+        <div class="tag-row">${safeTags.map((t) => `<span class="tag">${t}</span>`).join('')}</div>
       </div>
     </article>
   `;
@@ -217,15 +245,17 @@ const setupFilters = () => {
   const categories = Array.from(new Set(state.posts.map((p) => p.category)));
   const tags = Array.from(new Set(state.posts.flatMap((p) => p.tags)));
 
-  categoryFilter.innerHTML = ['全部分類', ...categories].map((c) => `<option value="${c}">${c}</option>`).join('');
-  tagFilter.innerHTML = ['全部標籤', ...tags].map((t) => `<option value="${t}">${t}</option>`).join('');
+  const allCategoryLabel = state.site.allCategoryLabel || '全部分類';
+  const allTagLabel = state.site.allTagLabel || '全部標籤';
+  categoryFilter.innerHTML = [allCategoryLabel, ...categories].map((c) => `<option value="${c}">${c}</option>`).join('');
+  tagFilter.innerHTML = [allTagLabel, ...tags].map((t) => `<option value="${t}">${t}</option>`).join('');
 
   const apply = () => {
     const cat = categoryFilter.value;
     const tag = tagFilter.value;
     const filtered = state.posts.filter((p) => {
-      const okCat = cat === '全部分類' || p.category === cat;
-      const okTag = tag === '全部標籤' || p.tags.includes(tag);
+      const okCat = cat === allCategoryLabel || p.category === cat;
+      const okTag = tag === allTagLabel || p.tags.includes(tag);
       return okCat && okTag && matchesSearch(p, state.search);
     });
     renderGrid(grid, filtered);

@@ -27,8 +27,12 @@ collections:
           - label: "文章"
             name: "items"
             widget: "list"
+            label_singular: "文章"
             summary: "{{fields.date}} · {{fields.title}}"
             hint: "封面可上傳圖片，內文為 Markdown（支援圖片）。"
+            collapsed: true
+            minimize_collapsed: true
+            add_to_top: true
             fields:
               - { label: "標題", name: "title", widget: "string" }
               - { label: "日期", name: "date", widget: "datetime", format: "YYYY-MM-DD", time_format: false }
@@ -87,11 +91,29 @@ collections:
           - { label: "首頁小標", name: "homeKicker", widget: "string" }
           - { label: "首頁主標", name: "homeTitle", widget: "string" }
           - { label: "首頁副標", name: "homeSubtitle", widget: "text" }
+          - { label: "首頁按鈕文字", name: "homeLatestButtonText", widget: "string", required: false }
           - { label: "最新文章標題", name: "latestTitle", widget: "string" }
+          - { label: "文章頁標題", name: "articlesPageTitle", widget: "string", required: false }
+          - { label: "期刊頁標題", name: "issuesPageTitle", widget: "string", required: false }
+          - { label: "搜尋框提示文字", name: "searchPlaceholder", widget: "string", required: false }
+          - { label: "首頁卡片欄數（桌面）", name: "homeCardsDesktop", widget: "number", value_type: "int", required: false, min: 1, max: 4 }
+          - { label: "文章頁卡片欄數（桌面）", name: "articleCardsDesktop", widget: "number", value_type: "int", required: false, min: 1, max: 4 }
+          - { label: "卡片最多顯示標籤數", name: "maxTagsPerCard", widget: "number", value_type: "int", required: false, min: 1, max: 10 }
+          - { label: "更多閱讀標題", name: "moreReadingTitle", widget: "string", required: false }
+          - { label: "更多閱讀數量", name: "moreReadingLimit", widget: "number", value_type: "int", required: false, min: 1, max: 12 }
+          - { label: "全部分類文字", name: "allCategoryLabel", widget: "string", required: false }
+          - { label: "全部標籤文字", name: "allTagLabel", widget: "string", required: false }
+          - { label: "期刊詳情按鈕文字", name: "issueExpandLabel", widget: "string", required: false }
+          - { label: "期刊空內容提示", name: "issueEmptyText", widget: "string", required: false }
+          - { label: "期刊文章數模板", name: "issueCountTemplate", widget: "string", required: false, hint: "使用 {count} 表示數量，例如：收錄 {count} 篇文章" }
+          - { label: "期刊詳情預設展開", name: "issueDetailsOpen", widget: "boolean", required: false, default: false }
           - { label: "底部文案", name: "footerText", widget: "string" }
+          - { label: "關於頁副標", name: "aboutKicker", widget: "string", required: false }
           - { label: "關於標題", name: "aboutTitle", widget: "string" }
+          - { label: "檔案資訊標題", name: "aboutInfoTitle", widget: "string", required: false }
           - { label: "關於段落 1", name: "aboutIntro", widget: "text" }
           - { label: "關於段落 2", name: "aboutStyle", widget: "text" }
           - { label: "城市", name: "city", widget: "string" }
           - { label: "Email", name: "email", widget: "string" }
+          - { label: "關於頁聯絡按鈕文字", name: "aboutMailLabel", widget: "string", required: false }
           - { label: "主題", name: "topics", widget: "string" }

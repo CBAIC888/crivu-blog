@@ -15,6 +15,12 @@ const setText = (sel, value) => {
   if (el && value) el.textContent = value;
 };
 
+const toInt = (value, fallback, min, max) => {
+  const num = Number.parseInt(value, 10);
+  if (Number.isNaN(num)) return fallback;
+  return Math.max(min, Math.min(max, num));
+};
+
 const applyTheme = (theme) => {
   document.documentElement.setAttribute('data-theme', theme);
   localStorage.setItem('theme', theme);
@@ -25,11 +31,12 @@ const applyTheme = (theme) => {
 const renderMoreItem = (post) => {
   const cover = post.cover || '/assets/img/cover-01.svg';
   const issue = post.issue ? `<span class="issue-pill">${post.issue}</span>` : '';
+  const date = post.date ? `<small>${post.date}</small>` : '';
   return `
     <a class="more-item" href="/post.html?slug=${post.slug}">
       <div class="more-thumb" style="background-image: url('${cover}');"></div>
       <div class="more-info">
-        <span class="pill">${post.category}</span>${issue}
+        <span class="pill">${post.category}</span>${issue}${date}
         <h3>${post.title}</h3>
         <p>${post.excerpt}</p>
       </div>
@@ -146,10 +153,16 @@ const setupHeaderOffset = () => {
 const applySite = async () => {
   try {
     const res = await fetch('/posts/site.json');
-    if (!res.ok) return;
+    if (!res.ok) return {};
     const site = await res.json();
     setText('#siteName', site.siteName);
     setText('#siteFooterText', site.footerText);
+    setText('#moreTitle', site.moreReadingTitle);
+
+    const searchInput = qs('#searchInput');
+    if (searchInput && site.searchPlaceholder) {
+      searchInput.setAttribute('placeholder', site.searchPlaceholder);
+    }
 
     const nav = qs('.nav');
     if (nav && Array.isArray(site.nav) && site.nav.length > 0) {
@@ -165,8 +178,10 @@ const applySite = async () => {
         });
       if (items.length > 0) nav.innerHTML = items.join('');
     }
+    return site;
   } catch {
     // keep fallback text
+    return {};
   }
 };
 
@@ -197,13 +212,14 @@ const init = async () => {
 
   qs('#postBody').innerHTML = marked.parse(post.body || '');
 
-  const more = posts.filter((p) => p.slug !== post.slug).slice(0, 4);
+  const site = await applySite();
+  const moreLimit = toInt(site.moreReadingLimit, 4, 1, 12);
+  const more = posts.filter((p) => p.slug !== post.slug).slice(0, moreLimit);
   const moreList = qs('#moreList');
   if (moreList) moreList.innerHTML = more.map(renderMoreItem).join('');
 
   setupSearch(posts);
   setupTheme();
-  await applySite();
   setupHeaderOffset();
   applyProgress();
 };

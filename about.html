@@ -8,7 +8,6 @@
   <link rel="stylesheet" href="/assets/css/style.css" />
 </head>
 <body>
-  <div class="grain"></div>
   <header class="site-header">
     <div class="logo" id="siteName">CRIVU</div>
     <nav class="nav">
@@ -29,25 +28,32 @@
   </header>
 
   <main class="about">
-    <div class="about-card">
-      <h1 id="aboutTitle">關於我</h1>
-      <p id="aboutIntro">這裡是你的個人博客。你可以寫生活、技術、旅行，或任何你關心的主題。</p>
-      <p id="aboutStyle">這個網站以「雜誌風」為核心：高可讀的排版、強調內容的主視覺，以及清晰的分類與標籤。</p>
-      <div class="about-meta">
-        <div>
-          <div class="meta-label">城市</div>
-          <div class="meta-value" id="aboutCity">台北 / 你的城市</div>
-        </div>
-        <div>
-          <div class="meta-label">Email</div>
-          <div class="meta-value" id="aboutEmail">hello@yourname.com</div>
-        </div>
-        <div>
-          <div class="meta-label">主題</div>
-          <div class="meta-value" id="aboutTopics">生活 · 技術 · 旅行</div>
-        </div>
-      </div>
-    </div>
+    <section class="about-shell">
+      <article class="about-card about-main">
+        <p class="about-kicker" id="aboutKicker">About</p>
+        <h1 id="aboutTitle">關於我</h1>
+        <p id="aboutIntro" class="about-lead">這裡是你的個人博客。你可以寫生活、技術、旅行，或任何你關心的主題。</p>
+        <p id="aboutStyle" class="about-detail">這個網站以「雜誌風」為核心：高可讀的排版、強調內容的主視覺，以及清晰的分類與標籤。</p>
+      </article>
+      <aside class="about-card about-side">
+        <h2 id="aboutInfoTitle">檔案資訊</h2>
+        <ul class="about-facts">
+          <li class="about-fact">
+            <div class="meta-label">城市</div>
+            <div class="meta-value" id="aboutCity">台北 / 你的城市</div>
+          </li>
+          <li class="about-fact">
+            <div class="meta-label">Email</div>
+            <div class="meta-value" id="aboutEmail">hello@yourname.com</div>
+          </li>
+          <li class="about-fact">
+            <div class="meta-label">主題</div>
+            <div class="meta-value" id="aboutTopics">生活 · 技術 · 旅行</div>
+          </li>
+        </ul>
+        <a id="aboutMailLink" class="about-mail" href="mailto:hello@yourname.com">聯絡我</a>
+      </aside>
+    </section>
   </main>
 
   <footer class="site-footer">
@@ -55,6 +61,5 @@
   </footer>
 
   <script src="/assets/js/app.js" type="module"></script>
-  <script src="/assets/js/about.js" type="module"></script>
 </body>
 </html>

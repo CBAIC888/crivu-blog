@@ -90,7 +90,13 @@ const setupSearch = (posts) => {
 };
 
 const renderIssue = (issue, posts) => {
-  const postCards = issue.posts
+  const expandLabel = state.site.issueExpandLabel || '展開本期詳情';
+  const emptyText = state.site.issueEmptyText || '暫無文章';
+  const countTemplate = state.site.issueCountTemplate || '收錄 {count} 篇文章';
+  const countText = countTemplate.replace('{count}', String((issue.posts || []).length));
+  const detailsOpen = state.site.issueDetailsOpen ? ' open' : '';
+  const linkedPosts = Array.isArray(issue.posts) ? issue.posts : [];
+  const postCards = linkedPosts
     .map((slug) => posts.find((p) => p.slug === slug))
     .filter(Boolean)
     .map(
@@ -113,9 +119,12 @@ const renderIssue = (issue, posts) => {
         </div>
         <h2>${issue.title}</h2>
         <p>${issue.theme}</p>
-        <div class="issue-note">${issue.editorNote}</div>
-        <div class="issue-count">收錄 ${issue.posts.length} 篇文章</div>
-        <div class="issue-posts">${postCards}</div>
+        <div class="issue-count">${countText}</div>
+        <details class="issue-expand"${detailsOpen}>
+          <summary>${expandLabel}</summary>
+          <div class="issue-note">${issue.editorNote || ''}</div>
+          <div class="issue-posts">${postCards || `<div class="issue-post">${emptyText}</div>`}</div>
+        </details>
       </div>
     </article>
   `;
@@ -143,6 +152,12 @@ const loadSite = async () => {
     state.site = await res.json();
     setText('#siteName', state.site.siteName);
     setText('#siteFooterText', state.site.footerText);
+    setText('#issuesPageTitle', state.site.issuesPageTitle);
+
+    const searchInput = qs('#searchInput');
+    if (searchInput && state.site.searchPlaceholder) {
+      searchInput.setAttribute('placeholder', state.site.searchPlaceholder);
+    }
 
     const nav = qs('.nav');
     if (nav && Array.isArray(state.site.nav) && state.site.nav.length > 0) {
@@ -164,7 +179,7 @@ const loadSite = async () => {
 };
 
 const init = async () => {
-  const [issuesRes, postsRes] = await Promise.all([fetch('/posts/issues.json'), fetch('/posts/posts.json')]);
+  const [issuesRes, postsRes] = await Promise.all([fetch('/posts/issues.json'), fetch('/posts/posts.json'), loadSite()]);
   const issuesData = await issuesRes.json();
   const postsData = await postsRes.json();
   const issues = issuesData.issues || [];
@@ -177,7 +192,6 @@ const init = async () => {
 
   setupSearch(posts);
   setupTheme();
-  await loadSite();
   setupHeaderOffset();
 };
 
