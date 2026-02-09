@@ -26,8 +26,9 @@ const toInt = (value, fallback, min, max) => {
 const applyTheme = (theme) => {
   document.documentElement.setAttribute('data-theme', theme);
   localStorage.setItem('theme', theme);
-  const icon = qs('#themeIcon');
-  if (icon) icon.textContent = theme === 'dark' ? '☾' : '☀';
+  qsa('.theme-icon').forEach((icon) => {
+    icon.textContent = theme === 'dark' ? '☾' : '☀';
+  });
 };
 
 const setupTheme = () => {
@@ -35,17 +36,30 @@ const setupTheme = () => {
   if (!toggle) return;
 
   toggle.innerHTML = '<span id="themeIcon" class="theme-icon">☀</span>';
+  const nav = qs('.nav');
+  if (nav && !qs('#mobileThemeToggle')) {
+    const mobileThemeBtn = document.createElement('button');
+    mobileThemeBtn.type = 'button';
+    mobileThemeBtn.id = 'mobileThemeToggle';
+    mobileThemeBtn.className = 'mobile-theme-action';
+    mobileThemeBtn.innerHTML = '<span class="theme-icon">☀</span><span>變換主題</span>';
+    nav.appendChild(mobileThemeBtn);
+  }
 
   const stored = localStorage.getItem('theme') || 'light';
   applyTheme(stored);
 
-  toggle.addEventListener('click', () => {
+  const switchTheme = () => {
     toggle.classList.remove('spin');
     void toggle.offsetWidth;
     toggle.classList.add('spin');
     const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
     applyTheme(next);
-  });
+  };
+
+  toggle.addEventListener('click', switchTheme);
+  const mobileThemeToggle = qs('#mobileThemeToggle');
+  if (mobileThemeToggle) mobileThemeToggle.addEventListener('click', switchTheme);
 };
 
 const loadPosts = async () => {
@@ -143,8 +157,35 @@ const setupMobileSearch = () => {
   if (!btn || !header || !input) return;
 
   btn.addEventListener('click', () => {
+    header.classList.remove('mobile-menu-open');
     header.classList.toggle('mobile-search-open');
     if (header.classList.contains('mobile-search-open')) input.focus();
+  });
+};
+
+const setupMobileMenu = () => {
+  const btn = qs('#mobileMenuBtn');
+  const header = qs('.site-header');
+  const nav = qs('.nav');
+  if (!btn || !header || !nav) return;
+
+  btn.addEventListener('click', () => {
+    header.classList.remove('mobile-search-open');
+    header.classList.toggle('mobile-menu-open');
+  });
+
+  nav.addEventListener('click', (e) => {
+    const target = e.target;
+    if (target instanceof HTMLElement && target.closest('a')) {
+      header.classList.remove('mobile-menu-open');
+    }
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!header.contains(e.target)) {
+      header.classList.remove('mobile-menu-open');
+      header.classList.remove('mobile-search-open');
+    }
   });
 };
 
@@ -343,6 +384,7 @@ const init = async () => {
   setupTagPage();
   setupHeaderOffset();
   setupMobileSearch();
+  setupMobileMenu();
 
   const grid = qs('#postGrid');
   if (grid && grid.childElementCount === 0) {
