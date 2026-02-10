@@ -1,4 +1,5 @@
 const qs = (sel) => document.querySelector(sel);
+const FALLBACK_COVER = '/assets/img/cover-01.svg';
 
 const getSlug = () => {
   const params = new URLSearchParams(window.location.search);
@@ -11,12 +12,35 @@ const formatDate = (iso) => {
 };
 
 const escapeHtml = (input) =>
-  String(input || '')
+  String(input ?? '')
     .replaceAll('&', '&amp;')
     .replaceAll('<', '&lt;')
     .replaceAll('>', '&gt;')
     .replaceAll('"', '&quot;')
     .replaceAll("'", '&#39;');
+
+const sanitizeUrl = (value, options = {}) => {
+  const { allowHash = true } = options;
+  const input = String(value ?? '').trim();
+  if (!input) return '#';
+  if (allowHash && input.startsWith('#')) return '#';
+  if (input.startsWith('/') || input.startsWith('./') || input.startsWith('../')) return input;
+  try {
+    const parsed = new URL(input, window.location.origin);
+    const protocol = parsed.protocol.toLowerCase();
+    if (protocol === 'http:' || protocol === 'https:' || protocol === 'mailto:') return parsed.href;
+  } catch {
+    return '#';
+  }
+  return '#';
+};
+
+const safeCoverUrl = (value) => {
+  const safe = sanitizeUrl(value, { allowHash: false });
+  return safe === '#' ? FALLBACK_COVER : safe;
+};
+
+const postUrl = (slug) => `/post.html?slug=${encodeURIComponent(String(slug ?? ''))}`;
 
 const inlineMarkdown = (text) => {
   const escaped = escapeHtml(text);
@@ -24,7 +48,10 @@ const inlineMarkdown = (text) => {
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
     .replace(/\*(.+?)\*/g, '<em>$1</em>')
     .replace(/`([^`]+?)`/g, '<code>$1</code>')
-    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_match, label, href) => {
+      const safeHref = sanitizeUrl(href);
+      return `<a href="${escapeHtml(safeHref)}" target="_blank" rel="noopener noreferrer nofollow">${label}</a>`;
+    });
 };
 
 const simpleMarkdown = (raw) => {
@@ -100,7 +127,7 @@ const initLazyBackgrounds = (root = document) => {
     if (node.dataset.bgLoaded === '1') return;
     const src = node.getAttribute('data-bg');
     if (!src) return;
-    node.style.backgroundImage = `url('${src}')`;
+    node.style.backgroundImage = `url('${safeCoverUrl(src)}')`;
     node.dataset.bgLoaded = '1';
   };
 
@@ -143,16 +170,17 @@ const applyTheme = (theme) => {
 };
 
 const renderMoreItem = (post) => {
-  const cover = post.cover || '/assets/img/cover-01.svg';
-  const issue = post.issue ? `<span class="issue-pill">${post.issue}</span>` : '';
-  const date = post.date ? `<small>${post.date}</small>` : '';
+  const cover = safeCoverUrl(post.cover);
+  const issue = post.issue ? `<span class="issue-pill">${escapeHtml(post.issue)}</span>` : '';
+  const date = post.date ? `<small>${escapeHtml(post.date)}</small>` : '';
+  const safeLink = postUrl(post.slug);
   return `
-    <a class="more-item" href="/post.html?slug=${post.slug}">
-      <div class="more-thumb lazy-bg" data-bg="${cover}"></div>
+    <a class="more-item" href="${escapeHtml(safeLink)}">
+      <div class="more-thumb lazy-bg" data-bg="${escapeHtml(cover)}"></div>
       <div class="more-info">
-        <span class="pill">${post.category}</span>${issue}${date}
-        <h3>${post.title}</h3>
-        <p>${post.excerpt}</p>
+        <span class="pill">${escapeHtml(post.category)}</span>${issue}${date}
+        <h3>${escapeHtml(post.title)}</h3>
+        <p>${escapeHtml(post.excerpt)}</p>
       </div>
     </a>
   `;
@@ -166,11 +194,12 @@ const setupSearch = (posts) => {
   const matchesSearch = (post, query) => {
     if (!query) return true;
     const q = query.toLowerCase();
+    const tags = Array.isArray(post.tags) ? post.tags : [];
     return (
-      post.title.toLowerCase().includes(q) ||
-      post.excerpt.toLowerCase().includes(q) ||
-      post.category.toLowerCase().includes(q) ||
-      post.tags.some((t) => t.toLowerCase().includes(q))
+      String(post.title || '').toLowerCase().includes(q) ||
+      String(post.excerpt || '').toLowerCase().includes(q) ||
+      String(post.category || '').toLowerCase().includes(q) ||
+      tags.some((t) => String(t).toLowerCase().includes(q))
     );
   };
 
@@ -190,9 +219,9 @@ const setupSearch = (posts) => {
     results.innerHTML = matches
       .map(
         (p) => `
-          <a class="search-item" href="/post.html?slug=${p.slug}">
-            ${p.title}
-            <small>${p.category} · ${p.tags.join(' / ')}</small>
+          <a class="search-item" href="${escapeHtml(postUrl(p.slug))}">
+            ${escapeHtml(p.title)}
+            <small>${escapeHtml(p.category)} · ${escapeHtml((Array.isArray(p.tags) ? p.tags : []).join(' / '))}</small>
           </a>
         `
       )
@@ -336,10 +365,11 @@ const applySite = async () => {
         .filter((item) => item && item.label && item.href)
         .map((item) => {
           const href = item.href;
-          const normalized = href.replace(/\/index\.html$/, '/') || '/';
+          const safeHref = sanitizeUrl(href);
+          const normalized = new URL(safeHref, window.location.origin).pathname.replace(/\/index\.html$/, '/') || '/';
           const isHome = normalized === '/';
           const isActive = isHome ? currentPath === '/' : currentPath.startsWith(normalized);
-          return `<a href="${href}"${isActive ? ' class="active"' : ''}>${item.label}</a>`;
+          return `<a href="${escapeHtml(safeHref)}"${isActive ? ' class="active"' : ''}>${escapeHtml(item.label)}</a>`;
         });
       if (items.length > 0) nav.innerHTML = items.join('');
     }
@@ -356,6 +386,7 @@ const init = async () => {
   const data = await res.json();
   const posts = data.items || data;
   const post = posts.find((p) => p.slug === slug) || posts[0];
+  if (!post) return;
 
   qs('#postTitle').textContent = post.title;
   qs('#postDate').textContent = formatDate(post.date);
@@ -370,10 +401,11 @@ const init = async () => {
   qs('#postExcerpt').textContent = post.excerpt;
 
   const tags = qs('#postTags');
-  tags.innerHTML = post.tags.map((t) => `<span class="tag">${t}</span>`).join('');
+  const tagList = Array.isArray(post.tags) ? post.tags : [];
+  tags.innerHTML = tagList.map((t) => `<span class="tag">${escapeHtml(t)}</span>`).join('');
 
   const cover = qs('#postCover');
-  cover.style.backgroundImage = `url('${post.cover || '/assets/img/cover-01.svg'}')`;
+  cover.style.backgroundImage = `url('${safeCoverUrl(post.cover)}')`;
 
   qs('#postBody').innerHTML = simpleMarkdown(post.body || '');
 

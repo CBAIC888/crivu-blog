@@ -11,6 +11,38 @@ const state = {
 
 const qs = (sel) => document.querySelector(sel);
 const qsa = (sel) => Array.from(document.querySelectorAll(sel));
+const FALLBACK_COVER = '/assets/img/cover-01.svg';
+
+const escapeHtml = (input) =>
+  String(input ?? '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
+
+const sanitizeUrl = (value, options = {}) => {
+  const { allowHash = true } = options;
+  const input = String(value ?? '').trim();
+  if (!input) return '#';
+  if (allowHash && input.startsWith('#')) return '#';
+  if (input.startsWith('/') || input.startsWith('./') || input.startsWith('../')) return input;
+  try {
+    const parsed = new URL(input, window.location.origin);
+    const protocol = parsed.protocol.toLowerCase();
+    if (protocol === 'http:' || protocol === 'https:' || protocol === 'mailto:') return parsed.href;
+  } catch {
+    return '#';
+  }
+  return '#';
+};
+
+const safeCoverUrl = (value) => {
+  const safe = sanitizeUrl(value, { allowHash: false });
+  return safe === '#' ? FALLBACK_COVER : safe;
+};
+
+const postUrl = (slug) => `/post.html?slug=${encodeURIComponent(String(slug ?? ''))}`;
 
 const setText = (sel, value) => {
   const el = qs(sel);
@@ -107,7 +139,7 @@ const applySiteSettings = () => {
 
   const mailLink = qs('#aboutMailLink');
   if (mailLink && site.email) {
-    mailLink.setAttribute('href', `mailto:${site.email}`);
+    mailLink.setAttribute('href', sanitizeUrl(`mailto:${site.email}`));
   }
 
   qsa('#searchInput').forEach((input) => {
@@ -128,10 +160,11 @@ const applyNavigation = (site) => {
     .filter((item) => item && item.label && item.href)
     .map((item) => {
       const href = item.href;
-      const normalized = href.replace(/\/index\.html$/, '/') || '/';
+      const safeHref = sanitizeUrl(href);
+      const normalized = new URL(safeHref, window.location.origin).pathname.replace(/\/index\.html$/, '/') || '/';
       const isHome = normalized === '/';
       const isActive = isHome ? currentPath === '/' : currentPath.startsWith(normalized);
-      return `<a href="${href}"${isActive ? ' class="active"' : ''}>${item.label}</a>`;
+      return `<a href="${escapeHtml(safeHref)}"${isActive ? ' class="active"' : ''}>${escapeHtml(item.label)}</a>`;
     });
 
   if (items.length > 0) nav.innerHTML = items.join('');
@@ -158,7 +191,7 @@ const initLazyBackgrounds = (root = document) => {
     if (node.dataset.bgLoaded === '1') return;
     const src = node.getAttribute('data-bg');
     if (!src) return;
-    node.style.backgroundImage = `url('${src}')`;
+    node.style.backgroundImage = `url('${safeCoverUrl(src)}')`;
     node.dataset.bgLoaded = '1';
   };
 
@@ -221,18 +254,19 @@ const setupMobileMenu = () => {
 };
 
 const renderCard = (post) => {
-  const cover = post.cover || '/assets/img/cover-01.svg';
-  const issue = post.issue ? `<span class="issue-pill">${post.issue}</span>` : '';
-  const date = post.date ? `<small>${post.date}</small>` : '';
+  const cover = safeCoverUrl(post.cover);
+  const issue = post.issue ? `<span class="issue-pill">${escapeHtml(post.issue)}</span>` : '';
+  const date = post.date ? `<small>${escapeHtml(post.date)}</small>` : '';
   const maxTags = toInt(state.site.maxTagsPerCard, 3, 1, 10);
-  const safeTags = Array.isArray(post.tags) ? post.tags.slice(0, maxTags) : [];
+  const safeTags = Array.isArray(post.tags) ? post.tags.slice(0, maxTags).map((tag) => escapeHtml(tag)) : [];
+  const safeLink = postUrl(post.slug);
   return `
     <article class="post-card">
-      <a class="image lazy-bg" href="/post.html?slug=${post.slug}" data-bg="${cover}"></a>
+      <a class="image lazy-bg" href="${escapeHtml(safeLink)}" data-bg="${escapeHtml(cover)}"></a>
       <div class="content">
-        <div class="card-meta"><span class="pill">${post.category}</span>${issue}${date}</div>
-        <h3><a href="/post.html?slug=${post.slug}">${post.title}</a></h3>
-        <p>${post.excerpt}</p>
+        <div class="card-meta"><span class="pill">${escapeHtml(post.category)}</span>${issue}${date}</div>
+        <h3><a href="${escapeHtml(safeLink)}">${escapeHtml(post.title)}</a></h3>
+        <p>${escapeHtml(post.excerpt)}</p>
         <div class="tag-row">${safeTags.map((t) => `<span class="tag">${t}</span>`).join('')}</div>
       </div>
     </article>
@@ -248,11 +282,12 @@ const renderGrid = (el, posts) => {
 const matchesSearch = (post, query) => {
   if (!query) return true;
   const q = query.toLowerCase();
+  const tags = Array.isArray(post.tags) ? post.tags : [];
   return (
-    post.title.toLowerCase().includes(q) ||
-    post.excerpt.toLowerCase().includes(q) ||
-    post.category.toLowerCase().includes(q) ||
-    post.tags.some((t) => t.toLowerCase().includes(q))
+    String(post.title || '').toLowerCase().includes(q) ||
+    String(post.excerpt || '').toLowerCase().includes(q) ||
+    String(post.category || '').toLowerCase().includes(q) ||
+    tags.some((t) => String(t).toLowerCase().includes(q))
   );
 };
 
@@ -284,9 +319,9 @@ const setupSearch = () => {
     results.innerHTML = matches
       .map(
         (p) => `
-          <a class="search-item" href="/post.html?slug=${p.slug}">
-            ${p.title}
-            <small>${p.category} · ${p.tags.join(' / ')}</small>
+          <a class="search-item" href="${escapeHtml(postUrl(p.slug))}">
+            ${escapeHtml(p.title)}
+            <small>${escapeHtml(p.category)} · ${escapeHtml((Array.isArray(p.tags) ? p.tags : []).join(' / '))}</small>
           </a>
         `
       )
@@ -327,20 +362,25 @@ const setupFilters = () => {
   const grid = qs('#postGrid');
   if (!categoryFilter || !tagFilter || !grid) return;
 
-  const categories = Array.from(new Set(state.posts.map((p) => p.category)));
-  const tags = Array.from(new Set(state.posts.flatMap((p) => p.tags)));
+  const categories = Array.from(new Set(state.posts.map((p) => p.category).filter(Boolean)));
+  const tags = Array.from(new Set(state.posts.flatMap((p) => (Array.isArray(p.tags) ? p.tags : [])).filter(Boolean)));
 
   const allCategoryLabel = state.site.allCategoryLabel || '全部分類';
   const allTagLabel = state.site.allTagLabel || '全部標籤';
-  categoryFilter.innerHTML = [allCategoryLabel, ...categories].map((c) => `<option value="${c}">${c}</option>`).join('');
-  tagFilter.innerHTML = [allTagLabel, ...tags].map((t) => `<option value="${t}">${t}</option>`).join('');
+  categoryFilter.innerHTML = [allCategoryLabel, ...categories]
+    .map((c) => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`)
+    .join('');
+  tagFilter.innerHTML = [allTagLabel, ...tags]
+    .map((t) => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`)
+    .join('');
 
   const apply = () => {
     const cat = categoryFilter.value;
     const tag = tagFilter.value;
     const filtered = state.posts.filter((p) => {
       const okCat = cat === allCategoryLabel || p.category === cat;
-      const okTag = tag === allTagLabel || p.tags.includes(tag);
+      const postTags = Array.isArray(p.tags) ? p.tags : [];
+      const okTag = tag === allTagLabel || postTags.includes(tag);
       return okCat && okTag && matchesSearch(p, state.search);
     });
     renderGrid(grid, filtered);
@@ -357,8 +397,10 @@ const setupCategoryPage = () => {
   const grid = qs('#categoryPosts');
   if (!list || !grid) return;
 
-  const categories = Array.from(new Set(state.posts.map((p) => p.category)));
-  list.innerHTML = categories.map((c) => `<button class="chip" data-cat="${c}">${c}</button>`).join('');
+  const categories = Array.from(new Set(state.posts.map((p) => p.category).filter(Boolean)));
+  list.innerHTML = categories
+    .map((c) => `<button class="chip" data-cat="${escapeHtml(c)}">${escapeHtml(c)}</button>`)
+    .join('');
 
   const renderCategory = (category) => {
     state.currentCategory = category;
@@ -383,13 +425,21 @@ const setupTagPage = () => {
   const grid = qs('#tagPosts');
   if (!list || !grid) return;
 
-  const tags = Array.from(new Set(state.posts.flatMap((p) => p.tags)));
-  list.innerHTML = tags.map((t) => `<button class="chip" data-tag="${t}">${t}</button>`).join('');
+  const tags = Array.from(new Set(state.posts.flatMap((p) => (Array.isArray(p.tags) ? p.tags : [])).filter(Boolean)));
+  list.innerHTML = tags
+    .map((t) => `<button class="chip" data-tag="${escapeHtml(t)}">${escapeHtml(t)}</button>`)
+    .join('');
 
   const renderTag = (tag) => {
     state.currentTag = tag;
     qsa('.chip').forEach((btn) => btn.classList.toggle('active', btn.dataset.tag === tag));
-    renderGrid(grid, state.posts.filter((p) => p.tags.includes(tag) && matchesSearch(p, state.search)));
+    renderGrid(
+      grid,
+      state.posts.filter((p) => {
+        const postTags = Array.isArray(p.tags) ? p.tags : [];
+        return postTags.includes(tag) && matchesSearch(p, state.search);
+      })
+    );
   };
 
   list.addEventListener('click', (e) => {

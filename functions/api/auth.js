@@ -15,12 +15,24 @@ export async function onRequest(context) {
     return new Response('Missing GITHUB_CLIENT_ID', { status: 500 });
   }
 
+  const bytes = new Uint8Array(16);
+  crypto.getRandomValues(bytes);
+  const state = Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
+
   const redirectUri = `${url.origin}/api/callback`;
   const params = new URLSearchParams({
     client_id: clientId,
     redirect_uri: redirectUri,
     scope: 'repo',
+    state,
   });
 
-  return Response.redirect(`https://github.com/login/oauth/authorize?${params.toString()}`, 302);
+  const secure = url.protocol === 'https:' ? '; Secure' : '';
+  const response = Response.redirect(`https://github.com/login/oauth/authorize?${params.toString()}`, 302);
+  response.headers.set(
+    'Set-Cookie',
+    `oauth_state=${state}; HttpOnly; Path=/api/callback; SameSite=Lax; Max-Age=600${secure}`
+  );
+  response.headers.set('Cache-Control', 'no-store, max-age=0');
+  return response;
 }

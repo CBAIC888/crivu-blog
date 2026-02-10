@@ -1,6 +1,15 @@
 (function () {
   if (typeof CMS === 'undefined') return;
 
+  var escapeHtml = function (input) {
+    return String(input == null ? '' : input)
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#39;');
+  };
+
   CMS.registerEditorComponent({
     id: 'image-block',
     label: '圖片（含尺寸建議）',
@@ -37,8 +46,8 @@
       return '![' + alt + '](' + src + ')\n<!-- preset:' + preset + ' -->' + caption;
     },
     toPreview: function (obj) {
-      var caption = obj.caption ? '<figcaption>' + obj.caption + '</figcaption>' : '';
-      return '<figure><img src="' + obj.src + '" alt="' + (obj.alt || '') + '"/>' + caption + '</figure>';
+      var caption = obj.caption ? '<figcaption>' + escapeHtml(obj.caption) + '</figcaption>' : '';
+      return '<figure><img src="' + escapeHtml(obj.src || '') + '" alt="' + escapeHtml(obj.alt || '') + '"/>' + caption + '</figure>';
     }
   });
 })();
