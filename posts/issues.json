@@ -37,7 +37,11 @@
       "title": "京劇",
       "theme": "傳統",
       "cover": "/assets/img/uploads/京劇.png",
-      "editorNote": "收錄京劇劇本、教學、伴奏等"
+      "editorNote": "收錄京劇劇本、教學、伴奏等",
+      "posts": [
+        "cgm",
+        "sln"
+      ]
     }
   ]
 }
