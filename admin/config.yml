@@ -45,7 +45,7 @@ collections:
               - { label: "封面", name: "cover", widget: "image", required: false, hint: "建議 1600x1000（橫向）" }
               - { label: "期刊 ID", name: "issue", widget: "string", required: false, hint: "例如 2026Q1" }
               - { label: "Slug", name: "slug", widget: "string", hint: "只用英文小寫、數字、-，例如 city-walk-notes" }
-              - { label: "內文", name: "body", widget: "markdown", hint: "可在游標位置插入圖片/音訊元件；建議文內圖 1200x800，直圖 1080x1350" }
+              - { label: "內文", name: "body", widget: "markdown", hint: "可在游標位置插入圖片/音訊元件（音訊可用右下角 Cloudflare 上傳按鈕）；建議文內圖 1200x800，直圖 1080x1350" }
 
   - name: "issues"
     label: "期刊"
