@@ -1,16 +1,17 @@
 {
   "items": [
     {
+      "excerpt": "隨時更新",
+      "body": "[audio](/assets/img/uploads/【西皮二六】講什麼節孝兩雙全.mp3)\n<!-- title:大登殿【講什麼節孝兩雙全】 -->\n*程派*\n\n[audio](/assets/img/uploads/【西皮流水】-王寶釧低頭用目看.mp3)\n<!-- title:大登殿【王寶釧低頭用目看】 -->\n*程派*",
+      "slug": "cpbz",
       "date": "2026-02-18",
+      "cover": "/assets/img/uploads/程派伴奏合輯.png",
       "title": "程派伴奏合輯",
-      "category": "程派",
       "tags": [
         "京劇"
       ],
-      "excerpt": "隨時更新",
       "issue": "opera",
-      "slug": "cpbz",
-      "body": "[audio](/assets/img/uploads/【西皮二六】講什麼節孝兩雙全.mp3)\n<!-- title:大登殿【講什麼節孝兩雙全】 -->\n*程派*\n\n[audio](/assets/img/uploads/【西皮流水】-王寶釧低頭用目看.mp3)\n<!-- title:大登殿【王寶釧低頭用目看】 -->\n*程派*"
+      "category": "程派"
     },
     {
       "excerpt": " ",
