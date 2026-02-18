@@ -50,4 +50,41 @@
       return '<figure><img src="' + escapeHtml(obj.src || '') + '" alt="' + escapeHtml(obj.alt || '') + '"/>' + caption + '</figure>';
     }
   });
+
+  CMS.registerEditorComponent({
+    id: 'audio-block',
+    label: '音訊（可上傳）',
+    fields: [
+      { name: 'src', label: '音訊檔', widget: 'file', media_library: { allow_multiple: false } },
+      { name: 'title', label: '音訊標題', widget: 'string', required: false },
+      { name: 'caption', label: '音訊說明', widget: 'string', required: false }
+    ],
+    pattern: /\[audio\]\((.*?)\)\n<!--\s*title:(.*?)\s*-->\n?(?:\*(.*?)\*)?/,
+    fromBlock: function (match) {
+      return {
+        src: match[1] || '',
+        title: match[2] || '',
+        caption: match[3] || ''
+      };
+    },
+    toBlock: function (obj) {
+      var src = obj.src || '';
+      var title = obj.title || '';
+      var caption = obj.caption ? '\n*' + obj.caption + '*' : '';
+      return '[audio](' + src + ')\n<!-- title:' + title + ' -->' + caption;
+    },
+    toPreview: function (obj) {
+      var title = obj.title ? '<strong>' + escapeHtml(obj.title) + '</strong>' : '';
+      var caption = obj.caption ? '<div>' + escapeHtml(obj.caption) + '</div>' : '';
+      return (
+        '<figure>' +
+        title +
+        '<audio controls preload="metadata" src="' +
+        escapeHtml(obj.src || '') +
+        '"></audio>' +
+        caption +
+        '</figure>'
+      );
+    }
+  });
 })();

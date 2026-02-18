@@ -73,12 +73,41 @@ const simpleMarkdown = (raw) => {
     inList = false;
   };
 
-  for (const line of lines) {
+  const renderAudioBlock = (audioSrc, title, caption) => {
+    const safeSrc = sanitizeUrl(audioSrc, { allowHash: false });
+    if (safeSrc === '#') return '';
+    const safeTitle = escapeHtml(title || '');
+    const safeCaption = escapeHtml(caption || '');
+    const titleHtml = safeTitle ? `<div class="post-audio-title">${safeTitle}</div>` : '';
+    const captionHtml = safeCaption ? `<figcaption>${safeCaption}</figcaption>` : '';
+    return `<figure class="post-audio">${titleHtml}<audio controls preload="metadata" src="${escapeHtml(safeSrc)}"></audio>${captionHtml}</figure>`;
+  };
+
+  for (let i = 0; i < lines.length; i += 1) {
+    const line = lines[i];
     const trimmed = line.trim();
     if (!trimmed) {
       flushParagraph();
       closeList();
       continue;
+    }
+
+    const audioMatch = trimmed.match(/^\[audio\]\((.*?)\)$/);
+    if (audioMatch) {
+      const next = (lines[i + 1] || '').trim();
+      const titleMatch = next.match(/^<!--\s*title:(.*?)\s*-->$/);
+      if (titleMatch) {
+        const captionLine = (lines[i + 2] || '').trim();
+        const captionMatch = captionLine.match(/^\*(.*?)\*$/);
+        const blockHtml = renderAudioBlock(audioMatch[1], titleMatch[1], captionMatch ? captionMatch[1] : '');
+        if (blockHtml) {
+          flushParagraph();
+          closeList();
+          out.push(blockHtml);
+        }
+        i += captionMatch ? 2 : 1;
+        continue;
+      }
     }
 
     if (/^###\s+/.test(trimmed)) {

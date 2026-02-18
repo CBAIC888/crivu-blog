@@ -523,6 +523,30 @@ select {
   font-family: 'Times New Roman', 'Noto Serif SC', 'Songti SC', serif;
 }
 
+.post-audio {
+  margin: 22px 0;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface-muted);
+}
+
+.post-audio-title {
+  margin-bottom: 10px;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.post-audio audio {
+  width: 100%;
+}
+
+.post-audio figcaption {
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
 .more {
   margin-top: 0;
   position: sticky;
