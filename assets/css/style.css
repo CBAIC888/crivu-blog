@@ -76,6 +76,10 @@ main {
   font-family: 'Times New Roman', 'Noto Serif SC', 'Songti SC', serif;
   font-size: 23px;
   letter-spacing: 0.8px;
+  color: var(--ink);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
 }
 
 .nav {
@@ -651,6 +655,7 @@ select {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 20px;
+  align-items: start;
 }
 
 .issue-card {
@@ -661,13 +666,17 @@ select {
   border-radius: var(--radius);
   box-shadow: var(--shadow);
   overflow: hidden;
+  align-self: start;
+  align-content: start;
 }
 
 .issue-cover {
+  height: 220px;
   min-height: 220px;
   background-size: cover;
   background-position: center;
   position: relative;
+  flex-shrink: 0;
 }
 
 .issue-cover::after {
@@ -997,7 +1006,9 @@ select {
   }
 
   .logo {
-    display: none;
+    font-size: 17px;
+    flex: 0 1 auto;
+    min-width: 0;
   }
 
   .nav {
@@ -1046,10 +1057,6 @@ select {
     font-size: 15px;
   }
 
-  .theme-toggle {
-    display: none;
-  }
-
   .mobile-theme-action {
     border: 1px solid var(--line);
     background: var(--surface-muted);
@@ -1087,8 +1094,10 @@ select {
   }
 
   .theme-toggle {
+    display: inline-flex;
     width: 34px;
     height: 34px;
+    font-size: 14px;
   }
 
   .hero h1 {
@@ -1136,19 +1145,7 @@ select {
     font-size: 17px;
   }
 
-  .more-item {
-    grid-template-columns: 1fr;
-  }
-
-  .more-thumb {
-    min-height: 140px;
-  }
-
-  .more-info {
-    padding-right: 0;
-  }
-
-  .more-item::after {
+  .more {
     display: none;
   }
 

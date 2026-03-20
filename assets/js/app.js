@@ -68,15 +68,6 @@ const setupTheme = () => {
   if (!toggle) return;
 
   toggle.innerHTML = '<span id="themeIcon" class="theme-icon">☀</span>';
-  const nav = qs('.nav');
-  if (nav && !qs('#mobileThemeToggle')) {
-    const mobileThemeBtn = document.createElement('button');
-    mobileThemeBtn.type = 'button';
-    mobileThemeBtn.id = 'mobileThemeToggle';
-    mobileThemeBtn.className = 'mobile-theme-action';
-    mobileThemeBtn.innerHTML = '<span class="theme-icon">☀</span><span>變換主題</span>';
-    nav.appendChild(mobileThemeBtn);
-  }
 
   const stored = localStorage.getItem('theme') || 'light';
   applyTheme(stored);
@@ -90,8 +81,6 @@ const setupTheme = () => {
   };
 
   toggle.addEventListener('click', switchTheme);
-  const mobileThemeToggle = qs('#mobileThemeToggle');
-  if (mobileThemeToggle) mobileThemeToggle.addEventListener('click', switchTheme);
 };
 
 const loadPosts = async () => {
