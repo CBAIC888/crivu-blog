@@ -23,10 +23,10 @@
   ],
   "moreReadingLimit": 12,
   "topics": "寫作、閱讀、戲曲、指南",
-  "aboutStyle": "我是CRIVU。這個網站是我的個人博客：把日常裡的靈感、技術實作、旅途見聞與閱讀思考等，整理成一期一期的內容。",
+  "aboutStyle": " ",
   "homeLatestButtonText": "文章",
-  "footerText": "© 2026 CRIVU · 本站部分資訊來源於網絡",
-  "city": "China",
+  "footerText": "© 2024-2026 CRIVU · 本站部分資訊來源於網路",
+  "city": "TaiWan",
   "searchPlaceholder": "搜尋",
   "aboutTitle": "關於",
   "articlesPageTitle": "文章",
@@ -46,5 +46,5 @@
   "allTagLabel": "全部標籤",
   "email": "cbc88898  gmail",
   "aboutInfoTitle": "檔案資訊",
-  "aboutIntro": "2026年2月8日建立。"
+  "aboutIntro": "2024年11月建立"
 }
