@@ -83,6 +83,10 @@ const setupTheme = () => {
   toggle.addEventListener('click', switchTheme);
 };
 
+const revealSiteContent = () => {
+  document.body.classList.remove('site-loading');
+};
+
 const loadPosts = async () => {
   const res = await fetch('/posts/posts.json');
   const data = await res.json();
@@ -461,6 +465,10 @@ const init = async () => {
   if (grid && grid.childElementCount === 0) {
     renderGrid(grid, state.posts.filter((p) => matchesSearch(p, state.search)));
   }
+
+  revealSiteContent();
 };
 
-init();
+init().catch(() => {
+  revealSiteContent();
+});

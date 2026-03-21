@@ -39,6 +39,10 @@ body {
   padding-top: var(--header-height);
 }
 
+.site-loading .hero-text {
+  visibility: hidden;
+}
+
 main,
 header,
 footer {
