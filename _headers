@@ -4,6 +4,12 @@
   Permissions-Policy: geolocation=(), microphone=(), camera=()
   X-Frame-Options: DENY
 
+/
+  Cache-Control: no-store, no-cache, must-revalidate, max-age=0
+
+/*.html
+  Cache-Control: no-store, no-cache, must-revalidate, max-age=0
+
 /admin/config.yml
   Cache-Control: no-store, no-cache, must-revalidate, max-age=0
 
