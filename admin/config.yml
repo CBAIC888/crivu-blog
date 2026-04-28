@@ -95,6 +95,7 @@ collections:
           - { label: "首頁主標", name: "homeTitle", widget: "string" }
           - { label: "首頁副標", name: "homeSubtitle", widget: "text" }
           - { label: "首頁按鈕文字", name: "homeLatestButtonText", widget: "string", required: false }
+          - { label: "首頁期刊小標", name: "homeIssueKicker", widget: "string", required: false }
           - { label: "首頁焦點期刊 ID", name: "homeFeaturedIssueId", widget: "string", required: false, hint: "不填則使用第一本合適的期刊；例如 jq01" }
           - { label: "首頁底部小字 1", name: "homeHeroCreditLine1", widget: "string", required: false }
           - { label: "首頁底部小字 2", name: "homeHeroCreditLine2", widget: "string", required: false }
@@ -127,4 +128,7 @@ collections:
           - { label: "城市", name: "city", widget: "string" }
           - { label: "Email", name: "email", widget: "string" }
           - { label: "關於頁聯絡按鈕文字", name: "aboutMailLabel", widget: "string", required: false }
+          - { label: "城市標籤", name: "aboutCityLabel", widget: "string", required: false }
+          - { label: "Email 標籤", name: "aboutEmailLabel", widget: "string", required: false }
+          - { label: "主題標籤", name: "aboutTopicsLabel", widget: "string", required: false }
           - { label: "主題", name: "topics", widget: "string" }

@@ -62,10 +62,6 @@ const revealSiteContent = () => {
   document.body.classList.remove('site-loading');
 };
 
-const revealSiteContent = () => {
-  document.body.classList.remove('site-loading');
-};
-
 const loadPosts = async () => {
   const res = await fetch('/posts/posts.json');
   const data = await res.json();
@@ -107,6 +103,7 @@ const applySiteSettings = () => {
   setText('#homeTitle', site.homeTitle);
   setText('#homeSubtitle', site.homeSubtitle);
   setText('#homeLatestButton', site.homeLatestButtonText);
+  setText('#homeIssueKicker', site.homeIssueKicker);
   setText('#latestTitle', site.latestTitle);
   setText('#latestIntro', site.latestIntro);
   setText('#articlesPageTitle', site.articlesPageTitle);
@@ -120,8 +117,11 @@ const applySiteSettings = () => {
   setText('#aboutInfoTitle', site.aboutInfoTitle);
   setText('#aboutMailLink', site.aboutMailLabel);
   setText('#aboutCity', site.city);
+  setText('#aboutCityLabel', site.aboutCityLabel);
   setText('#aboutEmail', site.email);
+  setText('#aboutEmailLabel', site.aboutEmailLabel);
   setText('#aboutTopics', site.topics);
+  setText('#aboutTopicsLabel', site.aboutTopicsLabel);
 
   const mailLink = qs('#aboutMailLink');
   if (mailLink && site.email) {
