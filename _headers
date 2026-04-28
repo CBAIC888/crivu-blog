@@ -13,19 +13,13 @@
   Cache-Control: no-store, no-cache, must-revalidate, max-age=0
 
 /admin/*
-  Content-Security-Policy: default-src 'self'; base-uri 'self'; frame-ancestors 'none'; img-src 'self' data: https:; script-src 'self' https://unpkg.com 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://api.github.com; form-action 'self'
+  Content-Security-Policy: default-src 'self'; base-uri 'self'; frame-ancestors 'none'; img-src 'self' data: https: blob:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://api.github.com https://github.com; form-action 'self'
 
 /api/*
   Content-Security-Policy: default-src 'none'; base-uri 'none'; frame-ancestors 'none'; img-src 'none'; script-src 'none'; style-src 'none'; connect-src 'none'; form-action 'none'
 
 /api/callback
   Content-Security-Policy: default-src 'none'; base-uri 'none'; frame-ancestors 'none'; img-src 'none'; script-src 'unsafe-inline'; style-src 'none'; connect-src 'none'; form-action 'none'
-
-/
-  Cache-Control: no-store, no-cache, must-revalidate, max-age=0
-
-/*.html
-  Cache-Control: no-store, no-cache, must-revalidate, max-age=0
 
 /admin/config.yml
   Cache-Control: no-store, no-cache, must-revalidate, max-age=0
