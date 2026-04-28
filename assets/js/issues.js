@@ -41,14 +41,6 @@ const setText = (sel, value) => {
   if (el && value) el.textContent = value;
 };
 
-const applyTheme = (theme) => {
-  document.documentElement.setAttribute('data-theme', theme);
-  localStorage.setItem('theme', theme);
-  document.querySelectorAll('.theme-icon').forEach((icon) => {
-    icon.textContent = theme === 'dark' ? '☾' : '☀';
-  });
-};
-
 const setupHeaderOffset = () => {
   const header = qs('.site-header');
   if (!header) return;
@@ -221,10 +213,28 @@ const renderIssue = (issue, posts) => {
       `
     )
     .join('');
+  const leadPost = linkedPosts.map((slug) => posts.find((p) => p.slug === slug)).find(Boolean);
+  const leadHref = leadPost ? postUrl(leadPost.slug) : '/articles.html';
+  const leadLabel = escapeHtml(state.site.issueReadLabel || '打開本期首篇');
+  const browseLabel = escapeHtml(state.site.issueBrowseLabel || '瀏覽全部文章');
 
   return `
     <article class="issue-card">
-      <div class="issue-cover lazy-bg" data-bg="${escapeHtml(cover)}"></div>
+      <div class="issue-book-visual">
+        <a class="issue-book-link" href="${escapeHtml(leadHref)}" aria-label="${escapeHtml(issue.title)}">
+          <div class="issue-book-object">
+            <div class="issue-book-spine"></div>
+            <div class="issue-cover lazy-bg" data-bg="${escapeHtml(cover)}">
+              <div class="issue-cover-copy">
+                <div class="book-kicker">Issue ${escapeHtml(issue.id)}</div>
+                <h2>${escapeHtml(issue.title)}</h2>
+                <p>${escapeHtml(issue.theme)}</p>
+              </div>
+            </div>
+            <div class="issue-book-shadow"></div>
+          </div>
+        </a>
+      </div>
       <div class="issue-body">
         <div class="issue-meta">
           <span class="pill">${escapeHtml(issue.id)}</span>
@@ -233,30 +243,18 @@ const renderIssue = (issue, posts) => {
         <h2>${escapeHtml(issue.title)}</h2>
         <p>${escapeHtml(issue.theme)}</p>
         <div class="issue-count">${countText}</div>
+        <div class="issue-note">${escapeHtml(issue.editorNote || '')}</div>
+        <div class="issue-actions">
+          <a class="issue-link" href="${escapeHtml(leadHref)}">${leadLabel}</a>
+          <a class="issue-link muted" href="/articles.html">${browseLabel}</a>
+        </div>
         <details class="issue-expand"${detailsOpen}>
           <summary>${expandLabel}</summary>
-          <div class="issue-note">${escapeHtml(issue.editorNote || '')}</div>
           <div class="issue-posts">${postCards || `<div class="issue-post">${emptyText}</div>`}</div>
         </details>
       </div>
     </article>
   `;
-};
-
-const setupTheme = () => {
-  const toggle = qs('#themeToggle');
-  if (!toggle) return;
-  toggle.innerHTML = '<span id="themeIcon" class="theme-icon">☀</span>';
-  const stored = localStorage.getItem('theme') || 'light';
-  applyTheme(stored);
-  const switchTheme = () => {
-    toggle.classList.remove('spin');
-    void toggle.offsetWidth;
-    toggle.classList.add('spin');
-    const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-    applyTheme(next);
-  };
-  toggle.addEventListener('click', switchTheme);
 };
 
 const loadSite = async () => {
@@ -267,6 +265,7 @@ const loadSite = async () => {
     setText('#siteName', state.site.siteName);
     setText('#siteFooterText', state.site.footerText);
     setText('#issuesPageTitle', state.site.issuesPageTitle);
+    setText('#issuesPageIntro', state.site.issuesPageIntro);
 
     const searchInput = qs('#searchInput');
     if (searchInput && state.site.searchPlaceholder) {
@@ -307,7 +306,6 @@ const init = async () => {
   }
 
   setupSearch(posts);
-  setupTheme();
   setupHeaderOffset();
   setupMobileSearch();
   setupMobileMenu();

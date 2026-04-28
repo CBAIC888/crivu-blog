@@ -1,5 +1,8 @@
+import { applyAdaptivePalette, getFeaturedPaletteSource } from './palette.js';
+
 const state = {
   posts: [],
+  issues: [],
   site: {},
   search: '',
   currentCategory: '',
@@ -55,32 +58,8 @@ const toInt = (value, fallback, min, max) => {
   return Math.max(min, Math.min(max, num));
 };
 
-const applyTheme = (theme) => {
-  document.documentElement.setAttribute('data-theme', theme);
-  localStorage.setItem('theme', theme);
-  qsa('.theme-icon').forEach((icon) => {
-    icon.textContent = theme === 'dark' ? '☾' : '☀';
-  });
-};
-
-const setupTheme = () => {
-  const toggle = qs('#themeToggle');
-  if (!toggle) return;
-
-  toggle.innerHTML = '<span id="themeIcon" class="theme-icon">☀</span>';
-
-  const stored = localStorage.getItem('theme') || 'light';
-  applyTheme(stored);
-
-  const switchTheme = () => {
-    toggle.classList.remove('spin');
-    void toggle.offsetWidth;
-    toggle.classList.add('spin');
-    const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-    applyTheme(next);
-  };
-
-  toggle.addEventListener('click', switchTheme);
+const revealSiteContent = () => {
+  document.body.classList.remove('site-loading');
 };
 
 const revealSiteContent = () => {
@@ -104,6 +83,17 @@ const loadSite = async () => {
   }
 };
 
+const loadIssues = async () => {
+  try {
+    const res = await fetch('/posts/issues.json');
+    if (!res.ok) return;
+    const data = await res.json();
+    state.issues = Array.isArray(data.issues) ? data.issues.slice() : [];
+  } catch {
+    state.issues = [];
+  }
+};
+
 const applySiteSettings = () => {
   const site = state.site;
   qsa('#siteName').forEach((el) => {
@@ -118,8 +108,11 @@ const applySiteSettings = () => {
   setText('#homeSubtitle', site.homeSubtitle);
   setText('#homeLatestButton', site.homeLatestButtonText);
   setText('#latestTitle', site.latestTitle);
+  setText('#latestIntro', site.latestIntro);
   setText('#articlesPageTitle', site.articlesPageTitle);
+  setText('#articlesPageIntro', site.articlesPageIntro);
   setText('#issuesPageTitle', site.issuesPageTitle);
+  setText('#issuesPageIntro', site.issuesPageIntro);
   setText('#aboutKicker', site.aboutKicker);
   setText('#aboutTitle', site.aboutTitle);
   setText('#aboutIntro', site.aboutIntro);
@@ -142,6 +135,81 @@ const applySiteSettings = () => {
   const root = document.documentElement;
   root.style.setProperty('--home-cols', String(toInt(site.homeCardsDesktop, 3, 1, 4)));
   root.style.setProperty('--list-cols', String(toInt(site.articleCardsDesktop, 3, 1, 4)));
+};
+
+const getFeaturedIssue = () => {
+  if (!Array.isArray(state.issues) || state.issues.length === 0) return null;
+  const preferredId = String(state.site.homeFeaturedIssueId || '').trim();
+  if (preferredId) {
+    const matched = state.issues.find((issue) => issue.id === preferredId);
+    if (matched) return matched;
+  }
+  return state.issues.find((issue) => issue.id === 'jq01') || state.issues[0];
+};
+
+const applyHomeFeature = async () => {
+  const hero = qs('#homeHero');
+  if (!hero) return null;
+
+  const featuredIssue = getFeaturedIssue();
+  const featuredPost =
+    featuredIssue && Array.isArray(featuredIssue.posts)
+      ? state.posts.find((post) => featuredIssue.posts.includes(post.slug))
+      : null;
+
+  const backdrop = qs('#homeHeroBackdrop');
+  const issueLink = qs('#homeIssueLink');
+  const issueCover = qs('#homeIssueCover');
+  const issueTitle = qs('#homeIssueTitle');
+  const issueMeta = qs('#homeIssueMeta');
+  const heroNote = qs('#homeHeroNote');
+  const heroCredit = qs('#homeHeroCredit');
+
+  const backgroundImage = safeCoverUrl(getFeaturedPaletteSource(state.posts, state.issues, FALLBACK_COVER));
+  const coverImage = safeCoverUrl((featuredIssue && featuredIssue.cover) || backgroundImage);
+
+  if (backdrop) {
+    backdrop.setAttribute('data-bg', backgroundImage);
+    backdrop.dataset.bgLoaded = '0';
+  }
+  if (issueCover) {
+    issueCover.setAttribute('data-bg', coverImage);
+    issueCover.dataset.bgLoaded = '0';
+  }
+  if (issueLink) {
+    issueLink.setAttribute('href', '/issues.html');
+  }
+  if (issueTitle && featuredIssue) {
+    issueTitle.textContent = featuredIssue.title || '新刊';
+  }
+  if (issueMeta && featuredIssue) {
+    issueMeta.textContent = [featuredIssue.theme, featuredIssue.publishDate].filter(Boolean).join(' · ');
+  }
+  if (heroNote) {
+    heroNote.textContent = '';
+    heroNote.hidden = true;
+  }
+  if (heroCredit) {
+    const creditLine1 =
+      state.site.homeHeroCreditLine1 ||
+      (featuredPost ? `本期預覽：${featuredPost.title}${featuredPost.category ? ` · ${featuredPost.category}` : ''}` : '本期預覽');
+    const creditLine2 = state.site.homeHeroCreditLine2 || '背景圖目前使用站內素材，後續可替換為你提供的定尺寸圖片';
+    heroCredit.innerHTML = `<span>${escapeHtml(creditLine1)}</span><span>${escapeHtml(creditLine2)}</span>`;
+  }
+
+  if (featuredIssue || state.site.homeKicker || state.site.homeTitle || state.site.homeSubtitle) {
+    setText('#homeKicker', state.site.homeKicker || (featuredIssue && featuredIssue.id) || '新刊');
+    setText('#homeTitle', state.site.homeTitle || (featuredIssue && featuredIssue.title) || '首頁');
+    setText(
+      '#homeSubtitle',
+      state.site.homeSubtitle ||
+        `${(featuredIssue && featuredIssue.theme) || ''}${featuredIssue && featuredIssue.theme ? '，' : ''}${featuredPost ? featuredPost.title : '循着时序更迭的脚步，于文字间细数四季风物。'}`
+    );
+  }
+
+  await applyAdaptivePalette(backgroundImage);
+  initLazyBackgrounds(hero);
+  return backgroundImage;
 };
 
 const applyNavigation = (site) => {
@@ -253,13 +321,14 @@ const renderCard = (post) => {
   const maxTags = toInt(state.site.maxTagsPerCard, 3, 1, 10);
   const safeTags = Array.isArray(post.tags) ? post.tags.slice(0, maxTags).map((tag) => escapeHtml(tag)) : [];
   const safeLink = postUrl(post.slug);
+  const excerpt = String(post.excerpt || '').trim();
   return `
     <article class="post-card">
       <a class="image lazy-bg" href="${escapeHtml(safeLink)}" data-bg="${escapeHtml(cover)}"></a>
       <div class="content">
         <div class="card-meta"><span class="pill">${escapeHtml(post.category)}</span>${issue}${date}</div>
         <h3><a href="${escapeHtml(safeLink)}">${escapeHtml(post.title)}</a></h3>
-        <p>${escapeHtml(post.excerpt)}</p>
+        ${excerpt ? `<p>${escapeHtml(excerpt)}</p>` : ''}
         <div class="tag-row">${safeTags.map((t) => `<span class="tag">${t}</span>`).join('')}</div>
       </div>
     </article>
@@ -448,10 +517,13 @@ const setupTagPage = () => {
 };
 
 const init = async () => {
-  setupTheme();
-  await Promise.all([loadPosts(), loadSite()]);
+  await Promise.all([loadPosts(), loadSite(), loadIssues()]);
 
   applySiteSettings();
+  const featureImage = await applyHomeFeature();
+  if (qs('#homeHero') && !featureImage && state.posts[0] && state.posts[0].cover) {
+    await applyAdaptivePalette(safeCoverUrl(state.posts[0].cover));
+  }
   applyNavigation(state.site);
   setupSearch();
   setupFilters();

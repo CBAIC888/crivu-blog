@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>CRIVU · 個人博客</title>
   <meta name="description" content="一個節約、美觀、可分類的個人博客。" />
-  <link rel="stylesheet" href="/assets/css/style.css?v=20260321" />
+  <link rel="stylesheet" href="/assets/css/style.css?v=20260428ui11" />
   <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml" />
 </head>
-<body class="site-loading">
+<body class="site-loading home-page">
   <header class="site-header">
     <a class="logo" id="siteName" href="/">CRIVU</a>
     <nav class="nav">
@@ -24,27 +24,50 @@
       </div>
       <button class="mobile-search-toggle" id="mobileSearchBtn" aria-label="搜尋">🔍</button>
       <button class="mobile-menu-toggle" id="mobileMenuBtn" aria-label="展開選單">☰</button>
-      <button class="theme-toggle" id="themeToggle" aria-label="切換主題">
-        <span id="themeIcon" class="theme-icon">☀</span>
-      </button>
     </div>
   </header>
 
   <main>
-    <section class="hero">
-      <div class="hero-text">
-        <p class="kicker" id="homeKicker"></p>
-        <h1 id="homeTitle"></h1>
-        <p class="subtitle" id="homeSubtitle"></p>
-        <div class="hero-cta">
-          <a class="btn" id="homeLatestButton" href="#latest">最新文章</a>
+    <section class="hero hero-magazine" id="homeHero">
+      <div class="hero-backdrop lazy-bg" id="homeHeroBackdrop"></div>
+      <div class="hero-frame">
+        <div class="hero-copy">
+          <p class="kicker" id="homeKicker"></p>
+          <h1 id="homeTitle"></h1>
+          <p class="subtitle" id="homeSubtitle"></p>
+          <div class="hero-cta">
+            <a class="btn" id="homeLatestButton" href="#latest">最新文章</a>
+          </div>
+          <p class="hero-note" id="homeHeroNote"></p>
         </div>
+        <aside class="hero-book">
+          <a class="book-link" id="homeIssueLink" href="/issues.html" aria-label="查看推薦期刊">
+            <div class="book-object">
+              <div class="book-spine"></div>
+              <div class="book-cover lazy-bg" id="homeIssueCover">
+                <div class="book-cover-copy">
+                  <div class="book-kicker">Featured Issue</div>
+                  <h2 id="homeIssueTitle">新刊</h2>
+                  <p id="homeIssueMeta"></p>
+                </div>
+              </div>
+              <div class="book-shadow"></div>
+            </div>
+          </a>
+        </aside>
+      </div>
+      <div class="hero-credit" id="homeHeroCredit">
+        <span>預覽首屏</span>
+        <span>背景圖之後可替換並限制顯示比例</span>
       </div>
     </section>
 
-    <section id="latest" class="latest">
+    <section id="latest" class="latest latest-list">
       <div class="section-title">
-        <h2 id="latestTitle">最新文章</h2>
+        <div>
+          <h2 id="latestTitle">最新文章</h2>
+          <p id="latestIntro">全部文章統一改為列表閱讀，去掉首頁首篇的特殊強調。</p>
+        </div>
         <div class="filters">
           <select id="categoryFilter" aria-label="分類篩選"></select>
           <select id="tagFilter" aria-label="標籤篩選"></select>
@@ -58,6 +81,6 @@
     <div id="siteFooterText">© 2026 CRIVU · 以雜誌方式寫作</div>
   </footer>
 
-  <script src="/assets/js/app.js?v=20260321b" type="module"></script>
+  <script src="/assets/js/app.js?v=20260428ui11" type="module"></script>
 </body>
 </html>

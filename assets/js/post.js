@@ -40,6 +40,7 @@ const safeCoverUrl = (value) => {
   return safe === '#' ? FALLBACK_COVER : safe;
 };
 
+
 const postUrl = (slug) => `/post.html?slug=${encodeURIComponent(String(slug ?? ''))}`;
 
 const inlineMarkdown = (text) => {
@@ -190,26 +191,19 @@ const toInt = (value, fallback, min, max) => {
   return Math.max(min, Math.min(max, num));
 };
 
-const applyTheme = (theme) => {
-  document.documentElement.setAttribute('data-theme', theme);
-  localStorage.setItem('theme', theme);
-  document.querySelectorAll('.theme-icon').forEach((icon) => {
-    icon.textContent = theme === 'dark' ? '☾' : '☀';
-  });
-};
-
 const renderMoreItem = (post) => {
   const cover = safeCoverUrl(post.cover);
   const issue = post.issue ? `<span class="issue-pill">${escapeHtml(post.issue)}</span>` : '';
   const date = post.date ? `<small>${escapeHtml(post.date)}</small>` : '';
   const safeLink = postUrl(post.slug);
+  const excerpt = String(post.excerpt || '').trim();
   return `
     <a class="more-item" href="${escapeHtml(safeLink)}">
       <div class="more-thumb lazy-bg" data-bg="${escapeHtml(cover)}"></div>
       <div class="more-info">
-        <span class="pill">${escapeHtml(post.category)}</span>${issue}${date}
+        <div class="more-meta"><span class="pill">${escapeHtml(post.category)}</span>${issue}${date}</div>
         <h3>${escapeHtml(post.title)}</h3>
-        <p>${escapeHtml(post.excerpt)}</p>
+        ${excerpt ? `<p>${escapeHtml(excerpt)}</p>` : ''}
       </div>
     </a>
   `;
@@ -277,22 +271,6 @@ const setupSearch = (posts) => {
       results.classList.remove('active');
     }
   });
-};
-
-const setupTheme = () => {
-  const toggle = qs('#themeToggle');
-  if (!toggle) return;
-  toggle.innerHTML = '<span id="themeIcon" class="theme-icon">☀</span>';
-  const stored = localStorage.getItem('theme') || 'light';
-  applyTheme(stored);
-  const switchTheme = () => {
-    toggle.classList.remove('spin');
-    void toggle.offsetWidth;
-    toggle.classList.add('spin');
-    const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-    applyTheme(next);
-  };
-  toggle.addEventListener('click', switchTheme);
 };
 
 const applyProgress = () => {
@@ -400,8 +378,8 @@ const applySite = async () => {
 
 const init = async () => {
   const slug = getSlug();
-  const res = await fetch('/posts/posts.json');
-  const data = await res.json();
+  const postsRes = await fetch('/posts/posts.json');
+  const data = await postsRes.json();
   const posts = data.items || data;
   const post = posts.find((p) => p.slug === slug) || posts[0];
   if (!post) return;
@@ -416,7 +394,10 @@ const init = async () => {
     issue.style.display = post.issue ? 'inline-block' : 'none';
   }
 
-  qs('#postExcerpt').textContent = post.excerpt;
+  const excerpt = String(post.excerpt || '').trim();
+  const excerptEl = qs('#postExcerpt');
+  excerptEl.textContent = excerpt;
+  excerptEl.hidden = !excerpt;
 
   const tags = qs('#postTags');
   const tagList = Array.isArray(post.tags) ? post.tags : [];
@@ -441,7 +422,6 @@ const init = async () => {
   }
 
   setupSearch(posts);
-  setupTheme();
   setupHeaderOffset();
   setupMobileSearch();
   setupMobileMenu();

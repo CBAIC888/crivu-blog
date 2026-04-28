@@ -71,12 +71,8 @@ collections:
                 widget: "list"
                 allow_add: true
                 collapsed: false
-                summary: "{{fields.slug}}"
-                field:
-                  label: "文章 Slug"
-                  name: "slug"
-                  widget: "string"
-                hint: "輸入文章 slug（例如 city-walk-notes）"
+                field: { label: "文章 Slug", name: "slug", widget: "string" }
+                hint: "直接輸入文章 slug（例如 city-walk-notes）"
 
   - name: "site"
     label: "站點設定"
@@ -99,9 +95,15 @@ collections:
           - { label: "首頁主標", name: "homeTitle", widget: "string" }
           - { label: "首頁副標", name: "homeSubtitle", widget: "text" }
           - { label: "首頁按鈕文字", name: "homeLatestButtonText", widget: "string", required: false }
+          - { label: "首頁焦點期刊 ID", name: "homeFeaturedIssueId", widget: "string", required: false, hint: "不填則使用第一本合適的期刊；例如 jq01" }
+          - { label: "首頁底部小字 1", name: "homeHeroCreditLine1", widget: "string", required: false }
+          - { label: "首頁底部小字 2", name: "homeHeroCreditLine2", widget: "string", required: false }
           - { label: "最新文章標題", name: "latestTitle", widget: "string" }
+          - { label: "首頁文章區說明", name: "latestIntro", widget: "text", required: false }
           - { label: "文章頁標題", name: "articlesPageTitle", widget: "string", required: false }
+          - { label: "文章頁說明", name: "articlesPageIntro", widget: "text", required: false }
           - { label: "期刊頁標題", name: "issuesPageTitle", widget: "string", required: false }
+          - { label: "期刊頁說明", name: "issuesPageIntro", widget: "text", required: false }
           - { label: "搜尋框提示文字", name: "searchPlaceholder", widget: "string", required: false }
           - { label: "首頁卡片欄數（桌面）", name: "homeCardsDesktop", widget: "number", value_type: "int", required: false, min: 1, max: 4 }
           - { label: "文章頁卡片欄數（桌面）", name: "articleCardsDesktop", widget: "number", value_type: "int", required: false, min: 1, max: 4 }
@@ -111,6 +113,8 @@ collections:
           - { label: "全部分類文字", name: "allCategoryLabel", widget: "string", required: false }
           - { label: "全部標籤文字", name: "allTagLabel", widget: "string", required: false }
           - { label: "期刊詳情按鈕文字", name: "issueExpandLabel", widget: "string", required: false }
+          - { label: "期刊首篇按鈕文字", name: "issueReadLabel", widget: "string", required: false }
+          - { label: "期刊文章頁按鈕文字", name: "issueBrowseLabel", widget: "string", required: false }
           - { label: "期刊空內容提示", name: "issueEmptyText", widget: "string", required: false }
           - { label: "期刊文章數模板", name: "issueCountTemplate", widget: "string", required: false, hint: "使用 {count} 表示數量，例如：收錄 {count} 篇文章" }
           - { label: "期刊詳情預設展開", name: "issueDetailsOpen", widget: "boolean", required: false, default: false }
