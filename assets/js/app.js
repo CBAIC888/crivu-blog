@@ -165,7 +165,7 @@ const applyHomeFeature = async () => {
   const heroNote = qs('#homeHeroNote');
   const heroCredit = qs('#homeHeroCredit');
 
-  const backgroundImage = safeCoverUrl(getFeaturedPaletteSource(state.posts, state.issues, FALLBACK_COVER));
+  const backgroundImage = safeCoverUrl(state.site.homeHeroImage || getFeaturedPaletteSource(state.posts, state.issues, FALLBACK_COVER));
   const coverImage = safeCoverUrl((featuredIssue && featuredIssue.cover) || backgroundImage);
 
   if (backdrop) {

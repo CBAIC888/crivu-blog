@@ -128,6 +128,7 @@ window.DECAP_CMS_CONFIG = {
             { label: '首頁副標', name: 'homeSubtitle', widget: 'text' },
             { label: '首頁按鈕文字', name: 'homeLatestButtonText', widget: 'string', required: false },
             { label: '首頁期刊小標', name: 'homeIssueKicker', widget: 'string', required: false },
+            { label: '首頁背景圖', name: 'homeHeroImage', widget: 'image', required: false, hint: '整個首頁首屏的大背景圖；建議至少 1800px 寬' },
             { label: '首頁焦點期刊 ID', name: 'homeFeaturedIssueId', widget: 'string', required: false, hint: '不填則使用第一本合適的期刊；例如 jq01' },
             { label: '首頁底部小字 1', name: 'homeHeroCreditLine1', widget: 'string', required: false },
             { label: '首頁底部小字 2', name: 'homeHeroCreditLine2', widget: 'string', required: false },
