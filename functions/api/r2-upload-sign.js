@@ -10,6 +10,18 @@ const json = (data, status = 200) =>
 const encoder = new TextEncoder();
 const MAX_PRESIGN_EXPIRES = 60 * 10;
 const DEFAULT_MAX_AUDIO_BYTES = 300 * 1024 * 1024;
+const DEFAULT_AUDIO_CONTENT_TYPE = 'audio/mpeg';
+const ALLOWED_AUDIO_CONTENT_TYPES = new Set([
+  'audio/mpeg',
+  'audio/mp3',
+  'audio/mp4',
+  'audio/x-m4a',
+  'audio/wav',
+  'audio/x-wav',
+  'audio/aac',
+  'audio/ogg',
+  'audio/flac',
+]);
 
 const toHex = (buffer) =>
   Array.from(new Uint8Array(buffer), (b) => b.toString(16).padStart(2, '0')).join('');
@@ -50,6 +62,8 @@ const safeExt = (filename) => {
   const allow = new Set(['mp3', 'm4a', 'wav', 'aac', 'ogg', 'flac']);
   return allow.has(ext) ? ext : 'mp3';
 };
+
+const normalizeContentType = (value) => String(value || '').split(';')[0].trim().toLowerCase();
 
 const toRfc3986 = (value) =>
   encodeURIComponent(value).replace(/[!'()*]/g, (c) => `%${c.charCodeAt(0).toString(16).toUpperCase()}`);
@@ -92,6 +106,38 @@ export async function onRequest(context) {
   const origin = request.headers.get('Origin');
   if (origin && origin !== url.origin) return json({ error: 'Forbidden origin' }, 403);
 
+  const authHeader = request.headers.get('Authorization') || '';
+  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : authHeader.trim();
+  if (!token) {
+    return json({ error: 'Missing GitHub token' }, 401);
+  }
+
+  const repo = env.GITHUB_REPO || 'CBAIC888/crivu-blog';
+  const ghRes = await fetch(`https://api.github.com/repos/${repo}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: 'application/vnd.github+json',
+      'User-Agent': 'crivu-cms-oauth',
+    },
+  });
+  if (ghRes.status === 401) return json({ error: 'Invalid GitHub token' }, 401);
+  if (ghRes.status === 404) return json({ error: 'GitHub token lacks repo access' }, 403);
+  if (!ghRes.ok) return json({ error: 'GitHub auth check failed' }, 502);
+  let repoJson;
+  try {
+    repoJson = await ghRes.json();
+  } catch {
+    return json({ error: 'Invalid GitHub auth response' }, 502);
+  }
+  const permissions = repoJson && typeof repoJson === 'object' ? repoJson.permissions : null;
+  const canWrite =
+    permissions &&
+    typeof permissions === 'object' &&
+    (permissions.push === true || permissions.admin === true || permissions.maintain === true);
+  if (!canWrite) {
+    return json({ error: 'GitHub token lacks write access to this repo' }, 403);
+  }
+
   const accountId = env.R2_ACCOUNT_ID;
   const accessKeyId = env.R2_ACCESS_KEY_ID;
   const secretAccessKey = env.R2_SECRET_ACCESS_KEY;
@@ -116,7 +162,7 @@ export async function onRequest(context) {
   }
 
   const filename = String(body.filename || '');
-  const contentType = String(body.contentType || 'application/octet-stream');
+  const requestedContentType = normalizeContentType(body.contentType);
   const size = Number(body.size || 0);
   const maxAudioBytes = Number(env.R2_MAX_AUDIO_BYTES || DEFAULT_MAX_AUDIO_BYTES);
 
@@ -137,6 +183,10 @@ export async function onRequest(context) {
   const host = `${accountId}.r2.cloudflarestorage.com`;
   const baseName = sanitizeFileBase(filename);
   const ext = safeExt(filename);
+  if (requestedContentType && !ALLOWED_AUDIO_CONTENT_TYPES.has(requestedContentType)) {
+    return json({ error: 'Unsupported content type. Only audio uploads are allowed.' }, 415);
+  }
+  const contentType = requestedContentType || DEFAULT_AUDIO_CONTENT_TYPE;
   const nonce = crypto.randomUUID().replaceAll('-', '').slice(0, 12);
   const key = `audio/uploads/${now.yyyymmdd}/${baseName}-${nonce}.${ext}`;
   const credentialScope = `${now.yyyymmdd}/${region}/${service}/aws4_request`;
@@ -147,12 +197,12 @@ export async function onRequest(context) {
     'X-Amz-Credential': `${accessKeyId}/${credentialScope}`,
     'X-Amz-Date': now.amzDate,
     'X-Amz-Expires': String(MAX_PRESIGN_EXPIRES),
-    'X-Amz-SignedHeaders': 'host',
+    'X-Amz-SignedHeaders': 'content-type;host',
   };
 
   const canonicalQuery = buildCanonicalQuery(query);
-  const canonicalHeaders = `host:${host}\n`;
-  const signedHeaders = 'host';
+  const canonicalHeaders = `content-type:${contentType}\nhost:${host}\n`;
+  const signedHeaders = 'content-type;host';
   const canonicalRequest = ['PUT', canonicalUri, canonicalQuery, canonicalHeaders, signedHeaders, 'UNSIGNED-PAYLOAD'].join(
     '\n'
   );

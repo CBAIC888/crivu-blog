@@ -103,6 +103,23 @@
     return String(name || '未命名音訊').replace(/\.[^.]+$/, '');
   };
 
+  var getCmsToken = function () {
+    try {
+      var raw =
+        window.localStorage.getItem('decap-cms-user') ||
+        window.localStorage.getItem('netlify-cms-user');
+      if (!raw) return '';
+      var parsed = JSON.parse(raw);
+      if (!parsed || typeof parsed !== 'object') return '';
+      if (parsed.token) return parsed.token;
+      if (parsed.access_token) return parsed.access_token;
+      if (parsed.auth && parsed.auth.token) return parsed.auth.token;
+    } catch (err) {
+      console.warn('讀取 CMS token 失敗', err);
+    }
+    return '';
+  };
+
   var rememberSelection = function (el) {
     if (!el || el.tagName !== 'TEXTAREA') return;
     lastEditorSelection.textarea = el;
@@ -144,9 +161,16 @@
   };
 
   var uploadAudioToCloudflare = async function (file) {
+    var token = getCmsToken();
+    if (!token) {
+      throw new Error('尚未登入 CMS，請先登入後再上傳音訊');
+    }
     var signRes = await fetch('/api/r2-upload-sign', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer ' + token
+      },
       body: JSON.stringify({
         filename: file.name,
         contentType: file.type || 'application/octet-stream',

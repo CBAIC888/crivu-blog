@@ -20,10 +20,11 @@ export async function onRequest(context) {
   const state = Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
 
   const redirectUri = `${url.origin}/api/callback`;
+  const scope = String(env.GITHUB_OAUTH_SCOPE || 'public_repo').trim() || 'public_repo';
   const params = new URLSearchParams({
     client_id: clientId,
     redirect_uri: redirectUri,
-    scope: 'repo',
+    scope,
     state,
   });
 
