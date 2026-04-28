@@ -5,7 +5,7 @@
       "id": "jq01",
       "title": "二十四節氣",
       "theme": "傳統-書信",
-      "cover": "/assets/img/uploads/未命名設計-1-.png",
+      "cover": "/assets/img/uploads/劇本.png",
       "editorNote": "收錄從甲辰年開始",
       "posts": [
         "bwqm",
@@ -23,9 +23,9 @@
     },
     {
       "id": "2026Q1",
-      "title": "2026 第一刊",
+      "title": "2026 一刊",
       "theme": "隨記",
-      "cover": "/assets/img/uploads/未命名設計.png",
+      "cover": "/assets/img/uploads/劇本-2-.png",
       "publishDate": "2026-02-01",
       "editorNote": "第一期時間為2025年12月-2026年4月",
       "posts": [
@@ -35,12 +35,12 @@
       ]
     },
     {
-      "publishDate": "2026-02-11",
+      "publishDate": "1924-01-01",
       "id": "opera",
       "title": "京劇",
       "theme": "傳統",
-      "cover": "/assets/img/uploads/京劇.png",
-      "editorNote": "收錄京劇劇本、教學、伴奏等",
+      "cover": "/assets/img/uploads/劇本-1-.png",
+      "editorNote": "收錄京劇劇本等",
       "posts": [
         "hsl",
         "cgm",
