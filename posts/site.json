@@ -4,6 +4,7 @@
   "issueExpandLabel": "展開本期詳情",
   "moreReadingTitle": "更多閱讀",
   "issueEmptyText": "暫無文章",
+  "homeHeroImage": "/assets/img/uploads/程派—春閨夢-3-.png",
   "nav": [
     {
       "label": "首頁",
@@ -32,7 +33,6 @@
   "issueReadLabel": "打開本期首篇",
   "latestIntro": "查看最新",
   "homeFeaturedIssueId": "jq01",
-  "homeHeroImage": "",
   "footerText": "© 2026 CRIVU · 本站部分資訊來源於網絡",
   "homeHeroCreditLine1": "文章內容或許會出錯，請注意辨別",
   "city": "China",
