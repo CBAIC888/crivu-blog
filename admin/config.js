@@ -22,6 +22,9 @@ window.CMS_CONFIG = {
     {
       name: 'posts',
       label: '文章',
+      sortable_fields: ['commit_date', 'commit_author'],
+      view_filters: [],
+      view_groups: [],
       files: [
         {
           name: 'posts',
@@ -63,6 +66,9 @@ window.CMS_CONFIG = {
     {
       name: 'issues',
       label: '期刊',
+      sortable_fields: ['commit_date', 'commit_author'],
+      view_filters: [],
+      view_groups: [],
       files: [
         {
           name: 'issues',
@@ -100,6 +106,9 @@ window.CMS_CONFIG = {
     {
       name: 'site',
       label: '站點設定',
+      sortable_fields: ['commit_date', 'commit_author'],
+      view_filters: [],
+      view_groups: [],
       files: [
         {
           name: 'site',

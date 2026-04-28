@@ -19,6 +19,9 @@ publish_mode: editorial_workflow
 collections:
   - name: "posts"
     label: "文章"
+    sortable_fields: ["commit_date", "commit_author"]
+    view_filters: []
+    view_groups: []
     files:
       - name: "posts"
         label: "文章列表"
@@ -50,6 +53,9 @@ collections:
 
   - name: "issues"
     label: "期刊"
+    sortable_fields: ["commit_date", "commit_author"]
+    view_filters: []
+    view_groups: []
     files:
       - name: "issues"
         label: "期刊列表"
@@ -77,6 +83,9 @@ collections:
 
   - name: "site"
     label: "站點設定"
+    sortable_fields: ["commit_date", "commit_author"]
+    view_filters: []
+    view_groups: []
     files:
       - name: "site"
         label: "站點資訊"
