@@ -1,4 +1,5 @@
 # 後台目前改由 /admin/config.js 手動初始化，以避開 CSP 對 YAML 載入流程的 unsafe-eval 限制；此檔請與 config.js 保持同步。
+# 注意：config.js 使用 window.DECAP_CMS_CONFIG，不能用 window.CMS_CONFIG，否則 Decap 會跳過 normalize/defaults 流程。
 backend:
   name: github
   repo: CBAIC888/crivu-blog
@@ -20,8 +21,6 @@ collections:
   - name: "posts"
     label: "文章"
     sortable_fields: ["commit_date", "commit_author"]
-    view_filters: []
-    view_groups: []
     files:
       - name: "posts"
         label: "文章列表"
@@ -54,8 +53,6 @@ collections:
   - name: "issues"
     label: "期刊"
     sortable_fields: ["commit_date", "commit_author"]
-    view_filters: []
-    view_groups: []
     files:
       - name: "issues"
         label: "期刊列表"
@@ -84,8 +81,6 @@ collections:
   - name: "site"
     label: "站點設定"
     sortable_fields: ["commit_date", "commit_author"]
-    view_filters: []
-    view_groups: []
     files:
       - name: "site"
         label: "站點資訊"

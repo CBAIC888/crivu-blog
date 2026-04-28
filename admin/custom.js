@@ -278,8 +278,16 @@
   );
 
   var boot = function () {
-    if (window.CMS_CONFIG) {
-      CMS.init({ config: window.CMS_CONFIG });
+    var config = window.DECAP_CMS_CONFIG || window.CMS_CONFIG;
+    if (config) {
+      if (window.CMS_CONFIG) {
+        try {
+          delete window.CMS_CONFIG;
+        } catch (err) {
+          window.CMS_CONFIG = undefined;
+        }
+      }
+      CMS.init({ config: config });
     }
     mountUploaderButton();
   };
