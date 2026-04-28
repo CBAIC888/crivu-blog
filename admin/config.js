@@ -1,0 +1,168 @@
+window.CMS_MANUAL_INIT = true;
+
+window.CMS_CONFIG = {
+  backend: {
+    name: 'github',
+    repo: 'CBAIC888/crivu-blog',
+    branch: 'main',
+    base_url: 'https://cbc688.com',
+    auth_endpoint: '/api/auth',
+    commit_messages: {
+      create: "content: create {{collection}} '{{slug}}'",
+      update: "content: update {{collection}} '{{slug}}'",
+      delete: "content: delete {{collection}} '{{slug}}'",
+      uploadMedia: "media: upload '{{path}}'",
+      deleteMedia: "media: delete '{{path}}'"
+    }
+  },
+  media_folder: 'assets/img/uploads',
+  public_folder: '/assets/img/uploads',
+  publish_mode: 'editorial_workflow',
+  collections: [
+    {
+      name: 'posts',
+      label: '文章',
+      files: [
+        {
+          name: 'posts',
+          label: '文章列表',
+          file: 'posts/posts.json',
+          format: 'json',
+          fields: [
+            {
+              label: '文章',
+              name: 'items',
+              widget: 'list',
+              label_singular: '文章',
+              summary: '{{fields.date}} · {{fields.title}}',
+              hint: '封面可上傳圖片，內文為 Markdown（支援圖片與音訊）。',
+              collapsed: true,
+              minimize_collapsed: true,
+              add_to_top: true,
+              fields: [
+                { label: '標題', name: 'title', widget: 'string' },
+                { label: '日期', name: 'date', widget: 'datetime', format: 'YYYY-MM-DD', time_format: false },
+                { label: '分類', name: 'category', widget: 'string' },
+                { label: '標籤', name: 'tags', widget: 'list', allow_add: true },
+                { label: '摘要', name: 'excerpt', widget: 'text' },
+                { label: '封面', name: 'cover', widget: 'image', required: false, hint: '建議 1600x1000（橫向）' },
+                { label: '期刊 ID', name: 'issue', widget: 'string', required: false, hint: '例如 2026Q1' },
+                { label: 'Slug', name: 'slug', widget: 'string', hint: '只用英文小寫、數字、-，例如 city-walk-notes' },
+                {
+                  label: '內文',
+                  name: 'body',
+                  widget: 'markdown',
+                  hint: '可在游標位置插入圖片/音訊元件（音訊可用右下角 Cloudflare 上傳按鈕）；建議文內圖 1200x800，直圖 1080x1350'
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      name: 'issues',
+      label: '期刊',
+      files: [
+        {
+          name: 'issues',
+          label: '期刊列表',
+          file: 'posts/issues.json',
+          format: 'json',
+          fields: [
+            {
+              label: '期刊',
+              name: 'issues',
+              widget: 'list',
+              summary: '{{fields.id}} · {{fields.title}}',
+              fields: [
+                { label: '期刊 ID', name: 'id', widget: 'string', hint: '例如 2026Q1' },
+                { label: '標題', name: 'title', widget: 'string' },
+                { label: '主題', name: 'theme', widget: 'string' },
+                { label: '封面', name: 'cover', widget: 'image', required: false, hint: '建議 1400x900（期刊卡面）' },
+                { label: '發布日期', name: 'publishDate', widget: 'datetime', format: 'YYYY-MM-DD', time_format: false },
+                { label: '編者語', name: 'editorNote', widget: 'text' },
+                {
+                  label: '收錄文章 Slug',
+                  name: 'posts',
+                  widget: 'list',
+                  allow_add: true,
+                  collapsed: false,
+                  field: { label: '文章 Slug', name: 'slug', widget: 'string' },
+                  hint: '直接輸入文章 slug（例如 city-walk-notes）'
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      name: 'site',
+      label: '站點設定',
+      files: [
+        {
+          name: 'site',
+          label: '站點資訊',
+          file: 'posts/site.json',
+          format: 'json',
+          fields: [
+            { label: '站名', name: 'siteName', widget: 'string' },
+            {
+              label: '導航',
+              name: 'nav',
+              widget: 'list',
+              required: false,
+              summary: '{{fields.label}} → {{fields.href}}',
+              fields: [
+                { label: '名稱', name: 'label', widget: 'string' },
+                { label: '連結', name: 'href', widget: 'string' }
+              ]
+            },
+            { label: '首頁小標', name: 'homeKicker', widget: 'string' },
+            { label: '首頁主標', name: 'homeTitle', widget: 'string' },
+            { label: '首頁副標', name: 'homeSubtitle', widget: 'text' },
+            { label: '首頁按鈕文字', name: 'homeLatestButtonText', widget: 'string', required: false },
+            { label: '首頁期刊小標', name: 'homeIssueKicker', widget: 'string', required: false },
+            { label: '首頁焦點期刊 ID', name: 'homeFeaturedIssueId', widget: 'string', required: false, hint: '不填則使用第一本合適的期刊；例如 jq01' },
+            { label: '首頁底部小字 1', name: 'homeHeroCreditLine1', widget: 'string', required: false },
+            { label: '首頁底部小字 2', name: 'homeHeroCreditLine2', widget: 'string', required: false },
+            { label: '最新文章標題', name: 'latestTitle', widget: 'string' },
+            { label: '首頁文章區說明', name: 'latestIntro', widget: 'text', required: false },
+            { label: '文章頁標題', name: 'articlesPageTitle', widget: 'string', required: false },
+            { label: '文章頁說明', name: 'articlesPageIntro', widget: 'text', required: false },
+            { label: '期刊頁標題', name: 'issuesPageTitle', widget: 'string', required: false },
+            { label: '期刊頁說明', name: 'issuesPageIntro', widget: 'text', required: false },
+            { label: '搜尋框提示文字', name: 'searchPlaceholder', widget: 'string', required: false },
+            { label: '首頁卡片欄數（桌面）', name: 'homeCardsDesktop', widget: 'number', value_type: 'int', required: false, min: 1, max: 4 },
+            { label: '文章頁卡片欄數（桌面）', name: 'articleCardsDesktop', widget: 'number', value_type: 'int', required: false, min: 1, max: 4 },
+            { label: '卡片最多顯示標籤數', name: 'maxTagsPerCard', widget: 'number', value_type: 'int', required: false, min: 1, max: 10 },
+            { label: '更多閱讀標題', name: 'moreReadingTitle', widget: 'string', required: false },
+            { label: '更多閱讀數量', name: 'moreReadingLimit', widget: 'number', value_type: 'int', required: false, min: 1, max: 12 },
+            { label: '全部分類文字', name: 'allCategoryLabel', widget: 'string', required: false },
+            { label: '全部標籤文字', name: 'allTagLabel', widget: 'string', required: false },
+            { label: '期刊詳情按鈕文字', name: 'issueExpandLabel', widget: 'string', required: false },
+            { label: '期刊首篇按鈕文字', name: 'issueReadLabel', widget: 'string', required: false },
+            { label: '期刊文章頁按鈕文字', name: 'issueBrowseLabel', widget: 'string', required: false },
+            { label: '期刊空內容提示', name: 'issueEmptyText', widget: 'string', required: false },
+            { label: '期刊文章數模板', name: 'issueCountTemplate', widget: 'string', required: false, hint: '使用 {count} 表示數量，例如：收錄 {count} 篇文章' },
+            { label: '期刊詳情預設展開', name: 'issueDetailsOpen', widget: 'boolean', required: false, default: false },
+            { label: '底部文案', name: 'footerText', widget: 'string' },
+            { label: '關於頁副標', name: 'aboutKicker', widget: 'string', required: false },
+            { label: '關於標題', name: 'aboutTitle', widget: 'string' },
+            { label: '檔案資訊標題', name: 'aboutInfoTitle', widget: 'string', required: false },
+            { label: '關於段落 1', name: 'aboutIntro', widget: 'text' },
+            { label: '關於段落 2', name: 'aboutStyle', widget: 'text' },
+            { label: '城市', name: 'city', widget: 'string' },
+            { label: 'Email', name: 'email', widget: 'string' },
+            { label: '關於頁聯絡按鈕文字', name: 'aboutMailLabel', widget: 'string', required: false },
+            { label: '城市標籤', name: 'aboutCityLabel', widget: 'string', required: false },
+            { label: 'Email 標籤', name: 'aboutEmailLabel', widget: 'string', required: false },
+            { label: '主題標籤', name: 'aboutTopicsLabel', widget: 'string', required: false },
+            { label: '主題', name: 'topics', widget: 'string' }
+          ]
+        }
+      ]
+    }
+  ]
+};

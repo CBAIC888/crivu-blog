@@ -1,3 +1,4 @@
+# 後台目前改由 /admin/config.js 手動初始化，以避開 CSP 對 YAML 載入流程的 unsafe-eval 限制；此檔請與 config.js 保持同步。
 backend:
   name: github
   repo: CBAIC888/crivu-blog

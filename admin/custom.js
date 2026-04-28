@@ -278,6 +278,9 @@
   );
 
   var boot = function () {
+    if (window.CMS_CONFIG) {
+      CMS.init({ config: window.CMS_CONFIG });
+    }
     mountUploaderButton();
   };
   if (document.readyState === 'loading') {
