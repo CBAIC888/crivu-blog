@@ -1435,19 +1435,28 @@ select {
     font-size: 30px;
   }
 
-  .post-card,
+  .post-card {
+    grid-template-columns: 104px minmax(0, 1fr);
+    gap: 14px;
+    padding: 16px 0;
+  }
+
+  .post-card .image {
+    min-height: 84px;
+    aspect-ratio: 1 / 1;
+  }
+
   .issue-card {
     grid-template-columns: 1fr;
     gap: 16px;
   }
 
-  .post-card .image,
   .issue-cover {
     min-height: 228px;
   }
 
   .post-card h3 {
-    font-size: 24px;
+    font-size: 21px;
   }
 
   .issue-book-visual {
@@ -1586,13 +1595,21 @@ select {
     max-width: none;
   }
 
-  .post-card .image,
+  .post-card {
+    grid-template-columns: 92px minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .post-card .image {
+    min-height: 78px;
+  }
+
   .issue-cover {
     min-height: 176px;
   }
 
   .post-card h3 {
-    font-size: 22px;
+    font-size: 19px;
   }
 
   .post-cover {
