@@ -29,7 +29,12 @@ export async function onRequest(context) {
   });
 
   const secure = url.protocol === 'https:' ? '; Secure' : '';
-  const response = Response.redirect(`https://github.com/login/oauth/authorize?${params.toString()}`, 302);
+  const response = new Response(null, {
+    status: 302,
+    headers: {
+      Location: `https://github.com/login/oauth/authorize?${params.toString()}`,
+    },
+  });
   response.headers.set(
     'Set-Cookie',
     `oauth_state=${state}; HttpOnly; Path=/api/callback; SameSite=Lax; Max-Age=600${secure}`
