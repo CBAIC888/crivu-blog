@@ -1,19 +1,6 @@
 {
   "issues": [
     {
-      "id": "2026Q1",
-      "title": "2026 第一刊",
-      "theme": "隨記",
-      "cover": "/assets/img/uploads/未命名設計.png",
-      "publishDate": "2026-02-01",
-      "editorNote": "第一期時間為2025年12月-2026年4月",
-      "posts": [
-        "tuise-zhesi",
-        "bei-suiji",
-        "xinfu"
-      ]
-    },
-    {
       "publishDate": "2026-02-11",
       "id": "jq01",
       "title": "二十四節氣",
@@ -21,6 +8,7 @@
       "cover": "/assets/img/uploads/未命名設計-1-.png",
       "editorNote": "收錄從甲辰年開始",
       "posts": [
+        "bwqm",
         "bwcf",
         "bwjz",
         "ysjz",
@@ -31,6 +19,19 @@
         "jcdz",
         "jcdx",
         "jcxx"
+      ]
+    },
+    {
+      "id": "2026Q1",
+      "title": "2026 第一刊",
+      "theme": "隨記",
+      "cover": "/assets/img/uploads/未命名設計.png",
+      "publishDate": "2026-02-01",
+      "editorNote": "第一期時間為2025年12月-2026年4月",
+      "posts": [
+        "tuise-zhesi",
+        "bei-suiji",
+        "xinfu"
       ]
     },
     {
