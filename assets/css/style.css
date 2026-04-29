@@ -911,6 +911,25 @@ select:focus {
   background: transparent;
 }
 
+.post-image {
+  margin: 28px 0;
+  display: grid;
+  gap: 10px;
+}
+
+.post-image img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--line);
+}
+
+.post-image figcaption {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
 .post-audio-title {
   margin-bottom: 10px;
   font-size: 13px;

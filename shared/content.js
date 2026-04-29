@@ -155,6 +155,14 @@ export const simpleMarkdown = (raw, options = {}) => {
     return `<figure class="post-audio">${titleHtml}<audio controls preload="metadata" src="${escapeHtml(safeSrc)}"></audio>${captionHtml}</figure>`;
   };
 
+  const renderImageBlock = (imageSrc, altText) => {
+    const safeSrc = sanitizeUrl(imageSrc, { allowHash: false, baseOrigin });
+    if (safeSrc === '#') return '';
+    const safeAlt = escapeHtml(altText || '');
+    const captionHtml = safeAlt ? `<figcaption>${safeAlt}</figcaption>` : '';
+    return `<figure class="post-image"><img src="${escapeHtml(safeSrc)}" alt="${safeAlt}" loading="lazy" />${captionHtml}</figure>`;
+  };
+
   for (let i = 0; i < lines.length; i += 1) {
     const line = lines[i];
     const trimmed = line.trim();
@@ -181,6 +189,17 @@ export const simpleMarkdown = (raw, options = {}) => {
         i += captionMatch ? 2 : 1;
         continue;
       }
+    }
+
+    const imageMatch = trimmed.match(/^!\[(.*?)\]\((.*?)\)$/);
+    if (imageMatch) {
+      const blockHtml = renderImageBlock(imageMatch[2], imageMatch[1]);
+      if (blockHtml) {
+        flushParagraph();
+        closeList();
+        out.push(blockHtml);
+      }
+      continue;
     }
 
     if (/^###\s+/.test(trimmed)) {
