@@ -71,7 +71,7 @@ const renderPage = ({ currentPath, description, footerText, moreHtml, origin, po
   <title>${escapeHtml(title)}</title>
   <meta name="description" content="${escapeHtml(description)}" />
   <link rel="canonical" href="${escapeHtml(canonicalUrl)}" />
-  <link rel="stylesheet" href="/assets/css/style.css?v=20260428ui15" />
+  <link rel="stylesheet" href="/assets/css/style.css?v=20260429ui16" />
   <link rel="icon" href="/assets/img/favicon.png" type="image/png" />
 </head>
 <body class="page-post">
@@ -118,7 +118,7 @@ const renderPage = ({ currentPath, description, footerText, moreHtml, origin, po
     <div id="siteFooterText">${escapeHtml(footer)}</div>
   </footer>
 
-  <script src="/assets/js/post.js?v=20260429ui01" type="module"></script>
+  <script src="/assets/js/post.js?v=20260429ui02" type="module"></script>
 </body>
 </html>`;
 };
@@ -134,7 +134,7 @@ const renderNotFound = ({ currentPath, origin, site }) => {
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>文章未找到 · ${escapeHtml(siteName)}</title>
   <meta name="description" content="找不到你要查看的文章。" />
-  <link rel="stylesheet" href="/assets/css/style.css?v=20260428ui15" />
+  <link rel="stylesheet" href="/assets/css/style.css?v=20260429ui16" />
 </head>
 <body>
   <header class="site-header">
