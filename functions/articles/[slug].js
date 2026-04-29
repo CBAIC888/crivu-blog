@@ -72,7 +72,7 @@ const renderPage = ({ currentPath, description, footerText, moreHtml, origin, po
   <meta name="description" content="${escapeHtml(description)}" />
   <link rel="canonical" href="${escapeHtml(canonicalUrl)}" />
   <link rel="stylesheet" href="/assets/css/style.css?v=20260428ui15" />
-  <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml" />
+  <link rel="icon" href="/assets/img/favicon.png" type="image/png" />
 </head>
 <body class="page-post">
   <div class="progress" id="readProgress"></div>
