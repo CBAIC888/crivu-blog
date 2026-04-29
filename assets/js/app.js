@@ -183,9 +183,9 @@ const applyHomeFeature = async () => {
       ? state.posts.find((post) => featuredIssue.posts.includes(post.slug))
       : null;
 
-  const backdrop = qs('#homeHeroBackdrop');
+  const backdropImage = qs('#homeHeroBackdropImage');
   const issueLink = qs('#homeIssueLink');
-  const issueCover = qs('#homeIssueCover');
+  const issueCoverImage = qs('#homeIssueCoverImage');
   const issueTitle = qs('#homeIssueTitle');
   const issueMeta = qs('#homeIssueMeta');
   const heroNote = qs('#homeHeroNote');
@@ -196,13 +196,11 @@ const applyHomeFeature = async () => {
   const backgroundImage = safeCoverUrl(state.site.homeHeroImage || getFeaturedPaletteSource(state.posts, state.issues, undefined));
   const coverImage = safeCoverUrl((featuredIssue && featuredIssue.cover) || backgroundImage);
 
-  if (backdrop) {
-    backdrop.setAttribute('data-bg', backgroundImage);
-    backdrop.dataset.bgLoaded = '0';
+  if (backdropImage) {
+    backdropImage.setAttribute('src', backgroundImage);
   }
-  if (issueCover) {
-    issueCover.setAttribute('data-bg', coverImage);
-    issueCover.dataset.bgLoaded = '0';
+  if (issueCoverImage) {
+    issueCoverImage.setAttribute('src', coverImage);
   }
   if (issueLink) {
     issueLink.setAttribute('href', '/issues.html');
@@ -236,7 +234,6 @@ const applyHomeFeature = async () => {
   }
 
   await applyAdaptivePalette(backgroundImage);
-  initLazyBackgrounds(hero);
   return backgroundImage;
 };
 
@@ -346,7 +343,7 @@ const renderCard = (post) => {
   ].filter(Boolean);
   return `
     <article class="post-card">
-      <a class="image lazy-bg" href="${escapeHtml(safeLink)}" data-bg="${escapeHtml(cover)}"></a>
+      <a class="image" href="${escapeHtml(safeLink)}"><img src="${escapeHtml(cover)}" alt="${escapeHtml(post.title || '')}" loading="lazy" /></a>
       <div class="content">
         <div class="card-meta">${metaBits.join('')}</div>
         <h3><a href="${escapeHtml(safeLink)}">${escapeHtml(post.title)}</a></h3>
@@ -359,7 +356,6 @@ const renderCard = (post) => {
 const renderGrid = (el, posts) => {
   if (!el) return;
   el.innerHTML = posts.map(renderCard).join('');
-  initLazyBackgrounds(el);
 };
 
 const matchesSearch = (post, query) => {

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>CRIVU</title>
   <meta name="description" content="CRIVU" />
-  <link rel="stylesheet" href="/assets/css/style.css?v=20260429ui17" />
+  <link rel="stylesheet" href="/assets/css/style.css?v=20260429ui18" />
   <link rel="icon" href="/assets/img/favicon.png" type="image/png" />
 </head>
 <body class="home-page">
@@ -29,7 +29,9 @@
 
   <main>
     <section class="hero hero-magazine" id="homeHero">
-      <div class="hero-backdrop lazy-bg" id="homeHeroBackdrop" data-bg="/assets/img/uploads/程派—春閨夢-3-.png" style="background-image:url('/assets/img/uploads/程派—春閨夢-3-.png')"></div>
+      <div class="hero-backdrop" id="homeHeroBackdrop">
+        <img id="homeHeroBackdropImage" class="hero-backdrop-image" src="/assets/img/uploads/程派—春閨夢-3-.png" alt="" />
+      </div>
       <div class="hero-frame hero-frame--book-only">
         <div class="hero-copy">
           <p class="kicker" id="homeKicker" hidden></p>
@@ -44,7 +46,8 @@
           <a class="book-link" id="homeIssueLink" href="/issues.html" aria-label="查看推薦期刊">
             <div class="book-object">
               <div class="book-spine"></div>
-              <div class="book-cover lazy-bg" id="homeIssueCover" data-bg="/assets/img/uploads/未命名設計-1-.png" style="background-image:url('/assets/img/uploads/未命名設計-1-.png')">
+              <div class="book-cover" id="homeIssueCover">
+                <img id="homeIssueCoverImage" class="book-cover-image" src="/assets/img/uploads/未命名設計-1-.png" alt="" />
                 <div class="book-cover-copy">
                   <div class="book-kicker" id="homeIssueKicker">Featured Issue</div>
                   <h2 id="homeIssueTitle">二十四節氣</h2>
@@ -78,6 +81,6 @@
     <div id="siteFooterText">© 2026 CRIVU</div>
   </footer>
 
-  <script src="/assets/js/app.js?v=20260429ui03" type="module"></script>
+  <script src="/assets/js/app.js?v=20260429ui04" type="module"></script>
 </body>
 </html>

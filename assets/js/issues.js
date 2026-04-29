@@ -24,37 +24,6 @@ const setupHeaderOffset = () => {
   window.addEventListener('resize', apply);
 };
 
-const initLazyBackgrounds = (root = document) => {
-  const nodes = Array.from(root.querySelectorAll('[data-bg]'));
-  if (nodes.length === 0) return;
-
-  const applyBg = (node) => {
-    if (node.dataset.bgLoaded === '1') return;
-    const src = node.getAttribute('data-bg');
-    if (!src) return;
-    node.style.backgroundImage = `url('${safeCoverUrl(src)}')`;
-    node.dataset.bgLoaded = '1';
-  };
-
-  if (!('IntersectionObserver' in window)) {
-    nodes.forEach(applyBg);
-    return;
-  }
-
-  const io = new IntersectionObserver(
-    (entries, observer) => {
-      entries.forEach((entry) => {
-        if (!entry.isIntersecting) return;
-        applyBg(entry.target);
-        observer.unobserve(entry.target);
-      });
-    },
-    { rootMargin: '280px 0px' }
-  );
-
-  nodes.forEach((node) => io.observe(node));
-};
-
 const setupMobileSearch = () => {
   const btn = qs('#mobileSearchBtn');
   const header = qs('.site-header');
@@ -121,8 +90,11 @@ const setupSearch = (posts) => {
       .map(
         (p) => `
           <a class="search-item" href="${escapeHtml(articlePath(p.slug))}">
-            <span class="search-item-title">${escapeHtml(p.title)}</span>
-            <small>${escapeHtml(buildSearchSnippet(p, query, 92))}</small>
+            <span class="search-item-main">
+              <span class="search-item-title">${escapeHtml(p.title)}</span>
+              <small class="search-item-meta">${escapeHtml([p.category, p.issue, p.date].filter(Boolean).join(' · '))}</small>
+            </span>
+            <small class="search-item-snippet">${escapeHtml(buildSearchSnippet(p, query, 68))}</small>
           </a>
         `
       )
@@ -186,7 +158,8 @@ const renderIssue = (issue, posts) => {
         <a class="issue-book-link" href="${escapeHtml(leadHref)}" aria-label="${escapeHtml(issue.title)}">
           <div class="issue-book-object">
             <div class="issue-book-spine"></div>
-            <div class="issue-cover lazy-bg" data-bg="${escapeHtml(cover)}">
+            <div class="issue-cover">
+              <img class="issue-cover-image" src="${escapeHtml(cover)}" alt="${escapeHtml(issue.title)}" loading="lazy" />
               <div class="issue-cover-copy">
                 <div class="book-kicker">Issue ${escapeHtml(issue.id)}</div>
                 <h2>${escapeHtml(issue.title)}</h2>
@@ -254,7 +227,6 @@ const init = async () => {
   const grid = qs('#issuesGrid');
   if (grid) {
     grid.innerHTML = issues.map((issue) => renderIssue(issue, posts)).join('');
-    initLazyBackgrounds(grid);
   }
 
   setupSearch(posts);
