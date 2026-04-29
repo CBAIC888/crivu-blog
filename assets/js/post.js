@@ -31,8 +31,11 @@ const setupSearch = (posts) => {
       .map(
         (post) => `
           <a class="search-item" href="${escapeHtml(articlePath(post.slug))}">
-            <span class="search-item-title">${escapeHtml(post.title)}</span>
-            <small>${escapeHtml(buildSearchSnippet(post, query, 92))}</small>
+            <span class="search-item-main">
+              <span class="search-item-title">${escapeHtml(post.title)}</span>
+              <small class="search-item-meta">${escapeHtml([post.category, post.issue, post.date].filter(Boolean).join(' · '))}</small>
+            </span>
+            <small class="search-item-snippet">${escapeHtml(buildSearchSnippet(post, query, 68))}</small>
           </a>
         `
       )

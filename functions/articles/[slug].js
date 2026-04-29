@@ -34,16 +34,18 @@ const toInt = (value, fallback, min, max) => {
 };
 
 const renderMoreItem = (post) => {
-  const cover = safeCoverUrl(post.cover);
-  const issue = post.issue ? `<span class="issue-pill">${escapeHtml(post.issue)}</span>` : '';
-  const date = post.date ? `<small>${escapeHtml(post.date)}</small>` : '';
   const safeLink = articlePath(post.slug);
-  const excerpt = buildDescription(post, 120);
+  const excerpt = buildDescription(post, 64);
+  const metaBits = [
+    post.category ? `<span class="pill">${escapeHtml(post.category || '')}</span>` : '',
+    post.issue ? `<span class="issue-pill">${escapeHtml(post.issue)}</span>` : '',
+    ...(Array.isArray(post.tags) ? post.tags.slice(0, 2).map((tag) => `<span class="tag">${escapeHtml(tag)}</span>`) : []),
+    post.date ? `<small>${escapeHtml(post.date)}</small>` : '',
+  ].filter(Boolean);
   return `
     <a class="more-item" href="${escapeHtml(safeLink)}">
-      <div class="more-thumb" style="background-image:url('${escapeHtml(cover)}')"></div>
       <div class="more-info">
-        <div class="more-meta"><span class="pill">${escapeHtml(post.category || '')}</span>${issue}${date}</div>
+        <div class="more-meta">${metaBits.join('')}</div>
         <h3>${escapeHtml(post.title || '')}</h3>
         ${excerpt ? `<p>${escapeHtml(excerpt)}</p>` : ''}
       </div>
@@ -71,7 +73,7 @@ const renderPage = ({ currentPath, description, footerText, moreHtml, origin, po
   <title>${escapeHtml(title)}</title>
   <meta name="description" content="${escapeHtml(description)}" />
   <link rel="canonical" href="${escapeHtml(canonicalUrl)}" />
-  <link rel="stylesheet" href="/assets/css/style.css?v=20260429ui16" />
+  <link rel="stylesheet" href="/assets/css/style.css?v=20260429ui17" />
   <link rel="icon" href="/assets/img/favicon.png" type="image/png" />
 </head>
 <body class="page-post">
@@ -118,7 +120,7 @@ const renderPage = ({ currentPath, description, footerText, moreHtml, origin, po
     <div id="siteFooterText">${escapeHtml(footer)}</div>
   </footer>
 
-  <script src="/assets/js/post.js?v=20260429ui02" type="module"></script>
+  <script src="/assets/js/post.js?v=20260429ui03" type="module"></script>
 </body>
 </html>`;
 };
@@ -134,7 +136,7 @@ const renderNotFound = ({ currentPath, origin, site }) => {
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>文章未找到 · ${escapeHtml(siteName)}</title>
   <meta name="description" content="找不到你要查看的文章。" />
-  <link rel="stylesheet" href="/assets/css/style.css?v=20260429ui16" />
+  <link rel="stylesheet" href="/assets/css/style.css?v=20260429ui17" />
 </head>
 <body>
   <header class="site-header">

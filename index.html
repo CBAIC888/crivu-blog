@@ -3,9 +3,9 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>CRIVU · 時序與戲曲</title>
-  <meta name="description" content="記錄節氣流轉、戲曲聆聽與日常思緒，並以期刊與文章的方式整理。" />
-  <link rel="stylesheet" href="/assets/css/style.css?v=20260429ui16" />
+  <title>CRIVU</title>
+  <meta name="description" content="CRIVU" />
+  <link rel="stylesheet" href="/assets/css/style.css?v=20260429ui17" />
   <link rel="icon" href="/assets/img/favicon.png" type="image/png" />
 </head>
 <body class="home-page">
@@ -30,11 +30,11 @@
   <main>
     <section class="hero hero-magazine" id="homeHero">
       <div class="hero-backdrop lazy-bg" id="homeHeroBackdrop" data-bg="/assets/img/uploads/程派—春閨夢-3-.png" style="background-image:url('/assets/img/uploads/程派—春閨夢-3-.png')"></div>
-      <div class="hero-frame">
+      <div class="hero-frame hero-frame--book-only">
         <div class="hero-copy">
-          <p class="kicker" id="homeKicker">二十四節氣</p>
-          <h1 id="homeTitle">時序裡的文字與戲曲</h1>
-          <p class="subtitle" id="homeSubtitle">記下節氣流轉、戲曲聆聽與日常思緒，以期刊與文章的方式慢慢整理。</p>
+          <p class="kicker" id="homeKicker" hidden></p>
+          <h1 id="homeTitle" hidden></h1>
+          <p class="subtitle" id="homeSubtitle" hidden></p>
           <div class="hero-cta">
             <a class="btn" id="homeLatestButton" href="#latest">最新文章</a>
           </div>
@@ -56,10 +56,7 @@
           </a>
         </aside>
       </div>
-      <div class="hero-credit" id="homeHeroCredit">
-        <span>記錄節氣、戲曲與日常思緒</span>
-        <span>所有內容按期刊與文章兩條線索整理</span>
-      </div>
+      <div class="hero-credit" id="homeHeroCredit" hidden></div>
     </section>
 
     <section id="latest" class="latest latest-list">
@@ -81,6 +78,6 @@
     <div id="siteFooterText">© 2026 CRIVU</div>
   </footer>
 
-  <script src="/assets/js/app.js?v=20260429ui02" type="module"></script>
+  <script src="/assets/js/app.js?v=20260429ui03" type="module"></script>
 </body>
 </html>

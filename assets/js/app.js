@@ -32,6 +32,15 @@ const setText = (sel, value) => {
   if (el && value !== undefined && value !== null && value !== '') el.textContent = value;
 };
 
+const setOptionalText = (sel, value) => {
+  const el = qs(sel);
+  if (!el) return '';
+  const text = normalizeText(value, { allowPlaceholder: true });
+  el.hidden = !text;
+  if (text) el.textContent = text;
+  return text;
+};
+
 const toInt = (value, fallback, min, max) => {
   const num = Number.parseInt(value, 10);
   if (Number.isNaN(num)) return fallback;
@@ -79,9 +88,9 @@ const applySiteSettings = () => {
     if (site.footerText) el.textContent = site.footerText;
   });
 
-  setText('#homeKicker', site.homeKicker);
-  setText('#homeTitle', site.homeTitle);
-  setText('#homeSubtitle', site.homeSubtitle);
+  setOptionalText('#homeKicker', site.homeKicker);
+  setOptionalText('#homeTitle', site.homeTitle);
+  setOptionalText('#homeSubtitle', site.homeSubtitle);
   setText('#homeLatestButton', site.homeLatestButtonText);
   setText('#homeIssueKicker', site.homeIssueKicker);
   setText('#latestTitle', site.latestTitle);
@@ -181,6 +190,8 @@ const applyHomeFeature = async () => {
   const issueMeta = qs('#homeIssueMeta');
   const heroNote = qs('#homeHeroNote');
   const heroCredit = qs('#homeHeroCredit');
+  const heroFrame = hero.querySelector('.hero-frame');
+  const heroCopy = hero.querySelector('.hero-copy');
 
   const backgroundImage = safeCoverUrl(state.site.homeHeroImage || getFeaturedPaletteSource(state.posts, state.issues, undefined));
   const coverImage = safeCoverUrl((featuredIssue && featuredIssue.cover) || backgroundImage);
@@ -207,21 +218,21 @@ const applyHomeFeature = async () => {
     heroNote.hidden = true;
   }
   if (heroCredit) {
-    const creditLine1 =
-      state.site.homeHeroCreditLine1 ||
-      (featuredPost ? `本期預覽：${featuredPost.title}${featuredPost.category ? ` · ${featuredPost.category}` : ''}` : '本期預覽');
-    const creditLine2 = state.site.homeHeroCreditLine2 || '背景圖目前使用站內素材，後續可替換為你提供的定尺寸圖片';
-    heroCredit.innerHTML = `<span>${escapeHtml(creditLine1)}</span><span>${escapeHtml(creditLine2)}</span>`;
+    const creditLine1 = normalizeText(state.site.homeHeroCreditLine1, { allowPlaceholder: true });
+    const creditLine2 = normalizeText(state.site.homeHeroCreditLine2, { allowPlaceholder: true });
+    heroCredit.hidden = !(creditLine1 || creditLine2);
+    heroCredit.innerHTML = [creditLine1, creditLine2].filter(Boolean).map((line) => `<span>${escapeHtml(line)}</span>`).join('');
   }
 
-  if (featuredIssue || state.site.homeKicker || state.site.homeTitle || state.site.homeSubtitle) {
-    setText('#homeKicker', state.site.homeKicker || (featuredIssue && featuredIssue.id) || '新刊');
-    setText('#homeTitle', state.site.homeTitle || (featuredIssue && featuredIssue.title) || '首頁');
-    setText(
-      '#homeSubtitle',
-      state.site.homeSubtitle ||
-        `${(featuredIssue && featuredIssue.theme) || ''}${featuredIssue && featuredIssue.theme ? '，' : ''}${featuredPost ? featuredPost.title : '循着时序更迭的脚步，于文字间细数四季风物。'}`
-    );
+  const kickerText = setOptionalText('#homeKicker', state.site.homeKicker);
+  const titleText = setOptionalText('#homeTitle', state.site.homeTitle);
+  const subtitleText = setOptionalText('#homeSubtitle', state.site.homeSubtitle);
+  const hasLeadCopy = Boolean(kickerText || titleText || subtitleText);
+  if (heroCopy) {
+    heroCopy.hidden = !hasLeadCopy;
+  }
+  if (heroFrame) {
+    heroFrame.classList.toggle('hero-frame--book-only', !hasLeadCopy);
   }
 
   await applyAdaptivePalette(backgroundImage);
@@ -323,20 +334,23 @@ const setupMobileMenu = () => {
 
 const renderCard = (post) => {
   const cover = safeCoverUrl(post.cover);
-  const issue = post.issue ? `<span class="issue-pill">${escapeHtml(post.issue)}</span>` : '';
-  const date = post.date ? `<small>${escapeHtml(post.date)}</small>` : '';
   const maxTags = toInt(state.site.maxTagsPerCard, 3, 1, 10);
   const safeTags = Array.isArray(post.tags) ? post.tags.slice(0, maxTags).map((tag) => escapeHtml(tag)) : [];
   const safeLink = articlePath(post.slug);
-  const excerpt = buildDescription(post, 120);
+  const excerpt = buildDescription(post, 72);
+  const metaBits = [
+    post.category ? `<span class="pill">${escapeHtml(post.category)}</span>` : '',
+    post.issue ? `<span class="issue-pill">${escapeHtml(post.issue)}</span>` : '',
+    ...safeTags.map((tag) => `<span class="tag">${tag}</span>`),
+    post.date ? `<small>${escapeHtml(post.date)}</small>` : '',
+  ].filter(Boolean);
   return `
     <article class="post-card">
       <a class="image lazy-bg" href="${escapeHtml(safeLink)}" data-bg="${escapeHtml(cover)}"></a>
       <div class="content">
-        <div class="card-meta"><span class="pill">${escapeHtml(post.category)}</span>${issue}${date}</div>
+        <div class="card-meta">${metaBits.join('')}</div>
         <h3><a href="${escapeHtml(safeLink)}">${escapeHtml(post.title)}</a></h3>
         ${excerpt ? `<p>${escapeHtml(excerpt)}</p>` : ''}
-        <div class="tag-row">${safeTags.map((t) => `<span class="tag">${t}</span>`).join('')}</div>
       </div>
     </article>
   `;
@@ -382,8 +396,11 @@ const setupSearch = () => {
       .map(
         (p) => `
           <a class="search-item" href="${escapeHtml(articlePath(p.slug))}">
-            <span class="search-item-title">${escapeHtml(p.title)}</span>
-            <small>${escapeHtml(buildSearchSnippet(p, query, 92))}</small>
+            <span class="search-item-main">
+              <span class="search-item-title">${escapeHtml(p.title)}</span>
+              <small class="search-item-meta">${escapeHtml([p.category, p.issue, p.date].filter(Boolean).join(' · '))}</small>
+            </span>
+            <small class="search-item-snippet">${escapeHtml(buildSearchSnippet(p, query, 68))}</small>
           </a>
         `
       )
