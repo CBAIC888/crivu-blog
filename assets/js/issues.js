@@ -1,4 +1,4 @@
-import { articlePath, escapeHtml, renderNavItems, safeCoverUrl } from '../../shared/content.js';
+import { articlePath, buildSearchSnippet, buildSearchText, escapeHtml, renderNavItems, safeCoverUrl } from '../../shared/content.js';
 
 const qs = (sel) => document.querySelector(sel);
 
@@ -96,14 +96,7 @@ const setupMobileMenu = () => {
 
 const matchesSearch = (post, query) => {
   if (!query) return true;
-  const q = query.toLowerCase();
-  const tags = Array.isArray(post.tags) ? post.tags : [];
-  return (
-    String(post.title || '').toLowerCase().includes(q) ||
-    String(post.excerpt || '').toLowerCase().includes(q) ||
-    String(post.category || '').toLowerCase().includes(q) ||
-    tags.some((t) => String(t).toLowerCase().includes(q))
-  );
+  return buildSearchText(post).toLowerCase().includes(query.toLowerCase());
 };
 
 const setupSearch = (posts) => {
@@ -128,8 +121,8 @@ const setupSearch = (posts) => {
       .map(
         (p) => `
           <a class="search-item" href="${escapeHtml(articlePath(p.slug))}">
-            ${escapeHtml(p.title)}
-            <small>${escapeHtml(p.category)} · ${escapeHtml((Array.isArray(p.tags) ? p.tags : []).join(' / '))}</small>
+            <span class="search-item-title">${escapeHtml(p.title)}</span>
+            <small>${escapeHtml(buildSearchSnippet(p, query, 92))}</small>
           </a>
         `
       )
@@ -157,7 +150,7 @@ const setupSearch = (posts) => {
 
 const renderIssue = (issue, posts) => {
   const cover = safeCoverUrl(issue.cover);
-  const expandLabel = escapeHtml(state.site.issueExpandLabel || '展開本期詳情');
+  const expandLabel = escapeHtml(state.site.issueExpandLabel || '查看收錄文章');
   const emptyText = escapeHtml(state.site.issueEmptyText || '暫無文章');
   const countTemplate = escapeHtml(state.site.issueCountTemplate || '收錄 {count} 篇文章');
   const countText = countTemplate.replace('{count}', String((issue.posts || []).length));
@@ -185,8 +178,7 @@ const renderIssue = (issue, posts) => {
     .join('');
   const leadPost = linkedPosts.map((slug) => posts.find((p) => p.slug === slug)).find(Boolean);
   const leadHref = leadPost ? articlePath(leadPost.slug) : '/articles.html';
-  const leadLabel = escapeHtml(state.site.issueReadLabel || '打開本期首篇');
-  const browseLabel = escapeHtml(state.site.issueBrowseLabel || '瀏覽全部文章');
+  const leadLabel = escapeHtml(state.site.issueReadLabel || '閱讀首篇');
 
   return `
     <article class="issue-card">
@@ -216,7 +208,6 @@ const renderIssue = (issue, posts) => {
         <div class="issue-note">${escapeHtml(issue.editorNote || '')}</div>
         <div class="issue-actions">
           <a class="issue-link" href="${escapeHtml(leadHref)}">${leadLabel}</a>
-          <a class="issue-link muted" href="/articles.html">${browseLabel}</a>
         </div>
         <details class="issue-expand"${detailsOpen}>
           <summary>${expandLabel}</summary>

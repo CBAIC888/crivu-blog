@@ -2,6 +2,8 @@ import { applyAdaptivePalette, getFeaturedPaletteSource } from './palette.js';
 import {
   articlePath,
   buildDescription,
+  buildSearchSnippet,
+  buildSearchText,
   escapeHtml,
   isValidEmail,
   normalizeText,
@@ -91,11 +93,23 @@ const applySiteSettings = () => {
   setText('#aboutKicker', site.aboutKicker);
   setText('#aboutTitle', site.aboutTitle);
   setText('#aboutIntro', site.aboutIntro);
-  setText('#aboutStyle', site.aboutStyle);
-  setText('#aboutInfoTitle', site.aboutInfoTitle);
   setText('#aboutMailLink', site.aboutMailLabel);
   setText('#aboutTopics', normalizeText(site.topics));
   setText('#aboutTopicsLabel', site.aboutTopicsLabel);
+
+  const aboutStyle = normalizeText(site.aboutStyle);
+  const aboutStyleEl = qs('#aboutStyle');
+  if (aboutStyleEl) {
+    aboutStyleEl.hidden = !aboutStyle;
+    if (aboutStyle) aboutStyleEl.textContent = aboutStyle;
+  }
+
+  const aboutInfoTitle = normalizeText(site.aboutInfoTitle);
+  const aboutInfoTitleEl = qs('#aboutInfoTitle');
+  if (aboutInfoTitleEl) {
+    aboutInfoTitleEl.hidden = !aboutInfoTitle;
+    if (aboutInfoTitle) aboutInfoTitleEl.textContent = aboutInfoTitle;
+  }
 
   const aboutCity = normalizeText(site.city);
   const aboutCityItem = qs('#aboutCityItem');
@@ -336,14 +350,7 @@ const renderGrid = (el, posts) => {
 
 const matchesSearch = (post, query) => {
   if (!query) return true;
-  const q = query.toLowerCase();
-  const tags = Array.isArray(post.tags) ? post.tags : [];
-  return (
-    String(post.title || '').toLowerCase().includes(q) ||
-    String(post.excerpt || '').toLowerCase().includes(q) ||
-    String(post.category || '').toLowerCase().includes(q) ||
-    tags.some((t) => String(t).toLowerCase().includes(q))
-  );
+  return buildSearchText(post).toLowerCase().includes(query.toLowerCase());
 };
 
 const setupSearch = () => {
@@ -375,8 +382,8 @@ const setupSearch = () => {
       .map(
         (p) => `
           <a class="search-item" href="${escapeHtml(articlePath(p.slug))}">
-            ${escapeHtml(p.title)}
-            <small>${escapeHtml(p.category)} · ${escapeHtml((Array.isArray(p.tags) ? p.tags : []).join(' / '))}</small>
+            <span class="search-item-title">${escapeHtml(p.title)}</span>
+            <small>${escapeHtml(buildSearchSnippet(p, query, 92))}</small>
           </a>
         `
       )

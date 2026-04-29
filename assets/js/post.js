@@ -1,4 +1,4 @@
-import { articlePath, escapeHtml, renderNavItems } from '../../shared/content.js';
+import { articlePath, buildSearchSnippet, buildSearchText, escapeHtml, renderNavItems } from '../../shared/content.js';
 
 const qs = (sel) => document.querySelector(sel);
 
@@ -9,14 +9,7 @@ const setupSearch = (posts) => {
 
   const matchesSearch = (post, query) => {
     if (!query) return true;
-    const q = query.toLowerCase();
-    const tags = Array.isArray(post.tags) ? post.tags : [];
-    return (
-      String(post.title || '').toLowerCase().includes(q) ||
-      String(post.excerpt || '').toLowerCase().includes(q) ||
-      String(post.category || '').toLowerCase().includes(q) ||
-      tags.some((tag) => String(tag).toLowerCase().includes(q))
-    );
+    return buildSearchText(post).toLowerCase().includes(query.toLowerCase());
   };
 
   const renderResults = () => {
@@ -38,8 +31,8 @@ const setupSearch = (posts) => {
       .map(
         (post) => `
           <a class="search-item" href="${escapeHtml(articlePath(post.slug))}">
-            ${escapeHtml(post.title)}
-            <small>${escapeHtml(post.category)} · ${escapeHtml((Array.isArray(post.tags) ? post.tags : []).join(' / '))}</small>
+            <span class="search-item-title">${escapeHtml(post.title)}</span>
+            <small>${escapeHtml(buildSearchSnippet(post, query, 92))}</small>
           </a>
         `
       )

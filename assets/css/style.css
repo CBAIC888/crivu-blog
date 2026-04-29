@@ -178,10 +178,10 @@ select {
 .search-results {
   position: absolute;
   top: calc(100% + 10px);
-  left: 0;
+  right: 0;
   display: none;
-  min-width: 100%;
-  width: min(420px, 90vw);
+  min-width: min(320px, 100%);
+  width: min(420px, calc(100vw - 24px));
   max-height: 320px;
   overflow: auto;
   padding: 6px;
@@ -189,6 +189,7 @@ select {
   border-radius: 18px;
   background: var(--surface-strong);
   box-shadow: var(--shadow);
+  z-index: 90;
 }
 
 .search-results.active {
@@ -203,6 +204,12 @@ select {
   transition: background 0.2s ease;
 }
 
+.search-item-title {
+  display: block;
+  font-size: 15px;
+  line-height: 1.4;
+}
+
 .search-item:hover {
   background: var(--surface-muted);
 }
@@ -212,6 +219,7 @@ select {
   margin-top: 4px;
   color: var(--muted);
   font-size: 12px;
+  line-height: 1.55;
 }
 
 .mobile-search-toggle,
@@ -658,22 +666,16 @@ select:focus {
   border-bottom: 1px solid var(--line);
 }
 
-.post-card:first-child {
-  border-top: 1px solid var(--line);
-}
-
 .post-card::before {
   counter-increment: post-entry;
   content: counter(post-entry, decimal-leading-zero);
   position: absolute;
   left: 0;
-  top: 0;
-  transform: translateY(-50%);
-  padding-right: 10px;
-  background: var(--bg);
+  top: 18px;
   color: var(--muted);
-  font-size: 11px;
-  letter-spacing: 0.16em;
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.08em;
 }
 
 .post-card .image {
@@ -801,7 +803,7 @@ select:focus {
 .post-meta {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 8px 14px;
   flex-wrap: wrap;
   padding-bottom: 14px;
   border-bottom: 1px solid var(--line);
@@ -818,6 +820,19 @@ select:focus {
 
 #postTags.tag-row {
   margin-top: 0;
+  gap: 12px;
+}
+
+.post-meta .pill,
+.post-meta .issue-pill,
+.post-meta .tag {
+  min-height: auto;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 12px;
+  letter-spacing: 0.08em;
 }
 
 .post-hero {
@@ -829,7 +844,7 @@ select:focus {
   margin: 0;
   max-width: 12ch;
   font-family: 'Iowan Old Style', 'Palatino Linotype', 'Noto Serif SC', 'Songti SC', serif;
-  font-size: clamp(42px, 5vw, 76px);
+  font-size: clamp(34px, 4.6vw, 60px);
   line-height: 0.96;
   letter-spacing: -0.045em;
 }
@@ -1191,17 +1206,19 @@ select:focus {
 }
 
 .issue-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   color: var(--ink);
   text-decoration: none;
-  font-size: 13px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font-size: 14px;
+  letter-spacing: 0.02em;
   border-bottom: 1px solid var(--line-strong);
   padding-bottom: 5px;
 }
 
-.issue-link.muted {
-  color: var(--muted);
+.issue-link::after {
+  content: '→';
 }
 
 .issue-expand {
@@ -1211,16 +1228,35 @@ select:focus {
 }
 
 .issue-expand summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   cursor: pointer;
   user-select: none;
-  color: var(--ink);
-  font-size: 13px;
-  letter-spacing: 0.08em;
+  color: var(--muted);
+  font-size: 12px;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
+}
+
+.issue-expand summary::-webkit-details-marker {
+  display: none;
+}
+
+.issue-expand summary::after {
+  content: '+';
+  color: var(--ink);
+  font-size: 18px;
+  line-height: 1;
+  letter-spacing: 0;
 }
 
 .issue-expand[open] summary {
   margin-bottom: 10px;
+}
+
+.issue-expand[open] summary::after {
+  content: '−';
 }
 
 .issue-posts {
@@ -1489,6 +1525,21 @@ select:focus {
     font-size: clamp(30px, 10vw, 48px);
   }
 
+  .home-page #homeTitle,
+  .home-page #homeSubtitle,
+  .home-page .hero-cta {
+    display: none;
+  }
+
+  .home-page .hero-copy {
+    max-width: none;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+    backdrop-filter: none;
+  }
+
   .hero-magazine {
     --hero-height: min(82vh, 760px);
     min-height: auto;
@@ -1524,6 +1575,10 @@ select:focus {
     padding: 16px 0;
   }
 
+  .post-card::before {
+    display: none;
+  }
+
   .post-card .image {
     min-height: 84px;
     aspect-ratio: 1 / 1;
@@ -1556,6 +1611,10 @@ select:focus {
 
   .post-cover {
     height: 280px;
+  }
+
+  .post-hero h1 {
+    font-size: clamp(28px, 10vw, 44px);
   }
 
   .post-body {
@@ -1644,6 +1703,11 @@ select:focus {
     min-width: 0;
   }
 
+  .site-header.mobile-search-open .search-results {
+    left: 0;
+    right: 0;
+  }
+
   .mobile-search-toggle,
   .mobile-menu-toggle {
     display: inline-flex;
@@ -1656,7 +1720,7 @@ select:focus {
   }
 
   .hero-frame {
-    padding: calc(var(--header-height) + 18px) 18px 88px;
+    padding: calc(var(--header-height) + 14px) 18px 52px;
   }
 
   .hero-copy .subtitle {

@@ -111,6 +111,53 @@ export const buildDescription = (post, maxLength = 140) => {
   return trimDescription(bodyText, maxLength);
 };
 
+export const buildSearchText = (post) => {
+  const tags = Array.isArray(post?.tags) ? post.tags.map((tag) => normalizeText(tag, { allowPlaceholder: true })) : [];
+  return collapseWhitespace(
+    [
+      normalizeText(post?.title, { allowPlaceholder: true }),
+      normalizeText(post?.excerpt, { allowPlaceholder: true }),
+      stripMarkdown(post?.body ?? ''),
+      normalizeText(post?.category, { allowPlaceholder: true }),
+      normalizeText(post?.issue, { allowPlaceholder: true }),
+      tags.join(' '),
+    ]
+      .filter(Boolean)
+      .join(' ')
+  );
+};
+
+const buildSnippetWindow = (text, query, maxLength) => {
+  const source = collapseWhitespace(text);
+  if (!source) return '';
+  if (!query) return trimDescription(source, maxLength);
+
+  const lower = source.toLowerCase();
+  const target = query.toLowerCase();
+  const at = lower.indexOf(target);
+  if (at === -1) return trimDescription(source, maxLength);
+
+  const radius = Math.max(18, Math.floor((maxLength - target.length) / 2));
+  const start = Math.max(0, at - radius);
+  const end = Math.min(source.length, at + target.length + radius);
+  const prefix = start > 0 ? '…' : '';
+  const suffix = end < source.length ? '…' : '';
+  return `${prefix}${source.slice(start, end).trim()}${suffix}`;
+};
+
+export const buildSearchSnippet = (post, query, maxLength = 88) => {
+  const normalizedQuery = normalizeText(query, { allowPlaceholder: true });
+  const candidates = [
+    normalizeText(post?.excerpt, { allowPlaceholder: true }),
+    stripMarkdown(post?.body ?? ''),
+    normalizeText(post?.title, { allowPlaceholder: true }),
+  ].filter(Boolean);
+
+  const matched = candidates.find((candidate) => candidate.toLowerCase().includes(normalizedQuery.toLowerCase()));
+  if (matched) return buildSnippetWindow(matched, normalizedQuery, maxLength);
+  return buildDescription(post, maxLength);
+};
+
 const inlineMarkdownLink = (label, href, baseOrigin) => {
   const safeHref = sanitizeUrl(href, { baseOrigin });
   return `<a href="${escapeHtml(safeHref)}" target="_blank" rel="noopener noreferrer nofollow">${escapeHtml(label)}</a>`;

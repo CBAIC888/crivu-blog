@@ -1,7 +1,7 @@
 {
   "aboutKicker": "About",
   "articlesPageIntro": "按時間順序閱讀全部文章。",
-  "issueExpandLabel": "展開本期詳情",
+  "issueExpandLabel": "查看收錄文章",
   "moreReadingTitle": "更多閱讀",
   "issueEmptyText": "暫無文章",
   "homeHeroImage": "/assets/img/uploads/img_0018.jpeg",
@@ -27,10 +27,10 @@
   "issuesPageIntro": "以期刊方式編排主題與收錄文章。",
   "moreReadingLimit": 12,
   "topics": "寫作、閱讀、戲曲、指南",
-  "aboutStyle": "這個網站以「雜誌風」為核心：高可讀的排版、強調內容的主視覺，以及清晰的分類與標籤。",
+  "aboutStyle": "",
   "aboutEmailLabel": "Email",
   "homeLatestButtonText": "最新文章",
-  "issueReadLabel": "打開本期首篇",
+  "issueReadLabel": "閱讀首篇",
   "latestIntro": "按時間展開近期更新。",
   "homeFeaturedIssueId": "jq01",
   "footerText": "© 2026 CRIVU",
@@ -58,6 +58,6 @@
   "allTagLabel": "全部標籤",
   "aboutCityLabel": "城市",
   "email": "",
-  "aboutInfoTitle": "檔案資訊",
+  "aboutInfoTitle": "",
   "aboutIntro": "我是CRIVU。這個網站是我的個人博客：把日常裡的靈感、技術實作、旅途見聞與閱讀思考等，整理成一期一期的內容。"
 }
