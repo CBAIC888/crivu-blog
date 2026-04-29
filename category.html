@@ -4,8 +4,9 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>分類 · CRIVU</title>
-  <meta name="description" content="文章分類" />
+  <meta name="description" content="按分類瀏覽 CRIVU 的全部文章。" />
   <link rel="stylesheet" href="/assets/css/style.css?v=20260428ui15" />
+  <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml" />
 </head>
 <body>
   <header class="site-header">
@@ -18,7 +19,7 @@
     </nav>
     <div class="header-actions">
       <div class="search-box">
-        <input id="searchInput" class="search-input" type="search" placeholder="搜尋文章 / 標籤 / 分類" />
+        <input id="searchInput" class="search-input" type="search" placeholder="搜尋" />
         <div id="searchResults" class="search-results"></div>
       </div>
       <button class="mobile-search-toggle" id="mobileSearchBtn" aria-label="搜尋">🔍</button>
@@ -29,16 +30,16 @@
   <main class="list-page">
     <section class="section-title">
       <h1>分類</h1>
-      <p>按分類瀏覽所有文章。</p>
+      <p>按分類瀏覽全部文章。</p>
     </section>
     <div id="categoryList" class="chip-grid"></div>
     <div id="categoryPosts" class="post-grid"></div>
   </main>
 
   <footer class="site-footer">
-    <div id="siteFooterText">© 2026 CRIVU · 以雜誌方式寫作</div>
+    <div id="siteFooterText">© 2026 CRIVU</div>
   </footer>
 
-  <script src="/assets/js/app.js?v=20260428ui13" type="module"></script>
+  <script src="/assets/js/app.js?v=20260429ui01" type="module"></script>
 </body>
 </html>

@@ -1,213 +1,6 @@
+import { articlePath, escapeHtml, renderNavItems } from '../../shared/content.js';
+
 const qs = (sel) => document.querySelector(sel);
-const FALLBACK_COVER = '/assets/img/cover-01.svg';
-
-const getSlug = () => {
-  const params = new URLSearchParams(window.location.search);
-  return params.get('slug');
-};
-
-const formatDate = (iso) => {
-  const [y, m, d] = iso.split('-');
-  return `${y}/${m}/${d}`;
-};
-
-const escapeHtml = (input) =>
-  String(input ?? '')
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#39;');
-
-const sanitizeUrl = (value, options = {}) => {
-  const { allowHash = true } = options;
-  const input = String(value ?? '').trim();
-  if (!input) return '#';
-  if (allowHash && input.startsWith('#')) return '#';
-  if (input.startsWith('/') || input.startsWith('./') || input.startsWith('../')) return input;
-  try {
-    const parsed = new URL(input, window.location.origin);
-    const protocol = parsed.protocol.toLowerCase();
-    if (protocol === 'http:' || protocol === 'https:' || protocol === 'mailto:') return parsed.href;
-  } catch {
-    return '#';
-  }
-  return '#';
-};
-
-const safeCoverUrl = (value) => {
-  const safe = sanitizeUrl(value, { allowHash: false });
-  return safe === '#' ? FALLBACK_COVER : safe;
-};
-
-
-const postUrl = (slug) => `/post.html?slug=${encodeURIComponent(String(slug ?? ''))}`;
-
-const inlineMarkdown = (text) => {
-  const escaped = escapeHtml(text);
-  return escaped
-    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*(.+?)\*/g, '<em>$1</em>')
-    .replace(/`([^`]+?)`/g, '<code>$1</code>')
-    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_match, label, href) => {
-      const safeHref = sanitizeUrl(href);
-      return `<a href="${escapeHtml(safeHref)}" target="_blank" rel="noopener noreferrer nofollow">${label}</a>`;
-    });
-};
-
-const simpleMarkdown = (raw) => {
-  const src = String(raw || '').replace(/\r\n/g, '\n');
-  const lines = src.split('\n');
-  const out = [];
-  let inList = false;
-  let paragraph = [];
-
-  const flushParagraph = () => {
-    if (paragraph.length === 0) return;
-    out.push(`<p>${inlineMarkdown(paragraph.join(' '))}</p>`);
-    paragraph = [];
-  };
-
-  const closeList = () => {
-    if (!inList) return;
-    out.push('</ul>');
-    inList = false;
-  };
-
-  const renderAudioBlock = (audioSrc, title, caption) => {
-    const safeSrc = sanitizeUrl(audioSrc, { allowHash: false });
-    if (safeSrc === '#') return '';
-    const safeTitle = escapeHtml(title || '');
-    const safeCaption = escapeHtml(caption || '');
-    const titleHtml = safeTitle ? `<div class="post-audio-title">${safeTitle}</div>` : '';
-    const captionHtml = safeCaption ? `<figcaption>${safeCaption}</figcaption>` : '';
-    return `<figure class="post-audio">${titleHtml}<audio controls preload="metadata" src="${escapeHtml(safeSrc)}"></audio>${captionHtml}</figure>`;
-  };
-
-  for (let i = 0; i < lines.length; i += 1) {
-    const line = lines[i];
-    const trimmed = line.trim();
-    if (!trimmed) {
-      flushParagraph();
-      closeList();
-      continue;
-    }
-
-    const audioMatch = trimmed.match(/^\[audio\]\((.*?)\)$/);
-    if (audioMatch) {
-      const next = (lines[i + 1] || '').trim();
-      const titleMatch = next.match(/^<!--\s*title:(.*?)\s*-->$/);
-      if (titleMatch) {
-        const captionLine = (lines[i + 2] || '').trim();
-        const captionMatch = captionLine.match(/^\*(.*?)\*$/);
-        const blockHtml = renderAudioBlock(audioMatch[1], titleMatch[1], captionMatch ? captionMatch[1] : '');
-        if (blockHtml) {
-          flushParagraph();
-          closeList();
-          out.push(blockHtml);
-        }
-        i += captionMatch ? 2 : 1;
-        continue;
-      }
-    }
-
-    if (/^###\s+/.test(trimmed)) {
-      flushParagraph();
-      closeList();
-      out.push(`<h3>${inlineMarkdown(trimmed.replace(/^###\s+/, ''))}</h3>`);
-      continue;
-    }
-    if (/^##\s+/.test(trimmed)) {
-      flushParagraph();
-      closeList();
-      out.push(`<h2>${inlineMarkdown(trimmed.replace(/^##\s+/, ''))}</h2>`);
-      continue;
-    }
-    if (/^#\s+/.test(trimmed)) {
-      flushParagraph();
-      closeList();
-      out.push(`<h1>${inlineMarkdown(trimmed.replace(/^#\s+/, ''))}</h1>`);
-      continue;
-    }
-
-    if (/^[-*]\s+/.test(trimmed) || /^\d+\.\s+/.test(trimmed)) {
-      flushParagraph();
-      if (!inList) {
-        out.push('<ul>');
-        inList = true;
-      }
-      out.push(`<li>${inlineMarkdown(trimmed.replace(/^([-*]|\d+\.)\s+/, ''))}</li>`);
-      continue;
-    }
-
-    closeList();
-    paragraph.push(trimmed);
-  }
-
-  flushParagraph();
-  closeList();
-  return out.join('\n');
-};
-
-const initLazyBackgrounds = (root = document) => {
-  const nodes = Array.from(root.querySelectorAll('[data-bg]'));
-  if (nodes.length === 0) return;
-
-  const applyBg = (node) => {
-    if (node.dataset.bgLoaded === '1') return;
-    const src = node.getAttribute('data-bg');
-    if (!src) return;
-    node.style.backgroundImage = `url('${safeCoverUrl(src)}')`;
-    node.dataset.bgLoaded = '1';
-  };
-
-  if (!('IntersectionObserver' in window)) {
-    nodes.forEach(applyBg);
-    return;
-  }
-
-  const io = new IntersectionObserver(
-    (entries, observer) => {
-      entries.forEach((entry) => {
-        if (!entry.isIntersecting) return;
-        applyBg(entry.target);
-        observer.unobserve(entry.target);
-      });
-    },
-    { rootMargin: '280px 0px' }
-  );
-
-  nodes.forEach((node) => io.observe(node));
-};
-
-const setText = (sel, value) => {
-  const el = qs(sel);
-  if (el && value) el.textContent = value;
-};
-
-const toInt = (value, fallback, min, max) => {
-  const num = Number.parseInt(value, 10);
-  if (Number.isNaN(num)) return fallback;
-  return Math.max(min, Math.min(max, num));
-};
-
-const renderMoreItem = (post) => {
-  const cover = safeCoverUrl(post.cover);
-  const issue = post.issue ? `<span class="issue-pill">${escapeHtml(post.issue)}</span>` : '';
-  const date = post.date ? `<small>${escapeHtml(post.date)}</small>` : '';
-  const safeLink = postUrl(post.slug);
-  const excerpt = String(post.excerpt || '').trim();
-  return `
-    <a class="more-item" href="${escapeHtml(safeLink)}">
-      <div class="more-thumb lazy-bg" data-bg="${escapeHtml(cover)}"></div>
-      <div class="more-info">
-        <div class="more-meta"><span class="pill">${escapeHtml(post.category)}</span>${issue}${date}</div>
-        <h3>${escapeHtml(post.title)}</h3>
-        ${excerpt ? `<p>${escapeHtml(excerpt)}</p>` : ''}
-      </div>
-    </a>
-  `;
-};
 
 const setupSearch = (posts) => {
   const input = qs('#searchInput');
@@ -222,7 +15,7 @@ const setupSearch = (posts) => {
       String(post.title || '').toLowerCase().includes(q) ||
       String(post.excerpt || '').toLowerCase().includes(q) ||
       String(post.category || '').toLowerCase().includes(q) ||
-      tags.some((t) => String(t).toLowerCase().includes(q))
+      tags.some((tag) => String(tag).toLowerCase().includes(q))
     );
   };
 
@@ -233,18 +26,20 @@ const setupSearch = (posts) => {
       results.innerHTML = '';
       return;
     }
-    const matches = posts.filter((p) => matchesSearch(p, query)).slice(0, 6);
+
+    const matches = posts.filter((post) => matchesSearch(post, query)).slice(0, 6);
     if (matches.length === 0) {
       results.classList.remove('active');
       results.innerHTML = '';
       return;
     }
+
     results.innerHTML = matches
       .map(
-        (p) => `
-          <a class="search-item" href="${escapeHtml(postUrl(p.slug))}">
-            ${escapeHtml(p.title)}
-            <small>${escapeHtml(p.category)} · ${escapeHtml((Array.isArray(p.tags) ? p.tags : []).join(' / '))}</small>
+        (post) => `
+          <a class="search-item" href="${escapeHtml(articlePath(post.slug))}">
+            ${escapeHtml(post.title)}
+            <small>${escapeHtml(post.category)} · ${escapeHtml((Array.isArray(post.tags) ? post.tags : []).join(' / '))}</small>
           </a>
         `
       )
@@ -254,38 +49,20 @@ const setupSearch = (posts) => {
 
   input.addEventListener('input', renderResults);
   input.addEventListener('focus', renderResults);
-  input.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
+  input.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') {
       const first = results.querySelector('.search-item');
       if (first) {
         window.location.href = first.getAttribute('href');
-      } else {
-        const q = encodeURIComponent(input.value.trim());
-        window.location.href = q ? `/?q=${q}` : '/';
       }
     }
   });
 
-  document.addEventListener('click', (e) => {
-    if (!results.contains(e.target) && e.target !== input) {
+  document.addEventListener('click', (event) => {
+    if (!results.contains(event.target) && event.target !== input) {
       results.classList.remove('active');
     }
   });
-};
-
-const applyProgress = () => {
-  const progress = qs('#readProgress');
-  if (!progress) return;
-
-  const onScroll = () => {
-    const doc = document.documentElement;
-    const total = doc.scrollHeight - doc.clientHeight;
-    const pct = total > 0 ? (doc.scrollTop / total) * 100 : 0;
-    progress.style.width = `${pct}%`;
-  };
-
-  window.addEventListener('scroll', onScroll, { passive: true });
-  onScroll();
 };
 
 const setupHeaderOffset = () => {
@@ -310,7 +87,9 @@ const setupMobileSearch = () => {
   btn.addEventListener('click', () => {
     header.classList.remove('mobile-menu-open');
     header.classList.toggle('mobile-search-open');
-    if (header.classList.contains('mobile-search-open')) input.focus();
+    if (header.classList.contains('mobile-search-open')) {
+      input.focus();
+    }
   });
 };
 
@@ -325,107 +104,72 @@ const setupMobileMenu = () => {
     header.classList.toggle('mobile-menu-open');
   });
 
-  nav.addEventListener('click', (e) => {
-    const target = e.target;
+  nav.addEventListener('click', (event) => {
+    const target = event.target;
     if (target instanceof HTMLElement && target.closest('a')) {
       header.classList.remove('mobile-menu-open');
     }
   });
 
-  document.addEventListener('click', (e) => {
-    if (!header.contains(e.target)) {
+  document.addEventListener('click', (event) => {
+    if (!header.contains(event.target)) {
       header.classList.remove('mobile-menu-open');
       header.classList.remove('mobile-search-open');
     }
   });
 };
 
+const applyProgress = () => {
+  const progress = qs('#readProgress');
+  if (!progress) return;
+
+  const onScroll = () => {
+    const doc = document.documentElement;
+    const total = doc.scrollHeight - doc.clientHeight;
+    const pct = total > 0 ? (doc.scrollTop / total) * 100 : 0;
+    progress.style.width = `${pct}%`;
+  };
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+};
+
 const applySite = async () => {
   try {
-    const res = await fetch('/posts/site.json');
-    if (!res.ok) return {};
-    const site = await res.json();
-    setText('#siteName', site.siteName);
-    setText('#siteFooterText', site.footerText);
-    setText('#moreTitle', site.moreReadingTitle);
+    const [siteRes, postsRes] = await Promise.all([fetch('/posts/site.json'), fetch('/posts/posts.json')]);
+    const site = siteRes.ok ? await siteRes.json() : {};
+    const postsData = postsRes.ok ? await postsRes.json() : [];
+    const posts = postsData.items || postsData;
+
+    const nav = qs('.nav');
+    if (nav && Array.isArray(site.nav) && site.nav.length > 0) {
+      const currentPath = window.location.pathname.replace(/\/index\.html$/, '/') || '/';
+      const items = renderNavItems(site.nav, currentPath, { baseOrigin: window.location.origin });
+      if (items) nav.innerHTML = items;
+    }
 
     const searchInput = qs('#searchInput');
     if (searchInput && site.searchPlaceholder) {
       searchInput.setAttribute('placeholder', site.searchPlaceholder);
     }
 
-    const nav = qs('.nav');
-    if (nav && Array.isArray(site.nav) && site.nav.length > 0) {
-      const currentPath = window.location.pathname.replace(/\/index\.html$/, '/') || '/';
-      const items = site.nav
-        .filter((item) => item && item.label && item.href)
-        .map((item) => {
-          const href = item.href;
-          const safeHref = sanitizeUrl(href);
-          const normalized = new URL(safeHref, window.location.origin).pathname.replace(/\/index\.html$/, '/') || '/';
-          const isHome = normalized === '/';
-          const isActive = isHome ? currentPath === '/' : currentPath.startsWith(normalized);
-          return `<a href="${escapeHtml(safeHref)}"${isActive ? ' class="active"' : ''}>${escapeHtml(item.label)}</a>`;
-        });
-      if (items.length > 0) nav.innerHTML = items.join('');
+    const moreTitle = qs('#moreTitle');
+    if (moreTitle && site.moreReadingTitle) {
+      moreTitle.textContent = site.moreReadingTitle;
     }
-    return site;
+
+    setupSearch(Array.isArray(posts) ? posts : []);
   } catch {
-    // keep fallback text
-    return {};
+    // keep server-rendered content as-is
   }
 };
 
 const init = async () => {
-  const slug = getSlug();
-  const postsRes = await fetch('/posts/posts.json');
-  const data = await postsRes.json();
-  const posts = data.items || data;
-  const post = posts.find((p) => p.slug === slug) || posts[0];
-  if (!post) return;
-
-  qs('#postTitle').textContent = post.title;
-  qs('#postDate').textContent = formatDate(post.date);
-  qs('#postCategory').textContent = post.category;
-
-  const issue = qs('#postIssue');
-  if (issue) {
-    issue.textContent = post.issue || '';
-    issue.style.display = post.issue ? 'inline-block' : 'none';
-  }
-
-  const excerpt = String(post.excerpt || '').trim();
-  const excerptEl = qs('#postExcerpt');
-  excerptEl.textContent = excerpt;
-  excerptEl.hidden = !excerpt;
-
-  const tags = qs('#postTags');
-  const tagList = Array.isArray(post.tags) ? post.tags : [];
-  tags.innerHTML = tagList.map((t) => `<span class="tag">${escapeHtml(t)}</span>`).join('');
-
-  const cover = qs('#postCover');
-  cover.style.backgroundImage = `url('${safeCoverUrl(post.cover)}')`;
-
-  qs('#postBody').innerHTML = simpleMarkdown(post.body || '');
-
-  const site = await applySite();
-  const moreLimit = toInt(site.moreReadingLimit, 4, 1, 12);
-  const moreList = qs('#moreList');
-  const moreSection = qs('.more');
-  const hideMoreOnMobile = window.matchMedia('(max-width: 600px)').matches;
-  if (moreSection && hideMoreOnMobile) {
-    moreSection.hidden = true;
-  } else if (moreList) {
-    const more = posts.filter((p) => p.slug !== post.slug).slice(0, moreLimit);
-    moreList.innerHTML = more.map(renderMoreItem).join('');
-    initLazyBackgrounds(moreList);
-  }
-
-  setupSearch(posts);
   setupHeaderOffset();
   setupMobileSearch();
   setupMobileMenu();
   applyProgress();
+  await applySite();
 };
 
 init();

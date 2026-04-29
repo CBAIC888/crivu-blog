@@ -1,40 +1,10 @@
+import { articlePath, escapeHtml, renderNavItems, safeCoverUrl } from '../../shared/content.js';
+
 const qs = (sel) => document.querySelector(sel);
-const FALLBACK_COVER = '/assets/img/cover-01.svg';
 
 const state = {
   site: {},
 };
-
-const escapeHtml = (input) =>
-  String(input ?? '')
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#39;');
-
-const sanitizeUrl = (value, options = {}) => {
-  const { allowHash = true } = options;
-  const input = String(value ?? '').trim();
-  if (!input) return '#';
-  if (allowHash && input.startsWith('#')) return '#';
-  if (input.startsWith('/') || input.startsWith('./') || input.startsWith('../')) return input;
-  try {
-    const parsed = new URL(input, window.location.origin);
-    const protocol = parsed.protocol.toLowerCase();
-    if (protocol === 'http:' || protocol === 'https:' || protocol === 'mailto:') return parsed.href;
-  } catch {
-    return '#';
-  }
-  return '#';
-};
-
-const safeCoverUrl = (value) => {
-  const safe = sanitizeUrl(value, { allowHash: false });
-  return safe === '#' ? FALLBACK_COVER : safe;
-};
-
-const postUrl = (slug) => `/post.html?slug=${encodeURIComponent(String(slug ?? ''))}`;
 
 const setText = (sel, value) => {
   const el = qs(sel);
@@ -157,7 +127,7 @@ const setupSearch = (posts) => {
     results.innerHTML = matches
       .map(
         (p) => `
-          <a class="search-item" href="${escapeHtml(postUrl(p.slug))}">
+          <a class="search-item" href="${escapeHtml(articlePath(p.slug))}">
             ${escapeHtml(p.title)}
             <small>${escapeHtml(p.category)} · ${escapeHtml((Array.isArray(p.tags) ? p.tags : []).join(' / '))}</small>
           </a>
@@ -206,7 +176,7 @@ const renderIssue = (issue, posts) => {
     .filter(Boolean)
     .map(
       (post) => `
-        <a class="issue-post" href="${escapeHtml(postUrl(post.slug))}">
+        <a class="issue-post" href="${escapeHtml(articlePath(post.slug))}">
           <span>${escapeHtml(post.title)}</span>
           <small>${escapeHtml(post.category)}</small>
         </a>
@@ -214,7 +184,7 @@ const renderIssue = (issue, posts) => {
     )
     .join('');
   const leadPost = linkedPosts.map((slug) => posts.find((p) => p.slug === slug)).find(Boolean);
-  const leadHref = leadPost ? postUrl(leadPost.slug) : '/articles.html';
+  const leadHref = leadPost ? articlePath(leadPost.slug) : '/articles.html';
   const leadLabel = escapeHtml(state.site.issueReadLabel || '打開本期首篇');
   const browseLabel = escapeHtml(state.site.issueBrowseLabel || '瀏覽全部文章');
 
@@ -275,17 +245,8 @@ const loadSite = async () => {
     const nav = qs('.nav');
     if (nav && Array.isArray(state.site.nav) && state.site.nav.length > 0) {
       const currentPath = window.location.pathname.replace(/\/index\.html$/, '/') || '/';
-      const items = state.site.nav
-        .filter((item) => item && item.label && item.href)
-        .map((item) => {
-          const href = item.href;
-          const safeHref = sanitizeUrl(href);
-          const normalized = new URL(safeHref, window.location.origin).pathname.replace(/\/index\.html$/, '/') || '/';
-          const isHome = normalized === '/';
-          const isActive = isHome ? currentPath === '/' : currentPath.startsWith(normalized);
-          return `<a href="${escapeHtml(safeHref)}"${isActive ? ' class="active"' : ''}>${escapeHtml(item.label)}</a>`;
-        });
-      if (items.length > 0) nav.innerHTML = items.join('');
+      const items = renderNavItems(state.site.nav, currentPath, { baseOrigin: window.location.origin });
+      if (items) nav.innerHTML = items;
     }
   } catch {
     state.site = {};

@@ -3,57 +3,21 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>文章 · CRIVU</title>
-  <meta name="description" content="文章頁" />
+  <title>重新導向中 · CRIVU</title>
+  <meta name="description" content="舊文章網址正在導向新的文章頁。" />
   <link rel="stylesheet" href="/assets/css/style.css?v=20260428ui15" />
+  <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml" />
+  <meta http-equiv="refresh" content="0; url=/articles.html" />
 </head>
-<body class="page-post">
-  <div class="progress" id="readProgress"></div>
-  <header class="site-header">
-    <a class="logo" id="siteName" href="/">CRIVU</a>
-    <nav class="nav">
-      <a href="/">首頁</a>
-      <a href="/issues.html">期刊</a>
-      <a href="/articles.html">文章</a>
-      <a href="/about.html">關於</a>
-    </nav>
-    <div class="header-actions">
-      <div class="search-box">
-        <input id="searchInput" class="search-input" type="search" placeholder="搜尋文章 / 標籤 / 分類" />
-        <div id="searchResults" class="search-results"></div>
+<body>
+  <main class="list-page">
+    <section class="section-title">
+      <div>
+        <h1>重新導向中</h1>
+        <p>文章網址已更新，正在帶你前往新的文章頁。</p>
       </div>
-      <button class="mobile-search-toggle" id="mobileSearchBtn" aria-label="搜尋">🔍</button>
-      <button class="mobile-menu-toggle" id="mobileMenuBtn" aria-label="展開選單">☰</button>
-    </div>
-  </header>
-
-  <main class="post-page">
-    <div class="post-layout">
-      <article id="post" class="post-article">
-        <div class="post-hero">
-          <div class="post-meta">
-            <span id="postDate"></span>
-            <span id="postCategory" class="pill"></span>
-            <span id="postIssue" class="issue-pill"></span>
-            <div id="postTags" class="tag-row"></div>
-          </div>
-          <h1 id="postTitle"></h1>
-          <p id="postExcerpt" class="post-excerpt"></p>
-          <div id="postCover" class="post-cover"></div>
-        </div>
-        <div id="postBody" class="post-body"></div>
-        <section class="more more-bottom">
-          <h2 id="moreTitle">更多閱讀</h2>
-          <div id="moreList" class="more-list"></div>
-        </section>
-      </article>
-    </div>
+    </section>
+    <p><a href="/articles.html">如果沒有自動跳轉，請改從文章列表進入。</a></p>
   </main>
-
-  <footer class="site-footer">
-    <div id="siteFooterText">© 2026 CRIVU · 以雜誌方式寫作</div>
-  </footer>
-
-  <script src="/assets/js/post.js?v=20260428ui12" type="module"></script>
 </body>
 </html>

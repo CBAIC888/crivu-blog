@@ -4,8 +4,9 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>關於 · CRIVU</title>
-  <meta name="description" content="關於我" />
+  <meta name="description" content="關於 CRIVU 與本站的寫作方向。" />
   <link rel="stylesheet" href="/assets/css/style.css?v=20260428ui15" />
+  <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml" />
 </head>
 <body>
   <header class="site-header">
@@ -18,7 +19,7 @@
     </nav>
     <div class="header-actions">
       <div class="search-box">
-        <input id="searchInput" class="search-input" type="search" placeholder="搜尋文章 / 標籤 / 分類" />
+        <input id="searchInput" class="search-input" type="search" placeholder="搜尋" />
         <div id="searchResults" class="search-results"></div>
       </div>
       <button class="mobile-search-toggle" id="mobileSearchBtn" aria-label="搜尋">🔍</button>
@@ -30,35 +31,35 @@
     <section class="about-shell">
       <article class="about-card about-main">
         <p class="about-kicker" id="aboutKicker">About</p>
-        <h1 id="aboutTitle">關於我</h1>
-        <p id="aboutIntro" class="about-lead">這裡是你的個人博客。你可以寫生活、技術、旅行，或任何你關心的主題。</p>
+        <h1 id="aboutTitle">關於</h1>
+        <p id="aboutIntro" class="about-lead">我是CRIVU。這個網站是我的個人博客：把日常裡的靈感、技術實作、旅途見聞與閱讀思考等，整理成一期一期的內容。</p>
         <p id="aboutStyle" class="about-detail">這個網站以「雜誌風」為核心：高可讀的排版、強調內容的主視覺，以及清晰的分類與標籤。</p>
       </article>
       <aside class="about-card about-side">
         <h2 id="aboutInfoTitle">檔案資訊</h2>
         <ul class="about-facts">
-          <li class="about-fact">
+          <li class="about-fact" id="aboutCityItem" hidden>
             <div class="meta-label" id="aboutCityLabel">城市</div>
-            <div class="meta-value" id="aboutCity">台北 / 你的城市</div>
+            <div class="meta-value" id="aboutCity"></div>
           </li>
-          <li class="about-fact">
+          <li class="about-fact" id="aboutEmailItem" hidden>
             <div class="meta-label" id="aboutEmailLabel">Email</div>
-            <div class="meta-value" id="aboutEmail">hello@yourname.com</div>
+            <div class="meta-value" id="aboutEmail"></div>
           </li>
-          <li class="about-fact">
+          <li class="about-fact" id="aboutTopicsItem">
             <div class="meta-label" id="aboutTopicsLabel">主題</div>
-            <div class="meta-value" id="aboutTopics">生活 · 技術 · 旅行</div>
+            <div class="meta-value" id="aboutTopics">寫作、閱讀、戲曲、指南</div>
           </li>
         </ul>
-        <a id="aboutMailLink" class="about-mail" href="mailto:hello@yourname.com">聯絡我</a>
+        <a id="aboutMailLink" class="about-mail" href="/about.html" hidden>聯絡我</a>
       </aside>
     </section>
   </main>
 
   <footer class="site-footer">
-    <div id="siteFooterText">© 2026 CRIVU · 以雜誌方式寫作</div>
+    <div id="siteFooterText">© 2026 CRIVU</div>
   </footer>
 
-  <script src="/assets/js/app.js?v=20260428ui13" type="module"></script>
+  <script src="/assets/js/app.js?v=20260429ui01" type="module"></script>
 </body>
 </html>

@@ -1,4 +1,14 @@
 import { applyAdaptivePalette, getFeaturedPaletteSource } from './palette.js';
+import {
+  articlePath,
+  buildDescription,
+  escapeHtml,
+  isValidEmail,
+  normalizeText,
+  renderNavItems,
+  safeCoverUrl,
+  sanitizeUrl,
+} from '../../shared/content.js';
 
 const state = {
   posts: [],
@@ -14,38 +24,6 @@ const state = {
 
 const qs = (sel) => document.querySelector(sel);
 const qsa = (sel) => Array.from(document.querySelectorAll(sel));
-const FALLBACK_COVER = '/assets/img/cover-01.svg';
-
-const escapeHtml = (input) =>
-  String(input ?? '')
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#39;');
-
-const sanitizeUrl = (value, options = {}) => {
-  const { allowHash = true } = options;
-  const input = String(value ?? '').trim();
-  if (!input) return '#';
-  if (allowHash && input.startsWith('#')) return '#';
-  if (input.startsWith('/') || input.startsWith('./') || input.startsWith('../')) return input;
-  try {
-    const parsed = new URL(input, window.location.origin);
-    const protocol = parsed.protocol.toLowerCase();
-    if (protocol === 'http:' || protocol === 'https:' || protocol === 'mailto:') return parsed.href;
-  } catch {
-    return '#';
-  }
-  return '#';
-};
-
-const safeCoverUrl = (value) => {
-  const safe = sanitizeUrl(value, { allowHash: false });
-  return safe === '#' ? FALLBACK_COVER : safe;
-};
-
-const postUrl = (slug) => `/post.html?slug=${encodeURIComponent(String(slug ?? ''))}`;
 
 const setText = (sel, value) => {
   const el = qs(sel);
@@ -116,16 +94,41 @@ const applySiteSettings = () => {
   setText('#aboutStyle', site.aboutStyle);
   setText('#aboutInfoTitle', site.aboutInfoTitle);
   setText('#aboutMailLink', site.aboutMailLabel);
-  setText('#aboutCity', site.city);
-  setText('#aboutCityLabel', site.aboutCityLabel);
-  setText('#aboutEmail', site.email);
-  setText('#aboutEmailLabel', site.aboutEmailLabel);
-  setText('#aboutTopics', site.topics);
+  setText('#aboutTopics', normalizeText(site.topics));
   setText('#aboutTopicsLabel', site.aboutTopicsLabel);
 
+  const aboutCity = normalizeText(site.city);
+  const aboutCityItem = qs('#aboutCityItem');
+  if (aboutCityItem) {
+    aboutCityItem.hidden = !aboutCity;
+  }
+  if (aboutCity) {
+    setText('#aboutCity', aboutCity);
+    setText('#aboutCityLabel', site.aboutCityLabel);
+  }
+
+  const aboutEmail = normalizeText(site.email, { allowPlaceholder: true });
+  const validEmail = isValidEmail(aboutEmail);
+  const aboutEmailItem = qs('#aboutEmailItem');
+  if (aboutEmailItem) {
+    aboutEmailItem.hidden = !validEmail;
+  }
+  if (validEmail) {
+    setText('#aboutEmail', aboutEmail);
+    setText('#aboutEmailLabel', site.aboutEmailLabel);
+  }
+
+  const aboutTopicsItem = qs('#aboutTopicsItem');
+  if (aboutTopicsItem) {
+    aboutTopicsItem.hidden = !normalizeText(site.topics);
+  }
+
   const mailLink = qs('#aboutMailLink');
-  if (mailLink && site.email) {
-    mailLink.setAttribute('href', sanitizeUrl(`mailto:${site.email}`));
+  if (mailLink) {
+    mailLink.hidden = !validEmail;
+    if (validEmail) {
+      mailLink.setAttribute('href', sanitizeUrl(`mailto:${aboutEmail}`));
+    }
   }
 
   qsa('#searchInput').forEach((input) => {
@@ -165,7 +168,7 @@ const applyHomeFeature = async () => {
   const heroNote = qs('#homeHeroNote');
   const heroCredit = qs('#homeHeroCredit');
 
-  const backgroundImage = safeCoverUrl(state.site.homeHeroImage || getFeaturedPaletteSource(state.posts, state.issues, FALLBACK_COVER));
+  const backgroundImage = safeCoverUrl(state.site.homeHeroImage || getFeaturedPaletteSource(state.posts, state.issues, undefined));
   const coverImage = safeCoverUrl((featuredIssue && featuredIssue.cover) || backgroundImage);
 
   if (backdrop) {
@@ -217,18 +220,8 @@ const applyNavigation = (site) => {
   if (!nav || !Array.isArray(site.nav) || site.nav.length === 0) return;
 
   const currentPath = window.location.pathname.replace(/\/index\.html$/, '/') || '/';
-  const items = site.nav
-    .filter((item) => item && item.label && item.href)
-    .map((item) => {
-      const href = item.href;
-      const safeHref = sanitizeUrl(href);
-      const normalized = new URL(safeHref, window.location.origin).pathname.replace(/\/index\.html$/, '/') || '/';
-      const isHome = normalized === '/';
-      const isActive = isHome ? currentPath === '/' : currentPath.startsWith(normalized);
-      return `<a href="${escapeHtml(safeHref)}"${isActive ? ' class="active"' : ''}>${escapeHtml(item.label)}</a>`;
-    });
-
-  if (items.length > 0) nav.innerHTML = items.join('');
+  const items = renderNavItems(site.nav, currentPath, { baseOrigin: window.location.origin });
+  if (items) nav.innerHTML = items;
 };
 
 const setupHeaderOffset = () => {
@@ -320,8 +313,8 @@ const renderCard = (post) => {
   const date = post.date ? `<small>${escapeHtml(post.date)}</small>` : '';
   const maxTags = toInt(state.site.maxTagsPerCard, 3, 1, 10);
   const safeTags = Array.isArray(post.tags) ? post.tags.slice(0, maxTags).map((tag) => escapeHtml(tag)) : [];
-  const safeLink = postUrl(post.slug);
-  const excerpt = String(post.excerpt || '').trim();
+  const safeLink = articlePath(post.slug);
+  const excerpt = buildDescription(post, 120);
   return `
     <article class="post-card">
       <a class="image lazy-bg" href="${escapeHtml(safeLink)}" data-bg="${escapeHtml(cover)}"></a>
@@ -381,7 +374,7 @@ const setupSearch = () => {
     results.innerHTML = matches
       .map(
         (p) => `
-          <a class="search-item" href="${escapeHtml(postUrl(p.slug))}">
+          <a class="search-item" href="${escapeHtml(articlePath(p.slug))}">
             ${escapeHtml(p.title)}
             <small>${escapeHtml(p.category)} · ${escapeHtml((Array.isArray(p.tags) ? p.tags : []).join(' / '))}</small>
           </a>
