@@ -1,4 +1,4 @@
-import { articlePath, buildSearchSnippet, buildSearchText, escapeHtml, renderNavItems, safeCoverUrl } from '../../shared/content.js';
+import { articlePath, buildSearchSnippet, buildSearchText, escapeHtml, renderNavItems, safeCoverUrl, withBuildVersion } from '../../shared/content.js';
 
 const qs = (sel) => document.querySelector(sel);
 
@@ -193,7 +193,7 @@ const renderIssue = (issue, posts) => {
 
 const loadSite = async () => {
   try {
-    const res = await fetch('/posts/site.json');
+    const res = await fetch(withBuildVersion('/posts/site.json'));
     if (!res.ok) return;
     state.site = await res.json();
     setText('#siteName', state.site.siteName);
@@ -218,7 +218,11 @@ const loadSite = async () => {
 };
 
 const init = async () => {
-  const [issuesRes, postsRes] = await Promise.all([fetch('/posts/issues.json'), fetch('/posts/posts.json'), loadSite()]);
+  const [issuesRes, postsRes] = await Promise.all([
+    fetch(withBuildVersion('/posts/issues.json')),
+    fetch(withBuildVersion('/posts/posts.json')),
+    loadSite(),
+  ]);
   const issuesData = await issuesRes.json();
   const postsData = await postsRes.json();
   const issues = issuesData.issues || [];

@@ -1,3 +1,5 @@
+import { withBuildVersion } from '../../shared/content.js';
+
 const qs = (sel) => document.querySelector(sel);
 
 const setText = (sel, value) => {
@@ -7,7 +9,7 @@ const setText = (sel, value) => {
 
 const init = async () => {
   try {
-    const res = await fetch('/posts/site.json');
+    const res = await fetch(withBuildVersion('/posts/site.json'));
     if (!res.ok) return;
     const site = await res.json();
 

@@ -12,6 +12,7 @@
 2. Validate the change locally before pushing:
    - Syntax check changed JS files with `node --check`.
    - If article routing changed, verify the function modules import cleanly.
+   - Run `node scripts/inject-build-version.js` from `/Users/cbaic/Desktop/開發/網站/blog` in a clean checkout or throwaway copy to verify build-version injection works.
 3. Create one commit only:
    - `git -C /Users/cbaic/Desktop/開發/網站/blog add -A`
    - `git -C /Users/cbaic/Desktop/開發/網站/blog commit -m "<message>"`
@@ -22,6 +23,13 @@
      - `GIT_TERMINAL_PROMPT=0 git -C /Users/cbaic/Desktop/開發/網站/blog rebase origin/main`
 5. Push once:
    - `git -C /Users/cbaic/Desktop/開發/網站/blog push origin main`
+
+## Cloudflare Pages Build Settings
+- Root directory: `/Users/cbaic/Desktop/開發/網站/blog`
+- Build command: `node scripts/inject-build-version.js`
+- Build output directory: `.`
+- The build step must run in Cloudflare Pages so `__BUILD_VERSION__` placeholders are replaced during deployment.
+- Cloudflare Cache Rules for `/assets/*` must respect query strings; do not enable ignore-query-string behavior for asset caching.
 
 ## Post-Deploy Verification
 - Verify GitHub accepted the push and note the exact commit SHA.
@@ -34,8 +42,16 @@
 - For article pages, confirm returned HTML already contains:
   - `<title>`
   - `<meta name="description">`
+  - `<meta name="build-version">`
   - `<h1>`
   - body text
+- Check versioned asset/data requests:
+  - `curl -I "https://cbc688.com/assets/js/app.js?v=<build-version>"`
+  - `curl -I "https://cbc688.com/posts/posts.json?v=<build-version>"`
+- Confirm headers are:
+  - HTML: `no-store, no-cache, must-revalidate, max-age=0`
+  - `/posts/*`: `public, max-age=0, must-revalidate`
+  - `/assets/*`: `public, max-age=31536000, immutable`
 
 ## If Public Site Still Shows Old HTML
 - Do **not** keep pushing.

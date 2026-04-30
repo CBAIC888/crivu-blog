@@ -1,4 +1,4 @@
-import { articlePath, buildSearchSnippet, buildSearchText, escapeHtml, renderNavItems } from '../../shared/content.js';
+import { articlePath, buildSearchSnippet, buildSearchText, escapeHtml, renderNavItems, withBuildVersion } from '../../shared/content.js';
 
 const qs = (sel) => document.querySelector(sel);
 
@@ -132,7 +132,10 @@ const applyProgress = () => {
 
 const applySite = async () => {
   try {
-    const [siteRes, postsRes] = await Promise.all([fetch('/posts/site.json'), fetch('/posts/posts.json')]);
+    const [siteRes, postsRes] = await Promise.all([
+      fetch(withBuildVersion('/posts/site.json')),
+      fetch(withBuildVersion('/posts/posts.json')),
+    ]);
     const site = siteRes.ok ? await siteRes.json() : {};
     const postsData = postsRes.ok ? await postsRes.json() : [];
     const posts = postsData.items || postsData;

@@ -1,5 +1,6 @@
 export const FALLBACK_COVER = '/assets/img/cover-01.svg';
 export const DEFAULT_SITE_ORIGIN = 'https://cbc688.com';
+export const BUILD_VERSION_PLACEHOLDER = '__BUILD_VERSION__';
 
 const PLACEHOLDER_PATTERNS = [
   /yourname/i,
@@ -67,6 +68,20 @@ export const sanitizeUrl = (value, options = {}) => {
 export const safeCoverUrl = (value, options = {}) => {
   const safe = sanitizeUrl(value, { allowHash: false, baseOrigin: options.baseOrigin });
   return safe === '#' ? FALLBACK_COVER : safe;
+};
+
+export const getBuildVersion = (doc = globalThis?.document) => {
+  if (!doc || typeof doc.querySelector !== 'function') return '';
+  const raw = doc.querySelector('meta[name="build-version"]')?.getAttribute('content') || '';
+  const version = raw.trim();
+  if (!version || version === BUILD_VERSION_PLACEHOLDER) return '';
+  return version;
+};
+
+export const withBuildVersion = (url, version = getBuildVersion()) => {
+  if (!version) return url;
+  const separator = url.includes('?') ? '&' : '?';
+  return `${url}${separator}v=${encodeURIComponent(version)}`;
 };
 
 export const articlePath = (slug) => {

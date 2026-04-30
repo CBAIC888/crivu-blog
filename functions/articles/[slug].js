@@ -11,7 +11,7 @@ import {
 
 const HTML_HEADERS = {
   'Content-Type': 'text/html; charset=UTF-8',
-  'Cache-Control': 'public, max-age=120, s-maxage=600, stale-while-revalidate=86400',
+  'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
   'Content-Security-Policy':
     "default-src 'self'; base-uri 'self'; frame-ancestors 'none'; img-src 'self' data: https:; script-src 'self' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; connect-src 'self' https://cloudflareinsights.com",
 };
@@ -70,10 +70,11 @@ const renderPage = ({ currentPath, description, footerText, moreHtml, origin, po
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="build-version" content="__BUILD_VERSION__" />
   <title>${escapeHtml(title)}</title>
   <meta name="description" content="${escapeHtml(description)}" />
   <link rel="canonical" href="${escapeHtml(canonicalUrl)}" />
-  <link rel="stylesheet" href="/assets/css/style.css?v=20260429ui19" />
+  <link rel="stylesheet" href="/assets/css/style.css?v=__BUILD_VERSION__" />
   <link rel="icon" href="/assets/img/favicon.png" type="image/png" />
 </head>
 <body class="page-post">
@@ -120,7 +121,7 @@ const renderPage = ({ currentPath, description, footerText, moreHtml, origin, po
     <div id="siteFooterText">${escapeHtml(footer)}</div>
   </footer>
 
-  <script src="/assets/js/post.js?v=20260429ui04" type="module"></script>
+  <script src="/assets/js/post.js?v=__BUILD_VERSION__" type="module"></script>
 </body>
 </html>`;
 };
@@ -134,9 +135,10 @@ const renderNotFound = ({ currentPath, origin, site }) => {
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="build-version" content="__BUILD_VERSION__" />
   <title>文章未找到 · ${escapeHtml(siteName)}</title>
   <meta name="description" content="找不到你要查看的文章。" />
-  <link rel="stylesheet" href="/assets/css/style.css?v=20260429ui19" />
+  <link rel="stylesheet" href="/assets/css/style.css?v=__BUILD_VERSION__" />
 </head>
 <body>
   <header class="site-header">

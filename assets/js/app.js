@@ -2,6 +2,7 @@ import { applyAdaptivePalette, getFeaturedPaletteSource } from './palette.js';
 import {
   articlePath,
   buildDescription,
+  withBuildVersion,
   buildSearchSnippet,
   buildSearchText,
   escapeHtml,
@@ -52,7 +53,7 @@ const revealSiteContent = () => {
 };
 
 const loadPosts = async () => {
-  const res = await fetch('/posts/posts.json');
+  const res = await fetch(withBuildVersion('/posts/posts.json'));
   const data = await res.json();
   state.posts = (data.items || data).slice();
   state.posts.sort((a, b) => b.date.localeCompare(a.date));
@@ -60,7 +61,7 @@ const loadPosts = async () => {
 
 const loadSite = async () => {
   try {
-    const res = await fetch('/posts/site.json');
+    const res = await fetch(withBuildVersion('/posts/site.json'));
     if (!res.ok) return;
     state.site = await res.json();
   } catch {
@@ -70,7 +71,7 @@ const loadSite = async () => {
 
 const loadIssues = async () => {
   try {
-    const res = await fetch('/posts/issues.json');
+    const res = await fetch(withBuildVersion('/posts/issues.json'));
     if (!res.ok) return;
     const data = await res.json();
     state.issues = Array.isArray(data.issues) ? data.issues.slice() : [];
