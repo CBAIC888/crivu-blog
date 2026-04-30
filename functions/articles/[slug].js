@@ -13,7 +13,7 @@ const HTML_HEADERS = {
   'Content-Type': 'text/html; charset=UTF-8',
   'Cache-Control': 'public, max-age=120, s-maxage=600, stale-while-revalidate=86400',
   'Content-Security-Policy':
-    "default-src 'self'; base-uri 'self'; frame-ancestors 'none'; img-src 'self' data: https:; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self'",
+    "default-src 'self'; base-uri 'self'; frame-ancestors 'none'; img-src 'self' data: https:; script-src 'self' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; connect-src 'self' https://cloudflareinsights.com",
 };
 
 const fetchStaticJson = async (context, pathname) => {

@@ -3,7 +3,7 @@ import { articlePath, normalizeText } from '../shared/content.js';
 const REDIRECT_HEADERS = {
   'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
   'Content-Security-Policy':
-    "default-src 'self'; base-uri 'self'; frame-ancestors 'none'; img-src 'self' data: https:; script-src 'self'; style-src 'self'; connect-src 'self'",
+    "default-src 'self'; base-uri 'self'; frame-ancestors 'none'; img-src 'self' data: https:; script-src 'self' https://static.cloudflareinsights.com; style-src 'self'; connect-src 'self' https://cloudflareinsights.com",
 };
 
 export async function onRequest({ request }) {
