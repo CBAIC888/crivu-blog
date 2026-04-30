@@ -73,12 +73,17 @@ body::before {
   z-index: 0;
 }
 
-.site-loading .hero-frame {
+.site-loading #homeHero,
+.site-loading #latest {
   visibility: hidden;
 }
 
-.site-loading .hero-text {
-  visibility: hidden;
+.site-loading #homeHero {
+  min-height: 640px;
+}
+
+.site-loading #latest {
+  min-height: 420px;
 }
 
 main,
