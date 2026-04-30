@@ -15,6 +15,7 @@ const TARGETS = [
   'issues.html',
   'issues-x.html',
   'post.html',
+  path.join('shared', 'site-pages.js'),
   'tag.html',
   path.join('functions', 'articles', '[slug].js'),
 ];
