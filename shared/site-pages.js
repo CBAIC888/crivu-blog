@@ -253,7 +253,7 @@ export const renderHomePage = ({ issues, posts, site }) => {
   return shell({
     bodyClass: 'home-page',
     currentPath: '/',
-    description: normalizeText(site.homeSubtitle) || normalizeText(site.latestIntro) || 'CRIVU',
+    description: normalizeText(site.homeSubtitle) || normalizeText(site.aboutIntro) || normalizeText(site.latestIntro) || 'CRIVU',
     mainHtml,
     scriptSrc: '/assets/js/app.js',
     site,
