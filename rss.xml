@@ -1,24 +1,81 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0">
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>CRIVU · 時序與戲曲</title>
+    <title>CRIVU</title>
     <link>https://cbc688.com/</link>
-    <description>記錄節氣流轉、戲曲聆聽與日常思緒，並以期刊與文章的方式整理。</description>
+    <atom:link href="https://cbc688.com/rss.xml" rel="self" type="application/rss+xml" />
+    <description>CRIVU 的個人博客更新。</description>
     <language>zh-Hant</language>
+    <lastBuildDate>Mon, 13 Apr 2026 16:00:00 GMT</lastBuildDate>
     <item>
-      <title>2026年4月1日</title>
+      <title>丙午清明</title>
       <link>https://cbc688.com/articles/bwqm</link>
-      <pubDate>Tue, 14 Apr 2026 00:00:00 +0800</pubDate>
+      <guid isPermaLink="true">https://cbc688.com/articles/bwqm</guid>
+      <pubDate>Mon, 13 Apr 2026 16:00:00 GMT</pubDate>
+      <description>四月五日。昨夜一念既定，今晨便动身去凯里。清晨四五点醒来，洗漱时觉得身体难得轻快，气力亦自内而生。</description>
     </item>
     <item>
       <title>丙午春分</title>
       <link>https://cbc688.com/articles/bwcf</link>
-      <pubDate>Fri, 20 Mar 2026 00:00:00 +0800</pubDate>
+      <guid isPermaLink="true">https://cbc688.com/articles/bwcf</guid>
+      <pubDate>Thu, 19 Mar 2026 16:00:00 GMT</pubDate>
+      <description>春分已至，黔地天气仍在冷暖之间反覆拉扯。乍暖还寒，阴晴未定。</description>
     </item>
     <item>
-      <title>丙午驚蟄</title>
+      <title>丙午惊蛰</title>
       <link>https://cbc688.com/articles/bwjz</link>
-      <pubDate>Thu, 05 Mar 2026 00:00:00 +0800</pubDate>
+      <guid isPermaLink="true">https://cbc688.com/articles/bwjz</guid>
+      <pubDate>Wed, 04 Mar 2026 16:00:00 GMT</pubDate>
+      <description>记得那日线上聊天时，我们曾认真地约定过一次「见面」。说来平常，只当日后总会实现。</description>
+    </item>
+    <item>
+      <title>褪色</title>
+      <link>https://cbc688.com/articles/tuise-zhesi</link>
+      <guid isPermaLink="true">https://cbc688.com/articles/tuise-zhesi</guid>
+      <pubDate>Sat, 07 Feb 2026 16:00:00 GMT</pubDate>
+      <description>「事物一旦褪色，便屬於永恆」這句話背後，是關於存在、記憶與歷史的思考。</description>
+    </item>
+    <item>
+      <title>幸福</title>
+      <link>https://cbc688.com/articles/xinfu</link>
+      <guid isPermaLink="true">https://cbc688.com/articles/xinfu</guid>
+      <pubDate>Wed, 31 Dec 2025 16:00:00 GMT</pubDate>
+      <description>幸福就是知足和追逐某一目標的過程，追逐是知足的前提。</description>
+    </item>
+    <item>
+      <title>心事｜悲聲之用</title>
+      <link>https://cbc688.com/articles/bei-suiji</link>
+      <guid isPermaLink="true">https://cbc688.com/articles/bei-suiji</guid>
+      <pubDate>Tue, 23 Dec 2025 16:00:00 GMT</pubDate>
+      <description>我恨著的事物，至今仍是很多。翻回過往筆記，那些字句瑣碎。</description>
+    </item>
+    <item>
+      <title>乙巳驚蟄</title>
+      <link>https://cbc688.com/articles/ysjz</link>
+      <guid isPermaLink="true">https://cbc688.com/articles/ysjz</guid>
+      <pubDate>Tue, 04 Mar 2025 16:00:00 GMT</pubDate>
+      <description>上周，與友人去學校附近的寺。一路行走，陽光灑落。</description>
+    </item>
+    <item>
+      <title>乙巳雨水</title>
+      <link>https://cbc688.com/articles/ysys</link>
+      <guid isPermaLink="true">https://cbc688.com/articles/ysys</guid>
+      <pubDate>Mon, 17 Feb 2025 16:00:00 GMT</pubDate>
+      <description>時至雨水，春寒料峭。外出，舊時氣息仍未散去。</description>
+    </item>
+    <item>
+      <title>乙巳立春</title>
+      <link>https://cbc688.com/articles/yslc</link>
+      <guid isPermaLink="true">https://cbc688.com/articles/yslc</guid>
+      <pubDate>Sun, 02 Feb 2025 16:00:00 GMT</pubDate>
+      <description>不覺間，又是立春。寒意未盡，枝頭的芽孢卻在夜裡悄悄舒展。</description>
+    </item>
+    <item>
+      <title>甲辰大寒</title>
+      <link>https://cbc688.com/articles/jcdh</link>
+      <guid isPermaLink="true">https://cbc688.com/articles/jcdh</guid>
+      <pubDate>Sun, 19 Jan 2025 16:00:00 GMT</pubDate>
+      <description>到這一日上，甲辰年終於也將盡了。前些日子，微信與友人閒聊。</description>
     </item>
   </channel>
 </rss>

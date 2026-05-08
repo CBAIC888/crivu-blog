@@ -72,6 +72,7 @@ const shell = ({ bodyClass = '', currentPath, description, mainHtml, scriptSrc, 
   <meta name="build-version" content="${BUILD_VERSION}" />
   <title>${escapeHtml(title)}</title>
   <meta name="description" content="${escapeHtml(description)}" />
+  <link rel="alternate" type="application/rss+xml" title="${escapeHtml(siteName)} RSS" href="/rss.xml" />
   <link rel="stylesheet" href="/assets/css/style.css?v=${BUILD_VERSION}" />
   <link rel="icon" href="/assets/img/favicon.png" type="image/png" />
 </head>
@@ -101,12 +102,8 @@ const shell = ({ bodyClass = '', currentPath, description, mainHtml, scriptSrc, 
 };
 
 const renderPostCard = (post, site) => {
-  const maxTags = Math.max(1, Math.min(10, Number.parseInt(site.maxTagsPerCard, 10) || 3));
-  const tags = Array.isArray(post.tags) ? post.tags.slice(0, maxTags) : [];
   const metaBits = [
-    post.category ? `<span class="pill">${escapeHtml(post.category)}</span>` : '',
     post.issue ? `<span class="issue-pill">${escapeHtml(post.issue)}</span>` : '',
-    ...tags.map((tag) => `<span class="tag">${escapeHtml(tag)}</span>`),
     post.date ? `<small>${escapeHtml(post.date)}</small>` : '',
   ].filter(Boolean);
   const href = articlePath(post.slug);
@@ -141,7 +138,7 @@ const renderIssueCard = (issue, posts, site) => {
       (post) => `
         <a class="issue-post" href="${escapeHtml(articlePath(post.slug))}">
           <span>${escapeHtml(post.title || '')}</span>
-          <small>${escapeHtml(post.category || '')}</small>
+          <small>${escapeHtml(post.date || '')}</small>
         </a>
       `
     )
@@ -202,8 +199,6 @@ export const renderHomePage = ({ issues, posts, site }) => {
   const heroImage = safeCoverUrl(site.homeHeroImage || featuredPost?.cover || featuredIssue?.cover);
   const issueCover = safeCoverUrl(featuredIssue?.cover || heroImage);
   const latestPosts = posts.slice(0, 12);
-  const categories = Array.from(new Set(posts.map((post) => post.category).filter(Boolean)));
-  const tags = Array.from(new Set(posts.flatMap((post) => (Array.isArray(post.tags) ? post.tags : [])).filter(Boolean)));
   const creditLines = [
     normalizeText(site.homeHeroCreditLine1, { allowPlaceholder: true }),
     normalizeText(site.homeHeroCreditLine2, { allowPlaceholder: true }),
@@ -250,10 +245,6 @@ export const renderHomePage = ({ issues, posts, site }) => {
           <h2 id="latestTitle">${escapeHtml(normalizeText(site.latestTitle) || '最新文章')}</h2>
           <p id="latestIntro">${escapeHtml(normalizeText(site.latestIntro) || '按時間展開近期更新。')}</p>
         </div>
-        <div class="filters">
-          <select id="categoryFilter" aria-label="分類篩選">${renderFilterOptions(categories, normalizeText(site.allCategoryLabel) || '全部分類')}</select>
-          <select id="tagFilter" aria-label="標籤篩選">${renderFilterOptions(tags, normalizeText(site.allTagLabel) || '全部標籤')}</select>
-        </div>
       </div>
       <div id="postGrid" class="post-grid list-mode">${latestPosts.map((post) => renderPostCard(post, site)).join('')}</div>
     </section>
@@ -271,17 +262,11 @@ export const renderHomePage = ({ issues, posts, site }) => {
 };
 
 export const renderArticlesPage = ({ posts, site }) => {
-  const categories = Array.from(new Set(posts.map((post) => post.category).filter(Boolean)));
-  const tags = Array.from(new Set(posts.flatMap((post) => (Array.isArray(post.tags) ? post.tags : [])).filter(Boolean)));
   const mainHtml = `<main class="list-page">
     <section class="section-title">
       <div>
         <h1 id="articlesPageTitle">${escapeHtml(normalizeText(site.articlesPageTitle) || '文章')}</h1>
         <p id="articlesPageIntro">${escapeHtml(normalizeText(site.articlesPageIntro) || '按時間順序閱讀全部文章。')}</p>
-      </div>
-      <div class="filters">
-        <select id="categoryFilter" aria-label="分類篩選">${renderFilterOptions(categories, normalizeText(site.allCategoryLabel) || '全部分類')}</select>
-        <select id="tagFilter" aria-label="標籤篩選">${renderFilterOptions(tags, normalizeText(site.allTagLabel) || '全部標籤')}</select>
       </div>
     </section>
     <div id="postGrid" class="post-grid list-mode">${posts.map((post) => renderPostCard(post, site)).join('')}</div>

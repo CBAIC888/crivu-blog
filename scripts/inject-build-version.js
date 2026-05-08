@@ -10,13 +10,11 @@ const VERSION_FILE = path.join(ROOT, 'shared', 'build-version.json');
 const TARGETS = [
   'about.html',
   'articles.html',
-  'category.html',
   'index.html',
   'issues.html',
   'issues-x.html',
   'post.html',
   path.join('shared', 'site-pages.js'),
-  'tag.html',
   path.join('functions', 'articles', '[slug].js'),
 ];
 

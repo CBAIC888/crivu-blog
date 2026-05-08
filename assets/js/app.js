@@ -18,11 +18,7 @@ const state = {
   issues: [],
   site: {},
   search: '',
-  currentCategory: '',
-  currentTag: '',
   applyHome: null,
-  applyCategory: null,
-  applyTag: null,
 };
 
 const qs = (sel) => document.querySelector(sel);
@@ -332,14 +328,10 @@ const setupMobileMenu = () => {
 
 const renderCard = (post) => {
   const cover = safeCoverUrl(post.cover);
-  const maxTags = toInt(state.site.maxTagsPerCard, 3, 1, 10);
-  const safeTags = Array.isArray(post.tags) ? post.tags.slice(0, maxTags).map((tag) => escapeHtml(tag)) : [];
   const safeLink = articlePath(post.slug);
   const excerpt = buildDescription(post, 72);
   const metaBits = [
-    post.category ? `<span class="pill">${escapeHtml(post.category)}</span>` : '',
     post.issue ? `<span class="issue-pill">${escapeHtml(post.issue)}</span>` : '',
-    ...safeTags.map((tag) => `<span class="tag">${tag}</span>`),
     post.date ? `<small>${escapeHtml(post.date)}</small>` : '',
   ].filter(Boolean);
   return `
@@ -395,7 +387,7 @@ const setupSearch = () => {
           <a class="search-item" href="${escapeHtml(articlePath(p.slug))}">
             <span class="search-item-main">
               <span class="search-item-title">${escapeHtml(p.title)}</span>
-              <small class="search-item-meta">${escapeHtml([p.category, p.issue, p.date].filter(Boolean).join(' · '))}</small>
+              <small class="search-item-meta">${escapeHtml([p.issue, p.date].filter(Boolean).join(' · '))}</small>
             </span>
             <small class="search-item-snippet">${escapeHtml(buildSearchSnippet(p, query, 68))}</small>
           </a>
@@ -407,8 +399,6 @@ const setupSearch = () => {
 
   const applyAll = () => {
     if (state.applyHome) state.applyHome();
-    if (state.applyCategory) state.applyCategory();
-    if (state.applyTag) state.applyTag();
     renderResults();
   };
 
@@ -433,101 +423,16 @@ const setupSearch = () => {
 };
 
 const setupFilters = () => {
-  const categoryFilter = qs('#categoryFilter');
-  const tagFilter = qs('#tagFilter');
   const grid = qs('#postGrid');
-  if (!categoryFilter || !tagFilter || !grid) return;
-
-  const categories = Array.from(new Set(state.posts.map((p) => p.category).filter(Boolean)));
-  const tags = Array.from(new Set(state.posts.flatMap((p) => (Array.isArray(p.tags) ? p.tags : [])).filter(Boolean)));
-
-  const allCategoryLabel = state.site.allCategoryLabel || '全部分類';
-  const allTagLabel = state.site.allTagLabel || '全部標籤';
-  categoryFilter.innerHTML = [allCategoryLabel, ...categories]
-    .map((c) => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`)
-    .join('');
-  tagFilter.innerHTML = [allTagLabel, ...tags]
-    .map((t) => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`)
-    .join('');
+  if (!grid) return;
 
   const apply = () => {
-    const cat = categoryFilter.value;
-    const tag = tagFilter.value;
-    const filtered = state.posts.filter((p) => {
-      const okCat = cat === allCategoryLabel || p.category === cat;
-      const postTags = Array.isArray(p.tags) ? p.tags : [];
-      const okTag = tag === allTagLabel || postTags.includes(tag);
-      return okCat && okTag && matchesSearch(p, state.search);
-    });
+    const filtered = state.posts.filter((p) => matchesSearch(p, state.search));
     renderGrid(grid, filtered);
   };
 
-  categoryFilter.addEventListener('change', apply);
-  tagFilter.addEventListener('change', apply);
   state.applyHome = apply;
   apply();
-};
-
-const setupCategoryPage = () => {
-  const list = qs('#categoryList');
-  const grid = qs('#categoryPosts');
-  if (!list || !grid) return;
-
-  const categories = Array.from(new Set(state.posts.map((p) => p.category).filter(Boolean)));
-  list.innerHTML = categories
-    .map((c) => `<button class="chip" data-cat="${escapeHtml(c)}">${escapeHtml(c)}</button>`)
-    .join('');
-
-  const renderCategory = (category) => {
-    state.currentCategory = category;
-    qsa('.chip').forEach((btn) => btn.classList.toggle('active', btn.dataset.cat === category));
-    renderGrid(grid, state.posts.filter((p) => p.category === category && matchesSearch(p, state.search)));
-  };
-
-  list.addEventListener('click', (e) => {
-    const btn = e.target.closest('.chip');
-    if (!btn) return;
-    renderCategory(btn.dataset.cat);
-  });
-
-  if (categories.length > 0) renderCategory(categories[0]);
-  state.applyCategory = () => {
-    if (state.currentCategory) renderCategory(state.currentCategory);
-  };
-};
-
-const setupTagPage = () => {
-  const list = qs('#tagList');
-  const grid = qs('#tagPosts');
-  if (!list || !grid) return;
-
-  const tags = Array.from(new Set(state.posts.flatMap((p) => (Array.isArray(p.tags) ? p.tags : [])).filter(Boolean)));
-  list.innerHTML = tags
-    .map((t) => `<button class="chip" data-tag="${escapeHtml(t)}">${escapeHtml(t)}</button>`)
-    .join('');
-
-  const renderTag = (tag) => {
-    state.currentTag = tag;
-    qsa('.chip').forEach((btn) => btn.classList.toggle('active', btn.dataset.tag === tag));
-    renderGrid(
-      grid,
-      state.posts.filter((p) => {
-        const postTags = Array.isArray(p.tags) ? p.tags : [];
-        return postTags.includes(tag) && matchesSearch(p, state.search);
-      })
-    );
-  };
-
-  list.addEventListener('click', (e) => {
-    const btn = e.target.closest('.chip');
-    if (!btn) return;
-    renderTag(btn.dataset.tag);
-  });
-
-  if (tags.length > 0) renderTag(tags[0]);
-  state.applyTag = () => {
-    if (state.currentTag) renderTag(state.currentTag);
-  };
 };
 
 const init = async () => {
@@ -541,8 +446,6 @@ const init = async () => {
   applyNavigation(state.site);
   setupSearch();
   setupFilters();
-  setupCategoryPage();
-  setupTagPage();
   setupHeaderOffset();
   setupMobileSearch();
   setupMobileMenu();

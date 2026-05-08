@@ -917,11 +917,6 @@ select:focus {
   letter-spacing: 0.04em;
 }
 
-#postTags.tag-row {
-  margin-top: 0;
-  gap: 10px;
-}
-
 .post-meta .pill,
 .post-meta .issue-pill,
 .post-meta .tag {

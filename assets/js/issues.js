@@ -92,7 +92,7 @@ const setupSearch = (posts) => {
           <a class="search-item" href="${escapeHtml(articlePath(p.slug))}">
             <span class="search-item-main">
               <span class="search-item-title">${escapeHtml(p.title)}</span>
-              <small class="search-item-meta">${escapeHtml([p.category, p.issue, p.date].filter(Boolean).join(' · '))}</small>
+              <small class="search-item-meta">${escapeHtml([p.issue, p.date].filter(Boolean).join(' · '))}</small>
             </span>
             <small class="search-item-snippet">${escapeHtml(buildSearchSnippet(p, query, 68))}</small>
           </a>
@@ -143,7 +143,7 @@ const renderIssue = (issue, posts) => {
       (post) => `
         <a class="issue-post" href="${escapeHtml(articlePath(post.slug))}">
           <span>${escapeHtml(post.title)}</span>
-          <small>${escapeHtml(post.category)}</small>
+          <small>${escapeHtml(post.date || '')}</small>
         </a>
       `
     )

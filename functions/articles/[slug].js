@@ -37,9 +37,7 @@ const renderMoreItem = (post) => {
   const safeLink = articlePath(post.slug);
   const excerpt = buildDescription(post, 64);
   const metaBits = [
-    post.category ? `<span class="pill">${escapeHtml(post.category || '')}</span>` : '',
     post.issue ? `<span class="issue-pill">${escapeHtml(post.issue)}</span>` : '',
-    ...(Array.isArray(post.tags) ? post.tags.slice(0, 2).map((tag) => `<span class="tag">${escapeHtml(tag)}</span>`) : []),
     post.date ? `<small>${escapeHtml(post.date)}</small>` : '',
   ].filter(Boolean);
   return `
@@ -61,7 +59,6 @@ const renderPage = ({ currentPath, description, footerText, moreHtml, origin, po
   const footer = normalizeText(footerText, { allowPlaceholder: true }) || `© ${new Date().getFullYear()} ${siteName}`;
   const moreTitle = normalizeText(site.moreReadingTitle) || '更多閱讀';
   const excerpt = normalizeText(post.excerpt);
-  const tags = Array.isArray(post.tags) ? post.tags.filter(Boolean) : [];
   const bodyHtml = simpleMarkdown(post.body || '', { baseOrigin: origin });
   const title = `${post.title} · ${siteName}`;
 
@@ -74,6 +71,7 @@ const renderPage = ({ currentPath, description, footerText, moreHtml, origin, po
   <title>${escapeHtml(title)}</title>
   <meta name="description" content="${escapeHtml(description)}" />
   <link rel="canonical" href="${escapeHtml(canonicalUrl)}" />
+  <link rel="alternate" type="application/rss+xml" title="${escapeHtml(siteName)} RSS" href="/rss.xml" />
   <link rel="stylesheet" href="/assets/css/style.css?v=__BUILD_VERSION__" />
   <link rel="icon" href="/assets/img/favicon.png" type="image/png" />
 </head>
@@ -100,9 +98,7 @@ const renderPage = ({ currentPath, description, footerText, moreHtml, origin, po
         <div class="post-hero">
           <div class="post-meta">
             <span id="postDate">${escapeHtml(formatDate(post.date || ''))}</span>
-            <span id="postCategory" class="pill">${escapeHtml(post.category || '')}</span>
             ${post.issue ? `<span id="postIssue" class="issue-pill">${escapeHtml(post.issue)}</span>` : ''}
-            <div id="postTags" class="tag-row">${tags.map((tag) => `<span class="tag">${escapeHtml(tag)}</span>`).join('')}</div>
           </div>
           <h1 id="postTitle">${escapeHtml(post.title || '')}</h1>
           ${excerpt ? `<p id="postExcerpt" class="post-excerpt">${escapeHtml(excerpt)}</p>` : '<p id="postExcerpt" class="post-excerpt" hidden></p>'}
