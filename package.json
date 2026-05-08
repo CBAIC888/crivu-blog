@@ -2,6 +2,7 @@
   "name": "crivu-blog",
   "private": true,
   "scripts": {
-    "build": "node scripts/inject-build-version.js"
+    "generate:rss": "node scripts/generate-rss.js",
+    "build": "node scripts/generate-rss.js && node scripts/inject-build-version.js"
   }
 }

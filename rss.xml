@@ -4,78 +4,134 @@
     <title>CRIVU</title>
     <link>https://cbc688.com/</link>
     <atom:link href="https://cbc688.com/rss.xml" rel="self" type="application/rss+xml" />
-    <description>CRIVU 的個人博客更新。</description>
+    <description>我是CRIVU。這個網站是我的個人博客，記錄日常裡的靈感、技術實作、旅途見聞與閱讀思考等。</description>
     <language>zh-Hant</language>
-    <lastBuildDate>Mon, 13 Apr 2026 16:00:00 GMT</lastBuildDate>
+    <lastBuildDate>Thu, 07 May 2026 16:00:00 GMT</lastBuildDate>
+    <item>
+      <title>七日雨浸畫室迷—第一章</title>
+      <link>https://cbc688.com/articles/hsm</link>
+      <guid isPermaLink="true">https://cbc688.com/articles/hsm</guid>
+      <pubDate>Thu, 07 May 2026 16:00:00 GMT</pubDate>
+      <description>雨已下了七日。 林硯之推開畫室的門，松節油與舊木頭的氣味一併而來。 畫室朝北，窗開在左側，臨著一株老梧桐；右側是一整面舊牆，牆上掛著一面蒙塵的鏡子；正對門的裡牆下，立著幾座蒙白布的畫架。靠窗處有一張長桌，桌上散著硬結的顏料、刮刀，以及幾支乾硬的畫筆。 窗外天色陰沉，雨雲壓得很低，微弱的天光從玻璃上洇進來，將屋內照出一層灰白。梧桐葉被雨水浸透，貼在窗上，倒像…</description>
+    </item>
     <item>
       <title>丙午清明</title>
       <link>https://cbc688.com/articles/bwqm</link>
       <guid isPermaLink="true">https://cbc688.com/articles/bwqm</guid>
       <pubDate>Mon, 13 Apr 2026 16:00:00 GMT</pubDate>
-      <description>四月五日。昨夜一念既定，今晨便动身去凯里。清晨四五点醒来，洗漱时觉得身体难得轻快，气力亦自内而生。</description>
+      <description>四月五日。 昨夜一念既定，今晨便动身去凯里。清晨四五点醒来，洗漱时觉得身体难得轻快，气力亦自内而生。想来是近日调养有得。 此行乘高铁，以护照验行，一路顺遂。九点过抵达凯里，便急往酒店安顿。早餐匆匆，未及细嚼，便携了随身之物，转乘七路公交，往下司古镇去。 春的清晨，游人寥落，正好成全了这份独行的清净。 沿路而行，不久至桥上。两侧江风迎面，带着水气与春意。我倚…</description>
     </item>
     <item>
       <title>丙午春分</title>
       <link>https://cbc688.com/articles/bwcf</link>
       <guid isPermaLink="true">https://cbc688.com/articles/bwcf</guid>
       <pubDate>Thu, 19 Mar 2026 16:00:00 GMT</pubDate>
-      <description>春分已至，黔地天气仍在冷暖之间反覆拉扯。乍暖还寒，阴晴未定。</description>
+      <description>春分已至，黔地天气仍在冷暖之间反覆拉扯。乍暖还寒，阴晴未定。草木未必立刻见新，那些伏在泥土深处的根脉，只是在暗处积蓄，挣脱往日沉滞，等一场透雨，将生机唤醒。 原来新生从不热闹。它总要经过一段反覆与迟疑，在泥泞里试探，在寒意中忍耐，才肯真正长出来。人亦如此。 近来心绪倒是沉静。常把《荒山泪》放在枕畔，一遍遍地听。不同的人唱，腔口各异，气息却都往同一处去。 张…</description>
     </item>
     <item>
       <title>丙午惊蛰</title>
       <link>https://cbc688.com/articles/bwjz</link>
       <guid isPermaLink="true">https://cbc688.com/articles/bwjz</guid>
       <pubDate>Wed, 04 Mar 2026 16:00:00 GMT</pubDate>
-      <description>记得那日线上聊天时，我们曾认真地约定过一次「见面」。说来平常，只当日后总会实现。</description>
+      <description>记得那日线上聊天时，我们曾认真地约定过一次「见面」。说来平常，只当日后总会实现。只是直到今日，那个约仍未赴成。回头想想，那段聊天竟也成了我们最后一次「再见」。 其实我常想与你说说近况。只是每每想到这里，话便停住。即便真要说，也不知从哪一句开始。日子过得很快，许多事情尚未厘清，人却已各自走远，彼此竟没有了联系。 有时我也会想，你如今过得如何？是否一切安好？又…</description>
     </item>
     <item>
       <title>褪色</title>
       <link>https://cbc688.com/articles/tuise-zhesi</link>
       <guid isPermaLink="true">https://cbc688.com/articles/tuise-zhesi</guid>
       <pubDate>Sat, 07 Feb 2026 16:00:00 GMT</pubDate>
-      <description>「事物一旦褪色，便屬於永恆」這句話背後，是關於存在、記憶與歷史的思考。</description>
+      <description>一、詩意中的悖論 「事物一旦褪色，便屬於永恆」——這句話表面上帶有浪漫主義色彩，但深入分析，它恰好觸及了辯證法與歷史唯物主義中的一個核心矛盾：事物如何在被遺忘、毀損或衰變之後仍獲得歷史性的意義，甚至被視為永恆。詩意的表述背後，是關於存在、記憶與歷史的思考。 張若虛《春江花月夜》中的幾句詩提供了極具張力的文本基礎： 「江畔何年初見月，江月何年初照人？」 「不…</description>
     </item>
     <item>
       <title>幸福</title>
       <link>https://cbc688.com/articles/xinfu</link>
       <guid isPermaLink="true">https://cbc688.com/articles/xinfu</guid>
       <pubDate>Wed, 31 Dec 2025 16:00:00 GMT</pubDate>
-      <description>幸福就是知足和追逐某一目標的過程，追逐是知足的前提。</description>
+      <description>在談到幸福時，想到之前寫的一篇小記。 「幸福就是知足和追逐某一目標的過程，追逐是知足的前提。」 它是「靜」與「動」、「有」與「無」間的聯繫。 「知足」是對現實和心靈的肯定；「追逐」則是對未知的展望，是意志的運動。 知足即止，追逐則行；一靜一動，一滿一空。它互為因果。 若人無知足心，那追逐易成盲動，永遠覺得不夠、永遠被慾望拖行。 若人只知知足而無追逐，則易陷…</description>
     </item>
     <item>
       <title>心事｜悲聲之用</title>
       <link>https://cbc688.com/articles/bei-suiji</link>
       <guid isPermaLink="true">https://cbc688.com/articles/bei-suiji</guid>
       <pubDate>Tue, 23 Dec 2025 16:00:00 GMT</pubDate>
-      <description>我恨著的事物，至今仍是很多。翻回過往筆記，那些字句瑣碎。</description>
+      <description>我恨著的事物，至今仍是很多。 翻回過往筆記，那些字句瑣碎。艱難、委屈、怨意，被反復書寫。那不是在控訴誰，也談不上伸冤；只是將當時那些恨意暫時擱置，免得在體內腐壞。 奇怪的是，我原以為自己早已麻木，也以為時間已經替我處理妥當，可再讀時，悲聲仍在。 它不是尖銳的，而是低沈的，持續的嗚咽。它不吵人，卻不肯離去。是內也有、外也有，一聲疊一聲，讓我無法假裝一切已然過…</description>
     </item>
     <item>
       <title>乙巳驚蟄</title>
       <link>https://cbc688.com/articles/ysjz</link>
       <guid isPermaLink="true">https://cbc688.com/articles/ysjz</guid>
       <pubDate>Tue, 04 Mar 2025 16:00:00 GMT</pubDate>
-      <description>上周，與友人去學校附近的寺。一路行走，陽光灑落。</description>
+      <description>【寺路】 上周，與友人去學校附近的寺。 一路行走，陽光灑落。我們頻頻按下快門，想要將這稍縱即逝的瞬間留存。可事物一旦褪色便屬於永恆了。 寺門緊閉，我們止步於廊下，聽著悠悠傳來的誦經與鐘磬聲。風自檐下穿過，拂動紅幡，「萬籟此都寂，但余鐘磬音」。只剩下時間流轉的回音。 寺前一木，枯瘦靜立。乾枝嶙峋，縱然無花無葉，卻固守著自己的位置。它見過多少來往，見過多少春秋…</description>
     </item>
     <item>
       <title>乙巳雨水</title>
       <link>https://cbc688.com/articles/ysys</link>
       <guid isPermaLink="true">https://cbc688.com/articles/ysys</guid>
       <pubDate>Mon, 17 Feb 2025 16:00:00 GMT</pubDate>
-      <description>時至雨水，春寒料峭。外出，舊時氣息仍未散去。</description>
+      <description>時至雨水，春寒料峭。外出，舊時氣息仍未散去，遲遲不願「褪去」。 近來總感憔悴，就連「可憐」的體重也降了些去；眼神時常迷離，甚至有時撥不清夢與實。你予我的方法，我一定試試。只是不知這羸弱，究竟因季節，還是… 習《春閨夢》沙場一折，才知何謂真正的可怖與哀痛。二黃導板起，張氏自塵土中緩緩起身，「回龍」後，四望，滿目破碎景象。其立於無定河畔，荒草間伏著餓烏，屍首縱…</description>
     </item>
     <item>
       <title>乙巳立春</title>
       <link>https://cbc688.com/articles/yslc</link>
       <guid isPermaLink="true">https://cbc688.com/articles/yslc</guid>
       <pubDate>Sun, 02 Feb 2025 16:00:00 GMT</pubDate>
-      <description>不覺間，又是立春。寒意未盡，枝頭的芽孢卻在夜裡悄悄舒展。</description>
+      <description>不覺間，又是立春。寒意未盡，枝頭的芽孢卻在夜裡悄悄舒展，新一年的輪回已然開啓了。 【新年】 前不久是農歷新年。不同以往，是在家裡過的。屋子還是那個屋子，燈光還是舊時顏色，可終究不一樣了。 自母親走後，那角落里的富貴竹枯了，牆上的壁畫落了，展示櫃里曾經白得透亮的天鵝，如今也是落滿灰塵了。 是歲月的塵，是時間的褪色，是一些東西的緩緩消亡。 一切都有預兆。只是我…</description>
     </item>
     <item>
       <title>甲辰大寒</title>
       <link>https://cbc688.com/articles/jcdh</link>
       <guid isPermaLink="true">https://cbc688.com/articles/jcdh</guid>
       <pubDate>Sun, 19 Jan 2025 16:00:00 GMT</pubDate>
-      <description>到這一日上，甲辰年終於也將盡了。前些日子，微信與友人閒聊。</description>
+      <description>到這一日上，甲辰年終於也將盡了。前些日子，微信與J閒聊，他是我許多興趣的“啓蒙老師”。聊了約莫半個鐘頭，話題來來回回，最終概括成一句話：「行有所止，欲有所制」。 寒暄後，我問他：慾望滿足時，是真的快樂嗎？ 他說，慾望滿足的快樂，像是飲鴆止渴。真正的快樂，不在於滿足，而在於超越慾望的過程。內心找到一種無求而自足的平靜。 慾望滿足的快樂是短暫且淺薄的。一個慾望…</description>
+    </item>
+    <item>
+      <title>甲辰小寒</title>
+      <link>https://cbc688.com/articles/jcxh</link>
+      <guid isPermaLink="true">https://cbc688.com/articles/jcxh</guid>
+      <pubDate>Sat, 04 Jan 2025 16:00:00 GMT</pubDate>
+      <description>【捨】 昨晚遲睡，醒來已是中午，懶懶起身，回味做的夢。夢中x提著什麼來回往垃圾車送，步履匆匆。再詳細卻記不清了。竟生釋然，或許也該捨去經月累積之物。 是裝滿了一個袋子的。欲放入垃圾桶時，意外掉出一張黃山的照片。既然落出，便是緣分未盡。將它拾起，才發現是七年前同學們互贈的明信片。 大體內容是，望一切如意。 不禁微微發怔，那時人事，未全散去。 【因果】 日前迎…</description>
+    </item>
+    <item>
+      <title>甲辰冬至</title>
+      <link>https://cbc688.com/articles/jcdz</link>
+      <guid isPermaLink="true">https://cbc688.com/articles/jcdz</guid>
+      <pubDate>Fri, 20 Dec 2024 16:00:00 GMT</pubDate>
+      <description>【隱霧】 入冬月以来，愈觉昏沉。有時看一則簡短的文字，都要停顿片刻才能理清；有時頭疼難捱。這或是難以入眠的緣故，再吃安睡也無了之前的效果。我稱它為“隱霧”。遇到它，我的應對辦法是「隱」一陣。在這一陣裡，避見一些人事。 【期間】 看一部新劇，每週三到週日晚上六點就守著更新，情节引人。 閒步至書店，挑三本舊書帶回，想要再憶過去。太多時間沒感受過紙張的觸感了。怎…</description>
+    </item>
+    <item>
+      <title>甲辰大雪</title>
+      <link>https://cbc688.com/articles/jcdx</link>
+      <guid isPermaLink="true">https://cbc688.com/articles/jcdx</guid>
+      <pubDate>Thu, 05 Dec 2024 16:00:00 GMT</pubDate>
+      <description>我友， 年關漸近，天氣愈發冷。今年的舊賬未及清算，倒也不急，心裡卻早已拾掇起了過冬的姿態。 貴陽的雨下得連綿，天寒又裹著潮氣，直往骨縫里鑽。原本外出的計劃只得作罷了，不由心裡空空。只好坐在暖桌邊，書翻幾頁，字臨幾行，聽幾首歌；若是坐得不舒服，便起身，模仿著角咿咿呀呀。 夜裡聽不熟悉的鋼琴曲入眠，曲調里有種說不清的悲戚，像是積年的舊淚流下；卻奇怪，聽著竟心安…</description>
+    </item>
+    <item>
+      <title>甲辰小雪</title>
+      <link>https://cbc688.com/articles/jcxx</link>
+      <guid isPermaLink="true">https://cbc688.com/articles/jcxx</guid>
+      <pubDate>Thu, 21 Nov 2024 16:00:00 GMT</pubDate>
+      <description>我友， 往年的冬天來得早，這年卻晚，晨昏都冷冽。於近窗的書桌邊久坐，有呵氣成冰的錯覺。好幾夜窩在暖氣旁重讀舊書。 靜氣養人，不知源自何處的說法，但聽來總是有幾分道理的。夜愈深，我也愈發靜；心似落塵的古鏡，不再急著映照，只是等著光陰的灰塵覆滿。靜，是無言的沈寂，是深藏的隱流。 夢倒是常做，夢里常見x。那種深邃，同冬夜裡的靜湖一般，看似無波，卻有些暗湧的意思。…</description>
+    </item>
+    <item>
+      <title>《荒山淚》劇本</title>
+      <link>https://cbc688.com/articles/hsl</link>
+      <guid isPermaLink="true">https://cbc688.com/articles/hsl</guid>
+      <pubDate>Sun, 31 Dec 2023 16:00:00 GMT</pubDate>
+      <description>一、注意 1.本剧本整理依据《中国京剧戏考》及《〈荒山泪〉（迟小秋演出）》等公开资料。 2.本剧本仅供学习、研究及非商业性分享使用，严禁以任何形式用于商业用途或牟利。 3.若需伴奏文件，請訪問公眾號「程待」獲取。 二、剧情介绍 《荒山泪》是程派代表作之一，故事拟托明末。明王朝战乱，朝廷肆意加派杂税、征丁抓夫，正是「苛政猛于虎」的戏曲化呈现。河南济源县，佃农…</description>
+    </item>
+    <item>
+      <title>《鎖麟囊》劇本</title>
+      <link>https://cbc688.com/articles/sln</link>
+      <guid isPermaLink="true">https://cbc688.com/articles/sln</guid>
+      <pubDate>Sun, 31 Dec 2023 16:00:00 GMT</pubDate>
+      <description>根据《翁偶虹剧作选》整理 注意： 1.资料主要整理于“《翁偶虹剧作选》”，仅供学习交流使用，严禁用于任何商业用途； 2.此剧本为整理后发布； 3.该资源完全免费，仅限于学习用途，请勿作其他用途传播。 一、情节 登州富戶薛姥嫁女薛湘靈予周庭訓，嫁前按當地習俗予女鎖麟囊，內貯珠寶。婚期花轎中途遇雨，至春秋亭暫避；又來一花轎，轎中為貧女趙守貞，感世態炎涼而啼哭。…</description>
+    </item>
+    <item>
+      <title>《春閨夢》劇本</title>
+      <link>https://cbc688.com/articles/cgm</link>
+      <guid isPermaLink="true">https://cbc688.com/articles/cgm</guid>
+      <pubDate>Sun, 31 Dec 2023 16:00:00 GMT</pubDate>
+      <description>注意： 1.资料主要整理于“张火丁2016年北京实况演出”，仅供学习交流使用，严禁用于任何商业用途； 2.此剧本为整理后发布，附有PDF版本，及有部分《春闺梦》伴奏文件，方便学习； 3.该资源完全免费，仅限于学习用途，请勿作其他用途传播； 4.资料中，主要角色唱段业已标红。 一、情节介绍 东汉末年，奋威将军公孙瓒与刘虞争地，各地征兵。百姓王恢与妻张氏新婚不…</description>
     </item>
   </channel>
 </rss>
