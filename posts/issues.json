@@ -5,7 +5,7 @@
       "id": "jq01",
       "title": "二十四節氣",
       "theme": "傳統-書信",
-      "cover": "/assets/img/uploads/劇本.png",
+      "cover": "/assets/img/uploads/程派—春閨夢-1-.png",
       "editorNote": "收錄從甲辰年開始",
       "posts": [
         "bwqm",
@@ -45,6 +45,17 @@
         "hsl",
         "cgm",
         "sln"
+      ]
+    },
+    {
+      "publishDate": "2026-05-09",
+      "id": "hsm",
+      "title": "七日雨浸畫室迷",
+      "theme": "小說",
+      "cover": "/assets/img/uploads/劇本.png",
+      "editorNote": " ",
+      "posts": [
+        "hsm"
       ]
     }
   ]
