@@ -27,11 +27,12 @@
   "issuesPageIntro": "全部期刊",
   "moreReadingLimit": 12,
   "topics": "寫作、閱讀、戲曲、指南、小说",
-  "aboutStyle": " ",
+  "aboutStyle": " 本站中部分資訊包括但不限於京劇劇本來源於網路整理，請仔細辨別。",
   "aboutEmailLabel": "Email",
   "homeLatestButtonText": "最新文章",
   "issueReadLabel": "閱讀首篇",
   "latestIntro": "持續更新",
+  "socialTwitter": "https://x.com/crive888?s=21",
   "homeFeaturedIssueId": "jq01",
   "footerText": "© 2026 CRIVU",
   "homeHeroCreditLine1": "從甲辰年開始記錄，持續更新",
@@ -57,7 +58,7 @@
   "homeTitle": " ",
   "allTagLabel": "全部標籤",
   "aboutCityLabel": "城市",
-  "email": "cbc88898@outlook.com",
+  "email": "cbc88898 outlook.com",
   "aboutInfoTitle": "",
-  "aboutIntro": "CRIVU 是一座個人的文字棲居之所，收錄隨筆、節氣書寫、小說連載、京劇札記與日常思索。此站以私人經驗為起點，記錄時間、記憶、寂寞、閱讀與創作之間的微光，也嘗試在尋常生活裡保存一些不肯輕易褪色的事物。"
+  "aboutIntro": "一個以隨筆、小說、節氣書寫與京劇札記為主的個人博客，記錄日常、記憶、閱讀與創作中的心事。"
 }
