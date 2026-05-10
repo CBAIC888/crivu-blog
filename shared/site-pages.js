@@ -59,10 +59,19 @@ const navHtml = (site, currentPath) => renderNavItems(Array.isArray(site.nav) &&
 
 const scriptTag = (src) => (src ? `\n  <script src="${escapeHtml(src)}?v=${BUILD_VERSION}" type="module"></script>` : '');
 
-const shell = ({ bodyClass = '', currentPath, description, mainHtml, scriptSrc, site, title }) => {
+const shell = ({ bodyClass = '', currentPath, description, mainHtml, scriptSrc, site, title, ogImage }) => {
   const siteName = fallbackSiteName(site);
   const footerText = fallbackFooter(site);
   const searchPlaceholder = normalizeText(site.searchPlaceholder) || '搜尋';
+  const faviconUrl = safeCoverUrl(site.favicon) !== '/assets/img/cover-01.svg'
+    ? safeCoverUrl(site.favicon)
+    : '/assets/img/favicon.png';
+  const keywords = normalizeText(site.siteKeywords);
+  const ogImg = ogImage || safeCoverUrl(site.ogImage);
+  const ogImgTag = ogImg && ogImg !== '/assets/img/cover-01.svg'
+    ? `\n  <meta property="og:image" content="${escapeHtml(ogImg)}" />\n  <meta name="twitter:image" content="${escapeHtml(ogImg)}" />`
+    : '';
+  const twitterCard = ogImgTag ? 'summary_large_image' : 'summary';
 
   return `<!doctype html>
 <html lang="zh-Hant">
@@ -71,10 +80,17 @@ const shell = ({ bodyClass = '', currentPath, description, mainHtml, scriptSrc, 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="build-version" content="${BUILD_VERSION}" />
   <title>${escapeHtml(title)}</title>
-  <meta name="description" content="${escapeHtml(description)}" />
+  <meta name="description" content="${escapeHtml(description)}" />${keywords ? `\n  <meta name="keywords" content="${escapeHtml(keywords)}" />` : ''}
+  <meta property="og:title" content="${escapeHtml(title)}" />
+  <meta property="og:description" content="${escapeHtml(description)}" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="${escapeHtml(siteName)}" />${ogImgTag}
+  <meta name="twitter:card" content="${twitterCard}" />
+  <meta name="twitter:title" content="${escapeHtml(title)}" />
+  <meta name="twitter:description" content="${escapeHtml(description)}" />
   <link rel="alternate" type="application/rss+xml" title="${escapeHtml(siteName)} RSS" href="/rss.xml" />
   <link rel="stylesheet" href="/assets/css/style.css?v=${BUILD_VERSION}" />
-  <link rel="icon" href="/assets/img/favicon.png" type="image/png" />
+  <link rel="icon" href="${escapeHtml(faviconUrl)}" type="image/png" />
 </head>
 <body${bodyClass ? ` class="${escapeHtml(bodyClass)}"` : ''}>
   <header class="site-header">
@@ -84,7 +100,7 @@ const shell = ({ bodyClass = '', currentPath, description, mainHtml, scriptSrc, 
     </nav>
     <div class="header-actions">
       <div class="search-box">
-        <input id="searchInput" class="search-input" type="search" placeholder="${escapeHtml(searchPlaceholder)}" />
+        <input id="searchInput" class="search-input" type="search" placeholder="${escapeHtml(searchPlaceholder)}" aria-label="搜尋文章" />
         <div id="searchResults" class="search-results"></div>
       </div>
       <button class="mobile-search-toggle" id="mobileSearchBtn" aria-label="搜尋">🔍</button>

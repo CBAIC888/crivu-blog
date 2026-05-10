@@ -11,7 +11,7 @@ export async function onRequest({ request }) {
   const slug = normalizeText(url.searchParams.get('slug'), { allowPlaceholder: true });
   const destination = slug ? articlePath(slug) : '/articles.html';
   return new Response(null, {
-    status: 302,
+    status: 301,
     headers: {
       ...REDIRECT_HEADERS,
       Location: destination,

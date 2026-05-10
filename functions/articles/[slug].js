@@ -13,7 +13,7 @@ const HTML_HEADERS = {
   'Content-Type': 'text/html; charset=UTF-8',
   'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
   'Content-Security-Policy':
-    "default-src 'self'; base-uri 'self'; frame-ancestors 'none'; img-src 'self' data: https:; script-src 'self' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; connect-src 'self' https://cloudflareinsights.com",
+    "default-src 'self'; base-uri 'self'; frame-ancestors 'none'; img-src 'self' data: https:; script-src 'self' https://static.cloudflareinsights.com; style-src 'self'; connect-src 'self' https://cloudflareinsights.com",
 };
 
 const fetchStaticJson = async (context, pathname) => {
@@ -84,7 +84,7 @@ const renderPage = ({ currentPath, description, footerText, moreHtml, origin, po
     </nav>
     <div class="header-actions">
       <div class="search-box">
-        <input id="searchInput" class="search-input" type="search" placeholder="${escapeHtml(normalizeText(site.searchPlaceholder) || '搜尋')}" />
+        <input id="searchInput" class="search-input" type="search" placeholder="${escapeHtml(normalizeText(site.searchPlaceholder) || '搜尋')}" aria-label="搜尋文章" />
         <div id="searchResults" class="search-results"></div>
       </div>
       <button class="mobile-search-toggle" id="mobileSearchBtn" aria-label="搜尋">🔍</button>
@@ -102,7 +102,7 @@ const renderPage = ({ currentPath, description, footerText, moreHtml, origin, po
           </div>
           <h1 id="postTitle">${escapeHtml(post.title || '')}</h1>
           ${excerpt ? `<p id="postExcerpt" class="post-excerpt">${escapeHtml(excerpt)}</p>` : '<p id="postExcerpt" class="post-excerpt" hidden></p>'}
-          <div id="postCover" class="post-cover" style="background-image:url('${escapeHtml(safeCoverUrl(post.cover))}')"></div>
+          <div id="postCover" class="post-cover"><img src="${escapeHtml(safeCoverUrl(post.cover))}" alt="${escapeHtml(post.title || '')}" loading="lazy" /></div>
         </div>
         <div id="postBody" class="post-body">${bodyHtml}</div>
         <section class="more more-bottom">

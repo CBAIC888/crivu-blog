@@ -12,7 +12,6 @@ const TARGETS = [
   'articles.html',
   'index.html',
   'issues.html',
-  'issues-x.html',
   'post.html',
   path.join('shared', 'site-pages.js'),
   path.join('functions', 'articles', '[slug].js'),
