@@ -54,12 +54,33 @@ const trim = (value, maxLength) => {
 
 const articleUrl = (slug) => new URL(`/articles/${encodeURIComponent(String(slug || '').trim())}`, SITE_ORIGIN).toString();
 
+// 一切時間以北京時間（Asia/Shanghai, UTC+8）為準。
+const TZ_OFFSET_MINUTES = 8 * 60;
+const RFC822_DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const RFC822_MONTHS = [
+  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+];
+const pad2 = (n) => String(n).padStart(2, '0');
+
+const formatRfc822InBeijing = (date) => {
+  const shifted = new Date(date.getTime() + TZ_OFFSET_MINUTES * 60 * 1000);
+  const day = RFC822_DAYS[shifted.getUTCDay()];
+  const d = pad2(shifted.getUTCDate());
+  const month = RFC822_MONTHS[shifted.getUTCMonth()];
+  const y = shifted.getUTCFullYear();
+  const hh = pad2(shifted.getUTCHours());
+  const mm = pad2(shifted.getUTCMinutes());
+  const ss = pad2(shifted.getUTCSeconds());
+  return `${day}, ${d} ${month} ${y} ${hh}:${mm}:${ss} +0800`;
+};
+
 const pubDate = (date) => {
   const raw = collapseWhitespace(date);
   const match = raw.match(/^(\d{4})-(\d{2})-(\d{2})$/);
   const parsed = match ? new Date(`${raw}T00:00:00+08:00`) : new Date(raw);
-  if (Number.isNaN(parsed.getTime())) return new Date().toUTCString();
-  return parsed.toUTCString();
+  if (Number.isNaN(parsed.getTime())) return formatRfc822InBeijing(new Date());
+  return formatRfc822InBeijing(parsed);
 };
 
 const postsData = readJson(POSTS_FILE, { items: [] });
@@ -71,7 +92,7 @@ const posts = (Array.isArray(postsData.items) ? postsData.items : postsData)
 
 const siteName = collapseWhitespace(site.siteName) || 'CRIVU';
 const siteDescription = collapseWhitespace(site.aboutIntro) || collapseWhitespace(site.latestIntro) || `${siteName} 的個人博客更新。`;
-const lastBuildDate = posts[0]?.date ? pubDate(posts[0].date) : new Date().toUTCString();
+const lastBuildDate = posts[0]?.date ? pubDate(posts[0].date) : formatRfc822InBeijing(new Date());
 
 const items = posts
   .map((post) => {
