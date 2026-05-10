@@ -77,7 +77,7 @@ const shell = ({ bodyClass = '', currentPath, description, mainHtml, scriptSrc, 
 <html lang="zh-Hant">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="build-version" content="${BUILD_VERSION}" />
   <title>${escapeHtml(title)}</title>
   <meta name="description" content="${escapeHtml(description)}" />${keywords ? `\n  <meta name="keywords" content="${escapeHtml(keywords)}" />` : ''}
@@ -95,7 +95,7 @@ const shell = ({ bodyClass = '', currentPath, description, mainHtml, scriptSrc, 
 <body${bodyClass ? ` class="${escapeHtml(bodyClass)}"` : ''}>
   <header class="site-header">
     <a class="logo" id="siteName" href="/">${escapeHtml(siteName)}</a>
-    <nav class="nav">
+    <nav class="nav" id="primaryNav">
       ${navHtml(site, currentPath)}
     </nav>
     <div class="header-actions">
@@ -103,8 +103,19 @@ const shell = ({ bodyClass = '', currentPath, description, mainHtml, scriptSrc, 
         <input id="searchInput" class="search-input" type="search" placeholder="${escapeHtml(searchPlaceholder)}" aria-label="搜尋文章" />
         <div id="searchResults" class="search-results"></div>
       </div>
-      <button class="mobile-search-toggle" id="mobileSearchBtn" aria-label="搜尋">🔍</button>
-      <button class="mobile-menu-toggle" id="mobileMenuBtn" aria-label="展開選單">☰</button>
+      <button class="mobile-search-toggle" id="mobileSearchBtn" aria-label="搜尋">
+        <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="18" height="18">
+          <circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="1.8"/>
+          <line x1="16.2" y1="16.2" x2="20" y2="20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <button class="mobile-menu-toggle" id="mobileMenuBtn" aria-label="展開選單" aria-expanded="false" aria-controls="primaryNav">
+        <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="18" height="18">
+          <line class="mm-line mm-line-top" x1="4" y1="7" x2="20" y2="7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          <line class="mm-line mm-line-mid" x1="4" y1="12" x2="20" y2="12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          <line class="mm-line mm-line-bot" x1="4" y1="17" x2="20" y2="17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+      </button>
     </div>
   </header>
 

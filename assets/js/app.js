@@ -293,11 +293,31 @@ const setupMobileSearch = () => {
   const input = qs('#searchInput');
   if (!btn || !header || !input) return;
 
+  const syncAria = () => {
+    const open = header.classList.contains('mobile-search-open');
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  };
+
   btn.addEventListener('click', () => {
     header.classList.remove('mobile-menu-open');
     header.classList.toggle('mobile-search-open');
+    syncAria();
+    // menu button aria should reset too
+    const menuBtn = qs('#mobileMenuBtn');
+    if (menuBtn) menuBtn.setAttribute('aria-expanded', 'false');
     if (header.classList.contains('mobile-search-open')) input.focus();
   });
+
+  // ESC 關閉搜尋
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      header.classList.remove('mobile-search-open');
+      syncAria();
+      btn.focus();
+    }
+  });
+
+  syncAria();
 };
 
 const setupMobileMenu = () => {
@@ -306,15 +326,25 @@ const setupMobileMenu = () => {
   const nav = qs('.nav');
   if (!btn || !header || !nav) return;
 
+  const syncAria = () => {
+    const open = header.classList.contains('mobile-menu-open');
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    btn.setAttribute('aria-label', open ? '收起選單' : '展開選單');
+  };
+
   btn.addEventListener('click', () => {
     header.classList.remove('mobile-search-open');
     header.classList.toggle('mobile-menu-open');
+    syncAria();
+    const searchBtn = qs('#mobileSearchBtn');
+    if (searchBtn) searchBtn.setAttribute('aria-expanded', 'false');
   });
 
   nav.addEventListener('click', (e) => {
     const target = e.target;
     if (target instanceof HTMLElement && target.closest('a')) {
       header.classList.remove('mobile-menu-open');
+      syncAria();
     }
   });
 
@@ -322,8 +352,22 @@ const setupMobileMenu = () => {
     if (!header.contains(e.target)) {
       header.classList.remove('mobile-menu-open');
       header.classList.remove('mobile-search-open');
+      syncAria();
+      const searchBtn = qs('#mobileSearchBtn');
+      if (searchBtn) searchBtn.setAttribute('aria-expanded', 'false');
     }
   });
+
+  // ESC 鍵關閉
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && header.classList.contains('mobile-menu-open')) {
+      header.classList.remove('mobile-menu-open');
+      syncAria();
+      btn.focus();
+    }
+  });
+
+  syncAria();
 };
 
 const renderCard = (post) => {
