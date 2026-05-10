@@ -372,7 +372,6 @@ const setupMobileMenu = () => {
 };
 
 const renderCard = (post, index) => {
-  const cover = safeCoverUrl(post.cover);
   const safeLink = articlePath(post.slug);
   const excerpt = buildDescription(post, 72);
   const displayDate = toDisplayDate(post.date);
@@ -380,17 +379,22 @@ const renderCard = (post, index) => {
     displayDate ? `<span class="cap">${escapeHtml(displayDate)}</span>` : '',
   ].filter(Boolean);
   const num = String((index ?? 0) + 1).padStart(2, '0');
+  const hasCover = Boolean(normalizeText(post.cover, { allowPlaceholder: true }));
+  const cover = hasCover ? safeCoverUrl(post.cover) : '';
+  const thumb = hasCover
+    ? `
+      <a class="toc__thumb" href="${escapeHtml(safeLink)}" aria-hidden="true">
+        <img src="${escapeHtml(cover)}" alt="" loading="lazy" />
+      </a>`
+    : '';
   return `
-    <li class="toc__row">
+    <li class="toc__row${hasCover ? '' : ' toc__row--no-cover'}">
       <span class="toc__num">${num}</span>
       <div class="toc__body">
         <p class="toc__meta">${metaBits.join('')}</p>
         <h3 class="toc__title"><a href="${escapeHtml(safeLink)}">${escapeHtml(post.title || '')}</a></h3>
         ${excerpt ? `<p class="toc__excerpt">${escapeHtml(excerpt)}</p>` : ''}
-      </div>
-      <a class="toc__thumb" href="${escapeHtml(safeLink)}" aria-hidden="true">
-        <img src="${escapeHtml(cover)}" alt="" loading="lazy" />
-      </a>
+      </div>${thumb}
     </li>
   `;
 };

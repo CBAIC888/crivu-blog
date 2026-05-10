@@ -37,7 +37,7 @@ const renderTocRow = (post, index) => {
     .join('');
   const excerpt = normalizeText(post.excerpt) || '';
   return `
-    <li class="toc__row">
+    <li class="toc__row toc__row--no-cover">
       <span class="toc__num">${num}</span>
       <div class="toc__body">
         <p class="toc__meta">${metaBits}</p>

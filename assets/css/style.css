@@ -528,6 +528,11 @@ main > .section:first-child {
   padding: 22px 0;
 }
 
+/* 沒有封面的文章列：把第三欄收掉，讓內容佔滿 */
+.toc__row--no-cover {
+  grid-template-columns: 64px 1fr;
+}
+
 .toc__num {
   font-family: var(--serif);
   font-size: 24px;
@@ -1418,6 +1423,7 @@ body::before { display: none !important; }
   .issues-grid { grid-template-columns: repeat(2, 1fr); }
   .toc__row,
   .post-card { grid-template-columns: 52px 1fr 140px; gap: 20px; }
+  .toc__row--no-cover { grid-template-columns: 52px 1fr; }
   .post-card { grid-template-columns: 1fr 140px; }
   .toc__thumb,
   .post-card .image { width: 140px; height: 100px; }
