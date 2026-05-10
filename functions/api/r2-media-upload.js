@@ -91,6 +91,16 @@ const makeNow = () => {
   };
 };
 
+const arrayBufferToBase64 = (buffer) => {
+  const bytes = new Uint8Array(buffer);
+  const chunkSize = 0x8000;
+  let binary = '';
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
+  }
+  return btoa(binary);
+};
+
 const verifyCmsToken = async (token, env) => {
   if (!token) return { ok: false, status: 401, error: 'Missing GitHub token' };
 
@@ -123,6 +133,53 @@ const verifyCmsToken = async (token, env) => {
   return { ok: true };
 };
 
+const makeImageKey = (filename, contentType, now = makeNow()) => {
+  const baseName = sanitizeFileBase(filename);
+  const ext = safeExt(filename, contentType);
+  const nonce = crypto.randomUUID().replaceAll('-', '').slice(0, 12);
+  return `images/uploads/${now.yyyymmdd}/${baseName}-${nonce}.${ext}`;
+};
+
+const uploadToGithubMedia = async ({ bytes, contentType, env, filename, token }) => {
+  const repo = env.GITHUB_REPO || 'CBAIC888/crivu-blog';
+  const branch = env.GITHUB_BRANCH || 'main';
+  const key = makeImageKey(filename, contentType);
+  const repoPath = `assets/img/uploads/${key.replace(/^images\/uploads\//, '')}`;
+  const uploadRes = await fetch(`https://api.github.com/repos/${repo}/contents/${repoPath}`, {
+    method: 'PUT',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: 'application/vnd.github+json',
+      'Content-Type': 'application/json',
+      'User-Agent': 'crivu-cms-oauth',
+    },
+    body: JSON.stringify({
+      message: `media: upload '${repoPath}'`,
+      content: arrayBufferToBase64(bytes),
+      branch,
+    }),
+  });
+
+  let uploadJson = {};
+  try {
+    uploadJson = await uploadRes.json();
+  } catch {
+    uploadJson = {};
+  }
+
+  if (!uploadRes.ok) {
+    const message = uploadJson.message || `GitHub media upload failed (${uploadRes.status})`;
+    return { ok: false, status: uploadRes.status >= 500 ? 502 : uploadRes.status, error: message };
+  }
+
+  return {
+    ok: true,
+    publicUrl: `/${repoPath}`,
+    key: repoPath,
+    storage: 'github',
+  };
+};
+
 const createSignedPutUrl = async ({ env, filename, contentType }) => {
   const accountId = env.R2_ACCOUNT_ID;
   const accessKeyId = env.R2_ACCESS_KEY_ID;
@@ -140,10 +197,7 @@ const createSignedPutUrl = async ({ env, filename, contentType }) => {
   const region = 'auto';
   const service = 's3';
   const host = `${accountId}.r2.cloudflarestorage.com`;
-  const baseName = sanitizeFileBase(filename);
-  const ext = safeExt(filename, contentType);
-  const nonce = crypto.randomUUID().replaceAll('-', '').slice(0, 12);
-  const key = `images/uploads/${now.yyyymmdd}/${baseName}-${nonce}.${ext}`;
+  const key = makeImageKey(filename, contentType, now);
   const credentialScope = `${now.yyyymmdd}/${region}/${service}/aws4_request`;
   const canonicalUri = `/${bucket}/${key.split('/').map(toRfc3986).join('/')}`;
 
@@ -211,14 +265,31 @@ export async function onRequest(context) {
   if (size > maxImageBytes) return json({ error: `Image too large. Max allowed is ${maxImageBytes} bytes` }, 413);
   if (!ALLOWED_IMAGE_CONTENT_TYPES.has(contentType)) return json({ error: 'Unsupported image content type' }, 415);
 
+  const bytes = await file.arrayBuffer();
   let signed;
   try {
     signed = await createSignedPutUrl({ env, filename, contentType });
   } catch (err) {
-    return json({ error: err && err.message ? err.message : 'Failed to prepare R2 upload' }, 500);
+    const fallback = await uploadToGithubMedia({ bytes, contentType, env, filename, token });
+    if (!fallback.ok) {
+      return json(
+        {
+          error: fallback.error || '圖片上傳失敗',
+          detail: err && err.message ? `R2 unavailable: ${err.message}` : 'R2 unavailable',
+        },
+        fallback.status || 502
+      );
+    }
+    return json({
+      publicUrl: fallback.publicUrl,
+      key: fallback.key,
+      name: filename,
+      size,
+      contentType,
+      storage: fallback.storage,
+    });
   }
 
-  const bytes = await file.arrayBuffer();
   const putRes = await fetch(signed.uploadUrl, {
     method: 'PUT',
     headers: { 'Content-Type': contentType },
@@ -236,5 +307,6 @@ export async function onRequest(context) {
     name: filename,
     size,
     contentType,
+    storage: 'r2',
   });
 }
