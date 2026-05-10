@@ -7,6 +7,7 @@ import {
   renderNavItems,
   safeCoverUrl,
   simpleMarkdown,
+  toDisplayDate,
 } from '../../shared/content.js';
 import { renderSiteFooter } from '../../shared/site-pages.js';
 
@@ -37,8 +38,9 @@ const toInt = (value, fallback, min, max) => {
 const renderMoreItem = (post) => {
   const safeLink = articlePath(post.slug);
   const excerpt = buildDescription(post, 64);
+  const displayDate = toDisplayDate(post.date);
   const metaBits = [
-    post.date ? `<span class="cap">${escapeHtml(post.date)}</span>` : '',
+    displayDate ? `<span class="cap">${escapeHtml(displayDate)}</span>` : '',
   ].filter(Boolean);
   return `
     <a class="more-item" href="${escapeHtml(safeLink)}">

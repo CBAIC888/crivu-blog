@@ -91,9 +91,19 @@ export const articlePath = (slug) => {
 
 export const formatDate = (iso) => {
   const raw = normalizeText(iso, { allowPlaceholder: true });
-  const match = raw.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  const match = raw.match(/^(\d{4})-(\d{2})-(\d{2})/);
   if (!match) return raw;
   return `${match[1]}/${match[2]}/${match[3]}`;
+};
+
+/**
+ * 將 ISO datetime (或純日期) 正規化為 `YYYY-MM-DD`，用於卡片列、搜尋結果等
+ * 只需要顯示日期的場景。兼容舊的 `2026-05-11` 與新的 `2026-05-11T14:30:00+08:00`。
+ */
+export const toDisplayDate = (iso) => {
+  const raw = normalizeText(iso, { allowPlaceholder: true });
+  const match = raw.match(/^(\d{4}-\d{2}-\d{2})/);
+  return match ? match[1] : raw;
 };
 
 const trimDescription = (value, maxLength) => {

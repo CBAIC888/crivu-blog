@@ -5,6 +5,7 @@ import {
   normalizeText,
   renderNavItems,
   safeCoverUrl,
+  toDisplayDate,
 } from './content.js';
 
 const BUILD_VERSION = '__BUILD_VERSION__';
@@ -276,8 +277,9 @@ const shell = ({
 const renderTocRow = (post, index) => {
   const href = articlePath(post.slug);
   const num = String(index + 1).padStart(2, '0');
+  const displayDate = toDisplayDate(post.date);
   const metaBits = [
-    post.date ? `<span class="cap">${escapeHtml(post.date)}</span>` : '',
+    displayDate ? `<span class="cap">${escapeHtml(displayDate)}</span>` : '',
   ]
     .filter(Boolean)
     .join('');

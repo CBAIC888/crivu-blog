@@ -88,6 +88,12 @@
     return 0;
   };
 
+  const toDisplayDate = (raw) => {
+    const str = String(raw == null ? '' : raw).trim();
+    const m = str.match(/^(\d{4}-\d{2}-\d{2})/);
+    return m ? m[1] : str;
+  };
+
   const articlePath = (slug) =>
     slug ? `/articles/${encodeURIComponent(String(slug).trim())}` : '/articles.html';
 
@@ -121,7 +127,7 @@
       .map(({ post }) => {
         const href = articlePath(post.slug || '');
         const title = highlight(post.title || '', q);
-        const meta = post.date ? escapeHtml(post.date) : '';
+        const meta = escapeHtml(toDisplayDate(post.date));
         const snip = highlight(snippet(post.excerpt || post.body, q), q);
         return `
           <a class="search-hit search-item" href="${href}">

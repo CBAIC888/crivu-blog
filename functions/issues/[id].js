@@ -4,6 +4,7 @@ import {
   normalizeText,
   renderNavItems,
   safeCoverUrl,
+  toDisplayDate,
 } from '../../shared/content.js';
 import { renderSiteFooter } from '../../shared/site-pages.js';
 
@@ -28,8 +29,9 @@ const fetchStaticJson = async (context, pathname) => {
 const renderTocRow = (post, index) => {
   const href = articlePath(post.slug);
   const num = String(index + 1).padStart(2, '0');
+  const displayDate = toDisplayDate(post.date);
   const metaBits = [
-    post.date ? `<span class="cap">${escapeHtml(post.date)}</span>` : '',
+    displayDate ? `<span class="cap">${escapeHtml(displayDate)}</span>` : '',
   ]
     .filter(Boolean)
     .join('');

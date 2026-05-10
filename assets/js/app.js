@@ -11,6 +11,7 @@ import {
   renderNavItems,
   safeCoverUrl,
   sanitizeUrl,
+  toDisplayDate,
 } from '../../shared/content.js';
 
 const state = {
@@ -374,8 +375,9 @@ const renderCard = (post, index) => {
   const cover = safeCoverUrl(post.cover);
   const safeLink = articlePath(post.slug);
   const excerpt = buildDescription(post, 72);
+  const displayDate = toDisplayDate(post.date);
   const metaBits = [
-    post.date ? `<span class="cap">${escapeHtml(post.date)}</span>` : '',
+    displayDate ? `<span class="cap">${escapeHtml(displayDate)}</span>` : '',
   ].filter(Boolean);
   const num = String((index ?? 0) + 1).padStart(2, '0');
   return `

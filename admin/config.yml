@@ -37,13 +37,13 @@ collections:
             name: "items"
             widget: "list"
             label_singular: "文章"
-            summary: "{{fields.date}} · {{fields.title}}"
+            summary: "{{fields.date | date('YYYY-MM-DD')}} · {{fields.title}}"
             collapsed: true
             minimize_collapsed: true
             add_to_top: true
             fields:
               - { label: "標題", name: "title", widget: "string" }
-              - { label: "日期", name: "date", widget: "datetime", format: "YYYY-MM-DD", time_format: false }
+              - { label: "日期", name: "date", widget: "datetime", format: "YYYY-MM-DDTHH:mm:ssZ", date_format: "YYYY-MM-DD", time_format: "HH:mm", picker_utc: false }
               - { label: "分類", name: "category", widget: "string", required: false }
               - { label: "標籤", name: "tags", widget: "list", required: false, allow_add: true }
               - { label: "摘要", name: "excerpt", widget: "text", required: false }
@@ -73,7 +73,7 @@ collections:
               - { label: "標題", name: "title", widget: "string" }
               - { label: "主題", name: "theme", widget: "string", required: false }
               - { label: "封面", name: "cover", widget: "image", required: false }
-              - { label: "發布日期", name: "publishDate", widget: "datetime", format: "YYYY-MM-DD", time_format: false, required: false }
+              - { label: "發布日期", name: "publishDate", widget: "datetime", format: "YYYY-MM-DDTHH:mm:ssZ", date_format: "YYYY-MM-DD", time_format: "HH:mm", picker_utc: false, required: false }
               - { label: "編者語", name: "editorNote", widget: "text", required: false }
               - label: "收錄文章（Slug 列表）"
                 name: "posts"
