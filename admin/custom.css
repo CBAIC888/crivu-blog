@@ -1,14 +1,19 @@
 :root {
-  --cms-accent: #d1583c;
+  --cms-accent: #9f3c3c;
   --cms-accent-2: #1c6b6a;
-  --cms-ink: #1b1a17;
-  --cms-bg: #f7f5f1;
+  --cms-ink: #1a1814;
+  --cms-bg: #f5f1e8;
   --cms-card: #ffffff;
-  --cms-line: rgba(17, 17, 17, 0.1);
+  --cms-card-alt: #fbf8f1;
+  --cms-line: rgba(26, 24, 20, 0.12);
+  --cms-line-strong: rgba(26, 24, 20, 0.4);
+  --cms-muted: #7a7168;
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans CJK SC', sans-serif !important;
+  font-family: 'Iowan Old Style', 'Palatino Linotype', 'Noto Serif SC',
+    'Songti SC', -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif !important;
   color: var(--cms-ink);
   background: var(--cms-bg);
 }
@@ -19,12 +24,13 @@ textarea,
 select,
 [class*='Button'],
 [class*='Control'] {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans CJK SC', sans-serif !important;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC',
+    'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans CJK SC', sans-serif !important;
 }
 
 button,
 [class*='Button'] {
-  border-radius: 10px !important;
+  border-radius: 8px !important;
 }
 
 a,
@@ -35,11 +41,32 @@ a,
 [class*='ControlLabel'] {
   font-weight: 600 !important;
   letter-spacing: 0.2px;
+  color: var(--cms-ink) !important;
+}
+
+/* 站點設定：「基本」「導航」等分組標題著色，讓長列表易讀 */
+[class*='ControlLabel']::first-line {
+  color: var(--cms-accent);
+}
+label[class*='ControlLabel'] {
+  position: relative;
+}
+/* 分組前綴加分隔線（視覺節拍，純 CSS 偵測「基本/導航/主題」等字首） */
+[class*='ControlLabel']:has-text('「基本」'),
+[class*='ControlLabel']:has-text('「導航」'),
+[class*='ControlLabel']:has-text('「主題」'),
+[class*='ControlLabel']:has-text('「首頁」'),
+[class*='ControlLabel']:has-text('「文章頁」'),
+[class*='ControlLabel']:has-text('「期刊頁」'),
+[class*='ControlLabel']:has-text('「關於頁」'),
+[class*='ControlLabel']:has-text('「舊版」') {
+  padding-top: 16px;
+  border-top: 1px dashed var(--cms-line);
 }
 
 [class*='ToolbarContainer'],
 [class*='AppHeader'] {
-  background: #f7f5f1 !important;
+  background: var(--cms-bg) !important;
   border-bottom: 1px solid var(--cms-line);
 }
 
@@ -53,7 +80,7 @@ a,
 [class*='ListCard'],
 [class*='EditorContainer'],
 [class*='Pane'] {
-  border-radius: 12px !important;
+  border-radius: 10px !important;
   background: var(--cms-card) !important;
   border: 1px solid var(--cms-line);
   box-shadow: none !important;
@@ -63,9 +90,91 @@ a,
   margin-bottom: 10px;
 }
 
-/* Keep native layout; only improve readability */
 [class*='EditorControl'] textarea,
 [class*='EditorControl'] input,
 [class*='EditorControl'] select {
   line-height: 1.45;
+}
+
+/* 浮動功能區：音訊上傳、快速工具 */
+.cms-fab-cluster {
+  position: fixed;
+  right: 22px;
+  bottom: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-end;
+  z-index: 9999;
+}
+.cms-fab-cluster button,
+.cms-fab-cluster a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  font: 600 13px/1 -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif;
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+  color: #fff;
+  background: var(--cms-ink);
+  box-shadow: 0 10px 28px -10px rgba(26, 24, 20, 0.45);
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+.cms-fab-cluster a { text-decoration: none; }
+.cms-fab-cluster button:hover,
+.cms-fab-cluster a:hover {
+  transform: translateY(-1px);
+  background: var(--cms-accent);
+}
+.cms-fab-cluster .fab-primary {
+  background: var(--cms-accent);
+}
+.cms-fab-cluster .fab-primary:hover {
+  background: var(--cms-accent-2);
+}
+.cms-fab-cluster .fab-kbd {
+  font-family: 'SF Mono', Menlo, monospace;
+  font-size: 11px;
+  padding: 2px 6px;
+  background: rgba(255, 255, 255, 0.16);
+  border-radius: 4px;
+}
+
+/* 站點設定頁的輔助說明卡 */
+.cms-hint-card {
+  position: sticky;
+  top: 0;
+  margin: -16px -16px 12px;
+  padding: 14px 18px;
+  background: var(--cms-card-alt);
+  border-bottom: 1px solid var(--cms-line);
+  font-size: 13px;
+  color: var(--cms-muted);
+  line-height: 1.6;
+  z-index: 5;
+}
+.cms-hint-card strong { color: var(--cms-ink); }
+.cms-hint-card code {
+  background: rgba(26, 24, 20, 0.06);
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-family: 'SF Mono', Menlo, monospace;
+  font-size: 12px;
+}
+
+/* 色碼欄位的即時色塊（JS 動態加 .cms-color-swatch） */
+.cms-color-field {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.cms-color-swatch {
+  width: 26px;
+  height: 26px;
+  border: 1px solid var(--cms-line-strong);
+  border-radius: 6px;
+  background: #fff;
+  flex: 0 0 auto;
 }

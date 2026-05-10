@@ -1,14 +1,24 @@
+/*
+ * CRIVU 後台補強
+ * - 兩個編輯器元件：圖片、音訊
+ * - 右下角浮動工具列：音訊上傳、在新分頁預覽正式站
+ * - 站點設定頁的浮動說明卡，提醒欄位前綴的分組規則
+ * - 當使用者在「品牌強調色」欄位填入 #rrggbb 時，旁邊顯示即時色塊
+ */
+
 (function () {
   if (typeof CMS === 'undefined') return;
 
-  var escapeHtml = function (input) {
-    return String(input == null ? '' : input)
+  /* ============================================================
+     1. 兩個 Markdown 自訂元件（圖片、音訊）
+     ============================================================ */
+  const escapeHtml = (input) =>
+    String(input == null ? '' : input)
       .replaceAll('&', '&amp;')
       .replaceAll('<', '&lt;')
       .replaceAll('>', '&gt;')
       .replaceAll('"', '&quot;')
       .replaceAll("'", '&#39;');
-  };
 
   CMS.registerEditorComponent({
     id: 'image-block',
@@ -20,7 +30,7 @@
         name: 'preset',
         label: '尺寸預設',
         widget: 'select',
-        default: 'article',
+        default: 'article-1200x800',
         options: [
           { label: '封面橫圖 1600x1000', value: 'cover-1600x1000' },
           { label: '文內橫圖 1200x800', value: 'article-1200x800' },
@@ -30,7 +40,7 @@
       { name: 'caption', label: '圖片說明', widget: 'string', required: false }
     ],
     pattern: /!\[(.*?)\]\((.*?)\)\n<!--\s*preset:(.*?)\s*-->\n?(?:\*(.*?)\*)?/,
-    fromBlock: function (match) {
+    fromBlock(match) {
       return {
         alt: match[1] || '',
         src: match[2] || '',
@@ -38,15 +48,15 @@
         caption: match[4] || ''
       };
     },
-    toBlock: function (obj) {
-      var alt = obj.alt || '';
-      var src = obj.src || '';
-      var preset = obj.preset || 'article-1200x800';
-      var caption = obj.caption ? '\n*' + obj.caption + '*' : '';
+    toBlock(obj) {
+      const alt = obj.alt || '';
+      const src = obj.src || '';
+      const preset = obj.preset || 'article-1200x800';
+      const caption = obj.caption ? '\n*' + obj.caption + '*' : '';
       return '![' + alt + '](' + src + ')\n<!-- preset:' + preset + ' -->' + caption;
     },
-    toPreview: function (obj) {
-      var caption = obj.caption ? '<figcaption>' + escapeHtml(obj.caption) + '</figcaption>' : '';
+    toPreview(obj) {
+      const caption = obj.caption ? '<figcaption>' + escapeHtml(obj.caption) + '</figcaption>' : '';
       return '<figure><img src="' + escapeHtml(obj.src || '') + '" alt="' + escapeHtml(obj.alt || '') + '"/>' + caption + '</figure>';
     }
   });
@@ -55,27 +65,27 @@
     id: 'audio-block',
     label: '音訊（Cloudflare）',
     fields: [
-      { name: 'src', label: '音訊 URL', widget: 'string', hint: '可用右下角「上傳音訊到 Cloudflare」按鈕自動插入' },
+      { name: 'src', label: '音訊 URL', widget: 'string', hint: '可用右下角「上傳音訊」按鈕自動插入' },
       { name: 'title', label: '音訊標題', widget: 'string', required: false },
       { name: 'caption', label: '音訊說明', widget: 'string', required: false }
     ],
     pattern: /\[audio\]\((.*?)\)\n<!--\s*title:(.*?)\s*-->\n?(?:\*(.*?)\*)?/,
-    fromBlock: function (match) {
+    fromBlock(match) {
       return {
         src: match[1] || '',
         title: match[2] || '',
         caption: match[3] || ''
       };
     },
-    toBlock: function (obj) {
-      var src = obj.src || '';
-      var title = obj.title || '';
-      var caption = obj.caption ? '\n*' + obj.caption + '*' : '';
+    toBlock(obj) {
+      const src = obj.src || '';
+      const title = obj.title || '';
+      const caption = obj.caption ? '\n*' + obj.caption + '*' : '';
       return '[audio](' + src + ')\n<!-- title:' + title + ' -->' + caption;
     },
-    toPreview: function (obj) {
-      var title = obj.title ? '<strong>' + escapeHtml(obj.title) + '</strong>' : '';
-      var caption = obj.caption ? '<div>' + escapeHtml(obj.caption) + '</div>' : '';
+    toPreview(obj) {
+      const title = obj.title ? '<strong>' + escapeHtml(obj.title) + '</strong>' : '';
+      const caption = obj.caption ? '<div>' + escapeHtml(obj.caption) + '</div>' : '';
       return (
         '<figure>' +
         title +
@@ -88,28 +98,59 @@
     }
   });
 
-  var UPLOAD_BUTTON_ID = 'cfAudioUploadButton';
-  var lastEditorSelection = {
-    textarea: null,
-    start: 0,
-    end: 0
+  /* ============================================================
+     2. 插入到游標位置的工具（音訊上傳用）
+     ============================================================ */
+  const lastSelection = { textarea: null, start: 0, end: 0 };
+
+  const rememberSelection = (el) => {
+    if (!el || el.tagName !== 'TEXTAREA') return;
+    lastSelection.textarea = el;
+    lastSelection.start = Number.isFinite(el.selectionStart) ? el.selectionStart : el.value.length;
+    lastSelection.end = Number.isFinite(el.selectionEnd) ? el.selectionEnd : el.value.length;
   };
 
-  var escapeMd = function (input) {
-    return String(input == null ? '' : input).replaceAll('\n', ' ').replaceAll('\r', ' ').replaceAll('*', '\\*');
+  const findEditorTextarea = () => {
+    if (lastSelection.textarea && document.contains(lastSelection.textarea)) {
+      return lastSelection.textarea;
+    }
+    const candidates = Array.from(document.querySelectorAll('textarea')).filter((el) => el.offsetParent !== null);
+    return candidates[0] || null;
   };
 
-  var fileTitle = function (name) {
-    return String(name || '未命名音訊').replace(/\.[^.]+$/, '');
+  const insertAtCursor = (markdown) => {
+    const el = findEditorTextarea();
+    if (!el) throw new Error('找不到文章編輯區（textarea）');
+    const value = el.value || '';
+    const start = Number.isFinite(lastSelection.start) ? lastSelection.start : value.length;
+    const end = Number.isFinite(lastSelection.end) ? lastSelection.end : start;
+    const prefix = value.slice(0, start);
+    const suffix = value.slice(end);
+    const leading = prefix && !prefix.endsWith('\n') ? '\n' : '';
+    const trailing = suffix && !suffix.startsWith('\n') ? '\n' : '';
+    const block = leading + markdown + trailing;
+    const next = prefix + block + suffix;
+    el.value = next;
+    const caret = prefix.length + block.length;
+    el.selectionStart = caret;
+    el.selectionEnd = caret;
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+    el.dispatchEvent(new Event('change', { bubbles: true }));
+    el.focus();
+    rememberSelection(el);
   };
 
-  var getCmsToken = function () {
+  const escapeMd = (input) =>
+    String(input == null ? '' : input).replaceAll('\n', ' ').replaceAll('\r', ' ').replaceAll('*', '\\*');
+
+  const fileTitle = (name) => String(name || '未命名音訊').replace(/\.[^.]+$/, '');
+
+  const getCmsToken = () => {
     try {
-      var raw =
-        window.localStorage.getItem('decap-cms-user') ||
-        window.localStorage.getItem('netlify-cms-user');
+      const raw =
+        window.localStorage.getItem('decap-cms-user') || window.localStorage.getItem('netlify-cms-user');
       if (!raw) return '';
-      var parsed = JSON.parse(raw);
+      const parsed = JSON.parse(raw);
       if (!parsed || typeof parsed !== 'object') return '';
       if (parsed.token) return parsed.token;
       if (parsed.access_token) return parsed.access_token;
@@ -120,177 +161,188 @@
     return '';
   };
 
-  var rememberSelection = function (el) {
-    if (!el || el.tagName !== 'TEXTAREA') return;
-    lastEditorSelection.textarea = el;
-    lastEditorSelection.start = Number.isFinite(el.selectionStart) ? el.selectionStart : el.value.length;
-    lastEditorSelection.end = Number.isFinite(el.selectionEnd) ? el.selectionEnd : el.value.length;
-  };
+  const uploadAudioToCloudflare = async (file) => {
+    const token = getCmsToken();
+    if (!token) throw new Error('尚未登入 CMS，請先登入後再上傳音訊');
 
-  var findEditorTextarea = function () {
-    if (lastEditorSelection.textarea && document.contains(lastEditorSelection.textarea)) {
-      return lastEditorSelection.textarea;
-    }
-    var candidates = Array.from(document.querySelectorAll("textarea")).filter(function (el) {
-      return el.offsetParent !== null;
-    });
-    if (candidates.length === 0) return null;
-    return candidates[0];
-  };
-
-  var insertAtCursor = function (markdown) {
-    var el = findEditorTextarea();
-    if (!el) throw new Error('找不到文章編輯區（textarea）');
-    var value = el.value || '';
-    var start = Number.isFinite(lastEditorSelection.start) ? lastEditorSelection.start : value.length;
-    var end = Number.isFinite(lastEditorSelection.end) ? lastEditorSelection.end : start;
-    var prefix = value.slice(0, start);
-    var suffix = value.slice(end);
-    var needsLeadingNewline = prefix && !prefix.endsWith('\n');
-    var needsTrailingNewline = suffix && !suffix.startsWith('\n');
-    var block = (needsLeadingNewline ? '\n' : '') + markdown + (needsTrailingNewline ? '\n' : '');
-    var next = prefix + block + suffix;
-    el.value = next;
-    var caret = prefix.length + block.length;
-    el.selectionStart = caret;
-    el.selectionEnd = caret;
-    el.dispatchEvent(new Event('input', { bubbles: true }));
-    el.dispatchEvent(new Event('change', { bubbles: true }));
-    el.focus();
-    rememberSelection(el);
-  };
-
-  var uploadAudioToCloudflare = async function (file) {
-    var token = getCmsToken();
-    if (!token) {
-      throw new Error('尚未登入 CMS，請先登入後再上傳音訊');
-    }
-    var signRes = await fetch('/api/r2-upload-sign', {
+    const signRes = await fetch('/api/r2-upload-sign', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: 'Bearer ' + token
-      },
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
       body: JSON.stringify({
         filename: file.name,
         contentType: file.type || 'application/octet-stream',
         size: file.size
       })
     });
-    var signJson = await signRes.json().catch(function () {
-      return {};
-    });
-    if (!signRes.ok) {
-      throw new Error(signJson.error || '取得 Cloudflare 上傳簽名失敗');
-    }
+    const signJson = await signRes.json().catch(() => ({}));
+    if (!signRes.ok) throw new Error(signJson.error || '取得 Cloudflare 上傳簽名失敗');
 
-    var putRes = await fetch(signJson.uploadUrl, {
+    const putRes = await fetch(signJson.uploadUrl, {
       method: signJson.method || 'PUT',
       headers: signJson.headers || { 'Content-Type': file.type || 'application/octet-stream' },
       body: file
     });
-    if (!putRes.ok) {
-      throw new Error('上傳到 Cloudflare 失敗（' + putRes.status + '）');
-    }
+    if (!putRes.ok) throw new Error('上傳到 Cloudflare 失敗（' + putRes.status + '）');
 
     return signJson.publicUrl;
   };
 
-  var mountUploaderButton = function () {
-    if (document.getElementById(UPLOAD_BUTTON_ID)) return;
-    var btn = document.createElement('button');
-    btn.id = UPLOAD_BUTTON_ID;
-    btn.type = 'button';
-    btn.textContent = '上傳音訊到 Cloudflare';
-    btn.style.position = 'fixed';
-    btn.style.right = '22px';
-    btn.style.bottom = '22px';
-    btn.style.zIndex = '9999';
-    btn.style.border = '0';
-    btn.style.borderRadius = '999px';
-    btn.style.padding = '10px 14px';
-    btn.style.fontSize = '13px';
-    btn.style.cursor = 'pointer';
-    btn.style.background = '#1f7ae0';
-    btn.style.color = '#fff';
-    btn.style.boxShadow = '0 8px 20px rgba(0, 0, 0, 0.2)';
+  /* ============================================================
+     3. 右下角浮動工具列
+     ============================================================ */
+  const mountFabCluster = () => {
+    if (document.querySelector('.cms-fab-cluster')) return;
 
-    btn.addEventListener('click', function () {
-      var fileInput = document.createElement('input');
+    const cluster = document.createElement('div');
+    cluster.className = 'cms-fab-cluster';
+
+    // 音訊上傳按鈕（原本就有，保留）
+    const audioBtn = document.createElement('button');
+    audioBtn.type = 'button';
+    audioBtn.id = 'cfAudioUploadButton';
+    audioBtn.className = 'fab-primary';
+    audioBtn.innerHTML = '🎵 上傳音訊';
+
+    audioBtn.addEventListener('click', () => {
+      const fileInput = document.createElement('input');
       fileInput.type = 'file';
       fileInput.accept = 'audio/*,.mp3,.m4a,.wav,.aac,.ogg,.flac';
-      fileInput.onchange = async function () {
-        var file = fileInput.files && fileInput.files[0];
+      fileInput.onchange = async () => {
+        const file = fileInput.files && fileInput.files[0];
         if (!file) return;
-        var originalText = btn.textContent;
-        btn.disabled = true;
-        btn.textContent = '上傳中...';
+        const originalHtml = audioBtn.innerHTML;
+        audioBtn.disabled = true;
+        audioBtn.innerHTML = '上傳中…';
         try {
-          var publicUrl = await uploadAudioToCloudflare(file);
-          var title = escapeMd(fileTitle(file.name));
-          var markdown = '[audio](' + publicUrl + ')\n<!-- title:' + title + ' -->';
+          const publicUrl = await uploadAudioToCloudflare(file);
+          const title = escapeMd(fileTitle(file.name));
+          const markdown = '[audio](' + publicUrl + ')\n<!-- title:' + title + ' -->';
           insertAtCursor(markdown);
-          btn.textContent = '已插入音訊';
-          setTimeout(function () {
-            btn.textContent = originalText;
-            btn.disabled = false;
+          audioBtn.innerHTML = '✓ 已插入音訊';
+          setTimeout(() => {
+            audioBtn.innerHTML = originalHtml;
+            audioBtn.disabled = false;
           }, 1400);
         } catch (err) {
           console.error(err);
           alert(err && err.message ? err.message : '音訊上傳失敗');
-          btn.textContent = originalText;
-          btn.disabled = false;
+          audioBtn.innerHTML = originalHtml;
+          audioBtn.disabled = false;
         }
       };
       fileInput.click();
     });
 
-    document.body.appendChild(btn);
+    // 在新分頁預覽正式站
+    const siteLink = document.createElement('a');
+    siteLink.target = '_blank';
+    siteLink.rel = 'noopener';
+    siteLink.href = 'https://cbc688.com/';
+    siteLink.innerHTML = '🌐 預覽網站';
+
+    cluster.appendChild(audioBtn);
+    cluster.appendChild(siteLink);
+    document.body.appendChild(cluster);
   };
 
-  document.addEventListener(
-    'focusin',
-    function (event) {
-      rememberSelection(event.target);
-    },
-    true
-  );
-  document.addEventListener(
-    'click',
-    function (event) {
-      rememberSelection(event.target);
-    },
-    true
-  );
-  document.addEventListener(
-    'keyup',
-    function (event) {
-      rememberSelection(event.target);
-    },
-    true
-  );
-  document.addEventListener(
-    'select',
-    function (event) {
-      rememberSelection(event.target);
-    },
-    true
-  );
+  /* ============================================================
+     4. 站點設定頁的浮動說明卡
+        偵測網址 hash 進入 /collections/site 時才顯示。
+     ============================================================ */
+  const ensureSiteHintCard = () => {
+    const isSitePage =
+      location.hash.includes('/collections/site') || location.hash.includes('/edit/site');
+    const existing = document.querySelector('.cms-hint-card');
+    if (!isSitePage) {
+      if (existing) existing.remove();
+      return;
+    }
+    if (existing) return;
 
-  var boot = function () {
-    var config = window.DECAP_CMS_CONFIG || window.CMS_CONFIG;
+    const container =
+      document.querySelector("[class*='PreviewPaneContainer']")?.parentElement ||
+      document.querySelector("[class*='EditorContainer']") ||
+      document.body;
+
+    const card = document.createElement('div');
+    card.className = 'cms-hint-card';
+    card.innerHTML = `
+      <strong>站點設定說明</strong>：
+      欄位依 <code>「基本」</code> / <code>「導航」</code> / <code>「主題」</code> /
+      <code>「首頁」</code> / <code>「文章頁」</code> / <code>「期刊頁」</code> /
+      <code>「關於頁」</code> / <code>「舊版」</code> 前綴分組。
+      修改發佈後前端自動套用；帶有「舊版」字樣的欄位代表目前前端不再使用，僅保留避免既有部署失效。
+    `;
+    container.prepend(card);
+  };
+
+  /* ============================================================
+     5. 顏色欄位即時色塊
+     ============================================================ */
+  const attachColorSwatches = () => {
+    document.querySelectorAll('input[type="text"]').forEach((input) => {
+      if (input.dataset.swatchAttached) return;
+      const labelText = input.closest('[class*="EditorControl"]')?.querySelector('[class*="ControlLabel"]')?.textContent || '';
+      if (!labelText.includes('強調色') && !labelText.includes('色碼')) return;
+
+      input.dataset.swatchAttached = '1';
+      const wrapper = input.parentElement;
+      if (!wrapper) return;
+      wrapper.classList.add('cms-color-field');
+      const swatch = document.createElement('span');
+      swatch.className = 'cms-color-swatch';
+      wrapper.appendChild(swatch);
+
+      const sync = () => {
+        const v = String(input.value || '').trim();
+        swatch.style.background = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(v) ? v : 'transparent';
+      };
+      sync();
+      input.addEventListener('input', sync);
+      input.addEventListener('change', sync);
+    });
+  };
+
+  /* ============================================================
+     6. 事件綁定
+     ============================================================ */
+  ['focusin', 'click', 'keyup', 'select'].forEach((evt) => {
+    document.addEventListener(evt, (e) => rememberSelection(e.target), true);
+  });
+
+  const onRouteChange = () => {
+    ensureSiteHintCard();
+    // 色塊會在 CMS 重新渲染輸入框後失效，重綁一次
+    attachColorSwatches();
+  };
+  window.addEventListener('hashchange', onRouteChange);
+
+  // DOM 變動時重跑一次小工具（CMS 會動態換頁）
+  let tick = 0;
+  const observer = new MutationObserver(() => {
+    cancelAnimationFrame(tick);
+    tick = requestAnimationFrame(() => {
+      ensureSiteHintCard();
+      attachColorSwatches();
+    });
+  });
+  observer.observe(document.body, { childList: true, subtree: true });
+
+  /* ============================================================
+     7. Boot
+     ============================================================ */
+  const boot = () => {
+    const config = window.DECAP_CMS_CONFIG || window.CMS_CONFIG;
     if (config) {
       if (window.CMS_CONFIG) {
-        try {
-          delete window.CMS_CONFIG;
-        } catch (err) {
-          window.CMS_CONFIG = undefined;
-        }
+        try { delete window.CMS_CONFIG; } catch { window.CMS_CONFIG = undefined; }
       }
-      CMS.init({ config: config });
+      CMS.init({ config });
     }
-    mountUploaderButton();
+    mountFabCluster();
+    onRouteChange();
   };
+
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', boot);
   } else {
