@@ -130,7 +130,12 @@ const renderFooter = (site, currentPath) => {
   const siteName = fallbackSiteName(site);
   const footerText = fallbackFooter(site);
   const siteDesc = normalizeText(site.siteDescription);
-  const email = normalizeText(site.email, { allowPlaceholder: true });
+  const rawEmail = normalizeText(site.email, { allowPlaceholder: true });
+  const email = rawEmail
+    .replace(/\s*\(at\)\s*/gi, '@')
+    .replace(/\s+at\s+/gi, '@')
+    .replace(/ /g, '');
+  const validEmail = email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? email : '';
   const socialHtml = renderSocialLinks(site);
   const navHtml = renderNavItems(
     Array.isArray(site.nav) && site.nav.length > 0 ? site.nav : DEFAULT_NAV,
@@ -145,11 +150,11 @@ const renderFooter = (site, currentPath) => {
     </div>`;
 
   const contactCol =
-    email || socialHtml
+    validEmail || socialHtml
       ? `
     <div class="site-footer__col site-footer__col--contact">
       <p class="cap">Contact</p>
-      ${email ? `<p><a href="mailto:${escapeHtml(email)}">${escapeHtml(email)}</a></p>` : ''}
+      ${validEmail ? `<p><a href="mailto:${escapeHtml(validEmail)}">${escapeHtml(validEmail)}</a></p>` : ''}
       ${socialHtml ? `<div class="social-links" aria-label="社群連結">${socialHtml}</div>` : ''}
     </div>`
       : '';
@@ -419,13 +424,16 @@ export const renderSiteFooter = (site, currentPath) => renderFooter(site, curren
 export const renderAboutPage = ({ site }) => {
   const aboutKicker = normalizeText(site.aboutKicker) || 'About';
   const aboutTitle = normalizeText(site.aboutTitle) || '關於';
-  const aboutIntro =
-    normalizeText(site.aboutIntro) ||
-    '我是 CRIVU。這個網站是我的個人博客：把日常裡的靈感、技術實作、旅途見聞與閱讀思考等，整理成一期一期的內容。';
+  const aboutIntro = normalizeText(site.aboutIntro);
   const aboutStyle = normalizeText(site.aboutStyle);
-  const aboutInfoTitle = normalizeText(site.aboutInfoTitle) || '資訊';
+  const aboutInfoTitle = normalizeText(site.aboutInfoTitle);
   const aboutCity = normalizeText(site.city);
-  const aboutEmail = normalizeText(site.email, { allowPlaceholder: true });
+  const rawEmail = normalizeText(site.email, { allowPlaceholder: true });
+  // 容錯：處理 Cloudflare Email Obfuscation 可能把 @ 變空格或 (at) 的情況
+  const aboutEmail = rawEmail
+    .replace(/\s*\(at\)\s*/gi, '@')
+    .replace(/\s+at\s+/gi, '@')
+    .replace(/ /g, '');
   const aboutTopics = normalizeText(site.topics);
   const validEmail = isValidEmail(aboutEmail);
 
@@ -449,7 +457,7 @@ export const renderAboutPage = ({ site }) => {
     facts.length > 0 || mailLink
       ? `
       <aside class="about-side">
-        <h2>${escapeHtml(aboutInfoTitle)}</h2>
+        ${aboutInfoTitle ? `<h2>${escapeHtml(aboutInfoTitle)}</h2>` : ''}
         ${facts.length > 0 ? `<dl class="about-facts">${facts.join('')}</dl>` : ''}
         ${mailLink}
       </aside>`
@@ -460,7 +468,7 @@ export const renderAboutPage = ({ site }) => {
       <div class="about-main">
         <p class="about-kicker">${escapeHtml(aboutKicker)}</p>
         <h1>${escapeHtml(aboutTitle)}</h1>
-        <p class="about-lead">${escapeHtml(aboutIntro)}</p>
+        ${aboutIntro ? `<p class="about-lead">${escapeHtml(aboutIntro)}</p>` : ''}
         ${aboutStyle ? `<p class="about-detail">${escapeHtml(aboutStyle)}</p>` : ''}
       </div>${asideHtml}
     </section>
@@ -468,7 +476,7 @@ export const renderAboutPage = ({ site }) => {
 
   return shell({
     currentPath: '/about.html',
-    description: aboutIntro,
+    description: aboutIntro || `${fallbackSiteName(site)} · 關於`,
     mainHtml,
     scriptSrc: '/assets/js/app.js',
     site,
