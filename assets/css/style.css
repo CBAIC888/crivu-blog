@@ -1287,7 +1287,7 @@ main > .section:first-child {
 .site-footer {
   flex-shrink: 0;
   margin-top: 0;
-  padding: 56px 6vw 32px;
+  padding: 28px 6vw 18px;
   background: var(--footer-bg);
   color: var(--footer-ink);
   border-top: 1px solid var(--footer-line);
@@ -1297,16 +1297,16 @@ main > .section:first-child {
   margin: 0 auto;
   display: grid;
   grid-template-columns: 2fr 1.4fr 1fr;
-  gap: 40px;
+  gap: 28px;
   align-items: start;
-  padding-bottom: 36px;
+  padding-bottom: 18px;
   border-bottom: 1px solid var(--footer-line);
 }
 .site-footer__col { min-width: 0; }
 .site-footer__brand {
-  margin: 0 0 10px;
+  margin: 0 0 6px;
   font-family: var(--serif);
-  font-size: 22px;
+  font-size: 18px;
   letter-spacing: 0.18em;
   color: var(--footer-ink);
   font-weight: 600;
@@ -1315,22 +1315,22 @@ main > .section:first-child {
 .site-footer__desc {
   margin: 0;
   color: var(--footer-ink);
-  opacity: 0.75;
-  font-size: 14px;
-  line-height: 1.8;
+  opacity: 0.72;
+  font-size: 11px;
+  line-height: 1.65;
   max-width: 28em;
 }
 .site-footer .cap {
   color: var(--footer-ink-dim);
-  margin-bottom: 12px;
+  margin-bottom: 8px;
   display: block;
 }
 .site-footer p {
-  margin: 0 0 8px;
+  margin: 0 0 6px;
   color: var(--footer-ink);
   opacity: 0.88;
-  font-size: 14px;
-  line-height: 1.8;
+  font-size: 13px;
+  line-height: 1.65;
 }
 .site-footer a {
   color: var(--footer-ink);
@@ -1346,16 +1346,16 @@ main > .section:first-child {
 /* 社群圖示 */
 .social-links {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   flex-wrap: wrap;
-  margin-top: 4px;
+  margin-top: 2px;
 }
 .social-link {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
-  height: 34px;
+  width: 28px;
+  height: 28px;
   border-radius: 999px;
   border: 1px solid var(--footer-line);
   color: var(--footer-ink);
@@ -1363,6 +1363,7 @@ main > .section:first-child {
   transition: opacity .2s, background .2s, border-color .2s, transform .2s;
   padding: 0;
 }
+.social-link svg { width: 15px; height: 15px; }
 .social-link:hover {
   opacity: 1;
   background: rgba(255, 255, 255, 0.06);
@@ -1375,10 +1376,10 @@ main > .section:first-child {
 .site-footer__copy,
 .site-footer #siteFooterText {
   max-width: var(--content-width);
-  margin: 20px auto 0;
+  margin: 12px auto 0;
   color: var(--footer-ink-dim);
   font-family: var(--sans);
-  font-size: 12px;
+  font-size: 11px;
   letter-spacing: 0.14em;
   text-align: center;
 }
@@ -1578,8 +1579,8 @@ body::before { display: none !important; }
 
   .about-side { padding: 22px 20px; }
 
-  .site-footer { padding: 40px 4vw 28px; }
-  .site-footer__inner { grid-template-columns: 1fr; gap: 28px; padding-bottom: 28px; }
+  .site-footer { padding: 22px 4vw 16px; }
+  .site-footer__inner { grid-template-columns: 1fr; gap: 18px; padding-bottom: 16px; }
   .site-footer__copy { text-align: left; }
 }
 
@@ -1596,7 +1597,7 @@ body::before { display: none !important; }
       height: calc(var(--header-height) + env(safe-area-inset-top));
     }
   }
-  .site-footer { padding-bottom: max(36px, calc(36px + env(safe-area-inset-bottom))); }
+  .site-footer { padding-bottom: max(20px, calc(20px + env(safe-area-inset-bottom))); }
 }
 
 /* 焦點環 */

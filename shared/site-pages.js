@@ -2,11 +2,9 @@ import {
   articlePath,
   buildDescription,
   escapeHtml,
-  isValidEmail,
   normalizeText,
   renderNavItems,
   safeCoverUrl,
-  sanitizeUrl,
 } from './content.js';
 
 const BUILD_VERSION = '__BUILD_VERSION__';
@@ -92,6 +90,7 @@ const SOCIAL_ICONS = {
   weibo: '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="currentColor"><path d="M10.1 18.6c-3.7.3-6.9-1.3-7.1-3.6-.2-2.3 2.6-4.4 6.3-4.7 3.7-.3 6.9 1.3 7.1 3.6.2 2.3-2.6 4.4-6.3 4.7Zm.7-6.7c-2.9.3-5.2 2-5 3.8.1 1.8 2.6 3 5.5 2.7 2.9-.3 5.2-2 5-3.8-.1-1.8-2.6-3-5.5-2.7Zm-.2 1.5c-.8.1-1.4.7-1.3 1.4.1.7.8 1.1 1.6 1.1.8-.1 1.4-.7 1.3-1.4-.1-.7-.8-1.1-1.6-1.1Zm6.6-7.1a4.5 4.5 0 0 1 4.5 5c-.1 1-.8 1-1.4.8.5-2-.9-3.9-3-4-.9-.1-1 .4-.7.9.2.4-.3.9-.8.7-.9-.5-.3-3.4 1.4-3.4Zm.6 2.7c1 0 1.9.9 1.7 1.9-.1.6-.8.6-1.1.3.2-.8-.5-1.5-1.3-1.3-.4.1-.7-.2-.6-.5 0-.2.6-.5 1.3-.4Z"/></svg>',
   mastodon: '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="currentColor"><path d="M21.3 8.1c0-4-2.7-5.1-2.7-5.1-1.3-.6-3.6-.9-6-.9h-.1c-2.4 0-4.7.3-6 .9 0 0-2.7 1.1-2.7 5.1 0 .9 0 1.9.1 2.8.2 3.2.7 6.3 3.7 7.2 1.4.4 2.5.5 3.5.5 1.6 0 2.5-.2 2.5-.2v-1.5s-1.1.4-2.3.3c-1.2 0-2.5-.1-2.7-1.6 0-.1 0-.3-.1-.4 0 0 1.1.3 2.6.4.9 0 1.7-.1 2.5-.2 2.4-.3 3.7-1.8 3.9-3.3.3-2.4.3-4 .3-4Zm-2.9 4.9h-1.8v-4.5c0-.9-.4-1.4-1.2-1.4-.9 0-1.3.5-1.3 1.6v2.4h-1.8V8.7c0-1.1-.4-1.6-1.3-1.6-.8 0-1.2.5-1.2 1.4V13H8V8.6c0-.9.2-1.6.7-2.1.5-.5 1.1-.8 2-.8.9 0 1.7.4 2.1 1.1l.4.8.4-.8c.5-.7 1.2-1.1 2.1-1.1.9 0 1.5.3 2 .8.4.5.7 1.2.7 2.1V13Z"/></svg>',
   link: '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.07 0l2.83-2.83a5 5 0 0 0-7.07-7.07L11 5"/><path d="M14 11a5 5 0 0 0-7.07 0L4.1 13.83a5 5 0 0 0 7.07 7.07L13 19"/></svg>',
+  email: '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>',
 };
 
 const renderSocialLinks = (site) => {
@@ -149,8 +148,15 @@ const renderFooter = (site, currentPath) => {
       ? `
     <div class="site-footer__col site-footer__col--contact">
       <p class="cap">Contact</p>
-      ${validEmail ? `<p><a href="mailto:${escapeHtml(validEmail)}">${escapeHtml(validEmail)}</a></p>` : ''}
-      ${socialHtml ? `<div class="social-links" aria-label="社群連結">${socialHtml}</div>` : ''}
+      ${
+        validEmail || socialHtml
+          ? `<div class="social-links" aria-label="聯絡與社群">${
+              validEmail
+                ? `<a class="social-link" href="mailto:${escapeHtml(validEmail)}" aria-label="Email" title="Email">${SOCIAL_ICONS.email}</a>`
+                : ''
+            }${socialHtml}</div>`
+          : ''
+      }
     </div>`
       : '';
 
@@ -414,38 +420,23 @@ export const renderAboutPage = ({ site }) => {
   const aboutStyle = normalizeText(site.aboutStyle);
   const aboutInfoTitle = normalizeText(site.aboutInfoTitle);
   const aboutCity = normalizeText(site.city);
-  const rawEmail = normalizeText(site.email, { allowPlaceholder: true });
-  // 容錯：處理 Cloudflare Email Obfuscation 可能把 @ 變空格或 (at) 的情況
-  const aboutEmail = rawEmail
-    .replace(/\s*\(at\)\s*/gi, '@')
-    .replace(/\s+at\s+/gi, '@')
-    .replace(/ /g, '');
   const aboutTopics = normalizeText(site.topics);
-  const validEmail = isValidEmail(aboutEmail);
 
   const facts = [
     aboutCity
       ? `<div><dt>${escapeHtml(normalizeText(site.aboutCityLabel) || '城市')}</dt><dd>${escapeHtml(aboutCity)}</dd></div>`
-      : '',
-    validEmail
-      ? `<div><dt>${escapeHtml(normalizeText(site.aboutEmailLabel) || 'Email')}</dt><dd>${escapeHtml(aboutEmail)}</dd></div>`
       : '',
     aboutTopics
       ? `<div><dt>${escapeHtml(normalizeText(site.aboutTopicsLabel) || '主題')}</dt><dd>${escapeHtml(aboutTopics)}</dd></div>`
       : '',
   ].filter(Boolean);
 
-  const mailLink = validEmail
-    ? `<a class="about-mail" href="${escapeHtml(sanitizeUrl(`mailto:${aboutEmail}`))}">${escapeHtml(normalizeText(site.aboutMailLabel) || '聯絡我')}</a>`
-    : '';
-
   const asideHtml =
-    facts.length > 0 || mailLink
+    facts.length > 0
       ? `
       <aside class="about-side">
         ${aboutInfoTitle ? `<h2>${escapeHtml(aboutInfoTitle)}</h2>` : ''}
-        ${facts.length > 0 ? `<dl class="about-facts">${facts.join('')}</dl>` : ''}
-        ${mailLink}
+        <dl class="about-facts">${facts.join('')}</dl>
       </aside>`
       : '';
 
