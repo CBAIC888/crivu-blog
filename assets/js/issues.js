@@ -177,15 +177,12 @@ const renderIssue = (issue, posts) => {
     : [];
   const count = linkedPosts.length;
   const countText = countTemplate.replace('{count}', `<strong>${count}</strong>`);
-  // 印章字：取標題首字做視覺標記
-  const sealChar = (issue.title || '期').trim().charAt(0);
   const href = `/issues/${encodeURIComponent(issue.id || '')}`;
 
   return `
     <a class="book" href="${escapeHtml(href)}" aria-label="${escapeHtml(issue.title || '')}">
       <div class="book__cover">
         <img src="${escapeHtml(cover)}" alt="" loading="lazy" />
-        <span class="book__seal" aria-hidden="true">${escapeHtml(sealChar)}</span>
       </div>
       <div class="book__meta">
         <p class="book__id">Issue ${escapeHtml(issue.id || '')}${issue.publishDate ? ` · ${escapeHtml(issue.publishDate)}` : ''}</p>

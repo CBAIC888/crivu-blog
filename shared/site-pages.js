@@ -213,7 +213,6 @@ const renderBook = (issue, posts, site) => {
     .filter(Boolean).length;
   const countTemplate = normalizeText(site.issueCountTemplate) || '收錄 {count} 篇文章';
   const countText = countTemplate.replace('{count}', `<strong>${count}</strong>`);
-  const sealChar = (issue.title || '期').trim().charAt(0);
   const href = `/issues/${encodeURIComponent(issue.id || '')}`;
   const cover = safeCoverUrl(issue.cover);
 
@@ -221,7 +220,6 @@ const renderBook = (issue, posts, site) => {
     <a class="book" href="${escapeHtml(href)}" aria-label="${escapeHtml(issue.title || '')}">
       <div class="book__cover">
         <img src="${escapeHtml(cover)}" alt="" loading="lazy" />
-        <span class="book__seal" aria-hidden="true">${escapeHtml(sealChar)}</span>
       </div>
       <div class="book__meta">
         <p class="book__id">Issue ${escapeHtml(issue.id || '')}${issue.publishDate ? ` · ${escapeHtml(issue.publishDate)}` : ''}</p>

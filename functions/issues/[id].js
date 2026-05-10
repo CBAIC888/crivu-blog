@@ -171,7 +171,6 @@ export async function onRequest(context) {
   const siteName = normalizeText(site.siteName, { allowPlaceholder: true }) || 'CRIVU';
   const title = `${issue.title || '期刊'} · ${siteName}`;
   const description = normalizeText(issue.editorNote) || normalizeText(issue.theme) || issue.title || '期刊';
-  const sealChar = (issue.title || '期').trim().charAt(0);
   const cover = safeCoverUrl(issue.cover);
 
   const tocRows = linkedPosts.length > 0
@@ -189,7 +188,6 @@ export async function onRequest(context) {
         <div class="issue-hero__grid">
           <figure class="issue-hero__cover">
             <img src="${escapeHtml(cover)}" alt="${escapeHtml(issue.title || '')} 封面" />
-            <span class="book__seal" aria-hidden="true">${escapeHtml(sealChar)}</span>
           </figure>
           <div class="issue-hero__body">
             <p class="kicker">Issue ${escapeHtml(issue.id)}</p>
