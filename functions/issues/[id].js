@@ -5,6 +5,7 @@ import {
   renderNavItems,
   safeCoverUrl,
 } from '../../shared/content.js';
+import { renderSiteFooter } from '../../shared/site-pages.js';
 
 const HTML_HEADERS = {
   'Content-Type': 'text/html; charset=UTF-8',
@@ -47,7 +48,6 @@ const renderTocRow = (post, index) => {
 const renderShell = ({ bodyHtml, currentPath, description, origin, site, title }) => {
   const siteName = normalizeText(site.siteName, { allowPlaceholder: true }) || 'CRIVU';
   const navHtml = renderNavItems(site.nav, currentPath, { baseOrigin: origin });
-  const footer = normalizeText(site.footerText, { allowPlaceholder: true }) || `© ${new Date().getFullYear()} ${siteName}`;
   const placeholder = escapeHtml(normalizeText(site.searchPlaceholder) || '搜尋文章');
 
   return `<!doctype html>
@@ -99,19 +99,7 @@ const renderShell = ({ bodyHtml, currentPath, description, origin, site, title }
 
   ${bodyHtml}
 
-  <footer class="site-footer">
-    <div class="site-footer__inner">
-      <div>
-        <p class="cap">${escapeHtml(siteName)}</p>
-        <p>${escapeHtml(normalizeText(site.siteDescription) || '')}</p>
-      </div>
-      <div>
-        <p class="cap">Subscribe</p>
-        <p><a href="/rss.xml">RSS</a></p>
-      </div>
-      <div class="site-footer__copy" id="siteFooterText">${escapeHtml(footer)}</div>
-    </div>
-  </footer>
+  ${renderSiteFooter(site, currentPath)}
 
   <script src="/assets/js/search.js?v=__BUILD_VERSION__"></script>
   <script src="/assets/js/mobile-nav.js?v=__BUILD_VERSION__"></script>

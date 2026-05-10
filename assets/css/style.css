@@ -1287,7 +1287,7 @@ main > .section:first-child {
 .site-footer {
   flex-shrink: 0;
   margin-top: 0;
-  padding: 48px 6vw 40px;
+  padding: 56px 6vw 32px;
   background: var(--footer-bg);
   color: var(--footer-ink);
   border-top: 1px solid var(--footer-line);
@@ -1296,13 +1296,33 @@ main > .section:first-child {
   max-width: var(--content-width);
   margin: 0 auto;
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr;
-  gap: 32px;
+  grid-template-columns: 2fr 1.2fr 1fr 1fr;
+  gap: 40px;
   align-items: start;
+  padding-bottom: 36px;
+  border-bottom: 1px solid var(--footer-line);
+}
+.site-footer__col { min-width: 0; }
+.site-footer__brand {
+  margin: 0 0 10px;
+  font-family: var(--serif);
+  font-size: 22px;
+  letter-spacing: 0.18em;
+  color: var(--footer-ink);
+  font-weight: 600;
+  padding-right: 0.18em;
+}
+.site-footer__desc {
+  margin: 0;
+  color: var(--footer-ink);
+  opacity: 0.75;
+  font-size: 14px;
+  line-height: 1.8;
+  max-width: 28em;
 }
 .site-footer .cap {
   color: var(--footer-ink-dim);
-  margin-bottom: 10px;
+  margin-bottom: 12px;
   display: block;
 }
 .site-footer p {
@@ -1314,21 +1334,68 @@ main > .section:first-child {
 }
 .site-footer a {
   color: var(--footer-ink);
-  border-bottom: 1px dotted var(--footer-ink-dim);
+  border-bottom: 1px solid transparent;
   padding-bottom: 1px;
+  transition: border-color .2s, opacity .2s;
 }
 .site-footer a:hover {
   color: var(--footer-ink);
-  border-bottom-color: var(--footer-ink);
+  border-bottom-color: var(--footer-ink-dim);
 }
+.site-footer__nav {
+  display: grid;
+  gap: 6px;
+}
+.site-footer__nav a {
+  display: inline-block;
+  font-family: var(--sans);
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  border-bottom: none;
+  padding: 2px 0;
+  opacity: 0.85;
+}
+.site-footer__nav a:hover { opacity: 1; border-bottom: none; }
+
+/* 社群圖示 */
+.social-links {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+.social-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  border: 1px solid var(--footer-line);
+  color: var(--footer-ink);
+  opacity: 0.78;
+  transition: opacity .2s, background .2s, border-color .2s, transform .2s;
+  padding: 0;
+}
+.social-link:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.06);
+  border-color: var(--footer-ink-dim);
+  transform: translateY(-1px);
+  border-bottom: 1px solid var(--footer-ink-dim); /* override generic a:hover */
+}
+
+/* Footer 底部版權 */
 .site-footer__copy,
 .site-footer #siteFooterText {
+  max-width: var(--content-width);
+  margin: 20px auto 0;
   color: var(--footer-ink-dim);
   font-family: var(--sans);
   font-size: 12px;
   letter-spacing: 0.14em;
+  text-align: center;
 }
-.site-footer__copy { text-align: right; }
 
 /* =========================================================
    舊版相容：移除不再用的元件殘影
@@ -1369,6 +1436,7 @@ body::before { display: none !important; }
   .post-card .image { width: 140px; height: 100px; }
   .issue-hero__grid { grid-template-columns: 260px 1fr; gap: 36px; }
   .about-shell { grid-template-columns: 1fr; gap: 32px; }
+  .site-footer__inner { grid-template-columns: 1fr 1fr; gap: 32px; }
 }
 
 @media (max-width: 760px) {
@@ -1524,7 +1592,8 @@ body::before { display: none !important; }
 
   .about-side { padding: 22px 20px; }
 
-  .site-footer__inner { grid-template-columns: 1fr; gap: 24px; }
+  .site-footer { padding: 40px 4vw 28px; }
+  .site-footer__inner { grid-template-columns: 1fr; gap: 28px; padding-bottom: 28px; }
   .site-footer__copy { text-align: left; }
 }
 

@@ -8,6 +8,7 @@ import {
   safeCoverUrl,
   simpleMarkdown,
 } from '../../shared/content.js';
+import { renderSiteFooter } from '../../shared/site-pages.js';
 
 const HTML_HEADERS = {
   'Content-Type': 'text/html; charset=UTF-8',
@@ -86,33 +87,13 @@ const renderHeader = (site, navHtml) => {
   </header>`;
 };
 
-const renderFooter = (site, footerText) => {
-  const siteName = normalizeText(site.siteName, { allowPlaceholder: true }) || 'CRIVU';
-  const siteDesc = normalizeText(site.siteDescription) || '';
-  return `
-  <footer class="site-footer">
-    <div class="site-footer__inner">
-      <div>
-        <p class="cap">${escapeHtml(siteName)}</p>
-        ${siteDesc ? `<p>${escapeHtml(siteDesc)}</p>` : ''}
-      </div>
-      <div>
-        <p class="cap">Subscribe</p>
-        <p><a href="/rss.xml">RSS</a></p>
-      </div>
-      <div class="site-footer__copy" id="siteFooterText">${escapeHtml(footerText)}</div>
-    </div>
-  </footer>`;
-};
+const renderFooter = (site, currentPath) => renderSiteFooter(site, currentPath);
 
-const renderPage = ({ currentPath, description, footerText, moreHtml, origin, post, site }) => {
+const renderPage = ({ currentPath, description, moreHtml, origin, post, site }) => {
   const canonicalPath = articlePath(post.slug);
   const canonicalUrl = new URL(canonicalPath, origin).toString();
   const navHtml = renderNavItems(site.nav, currentPath, { baseOrigin: origin });
   const siteName = normalizeText(site.siteName, { allowPlaceholder: true }) || 'CRIVU';
-  const footer =
-    normalizeText(footerText, { allowPlaceholder: true }) ||
-    `© ${new Date().getFullYear()} ${siteName}`;
   const moreTitle = normalizeText(site.moreReadingTitle) || '更多閱讀';
   const excerpt = normalizeText(post.excerpt);
   const bodyHtml = simpleMarkdown(post.body || '', { baseOrigin: origin });
@@ -175,7 +156,7 @@ const renderPage = ({ currentPath, description, footerText, moreHtml, origin, po
     </aside>
   </main>
 
-  ${renderFooter(site, footer)}
+  ${renderFooter(site, currentPath)}
 
   <script src="/assets/js/search.js?v=__BUILD_VERSION__"></script>
   <script src="/assets/js/mobile-nav.js?v=__BUILD_VERSION__"></script>
@@ -187,9 +168,6 @@ const renderPage = ({ currentPath, description, footerText, moreHtml, origin, po
 const renderNotFound = ({ currentPath, origin, site }) => {
   const navHtml = renderNavItems(site.nav, currentPath, { baseOrigin: origin });
   const siteName = normalizeText(site.siteName, { allowPlaceholder: true }) || 'CRIVU';
-  const footer =
-    normalizeText(site.footerText, { allowPlaceholder: true }) ||
-    `© ${new Date().getFullYear()} ${siteName}`;
   const favicon =
     safeCoverUrl(site.favicon) !== '/assets/img/cover-01.svg'
       ? safeCoverUrl(site.favicon)
@@ -215,7 +193,7 @@ const renderNotFound = ({ currentPath, origin, site }) => {
       <p class="page-intro">這篇文章可能尚未發布、已更名，或網址有誤。<a href="/articles.html">返回文章列表</a>。</p>
     </header>
   </main>
-  ${renderFooter(site, footer)}
+  ${renderFooter(site, currentPath)}
   <script src="/assets/js/search.js?v=__BUILD_VERSION__"></script>
   <script src="/assets/js/mobile-nav.js?v=__BUILD_VERSION__"></script>
 </body>
@@ -254,7 +232,6 @@ export async function onRequest(context) {
     renderPage({
       currentPath,
       description,
-      footerText: site.footerText,
       moreHtml,
       origin,
       post,

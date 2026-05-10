@@ -377,35 +377,8 @@
   };
 
   /* ============================================================
-     4. 站點設定頁的浮動說明卡
-        偵測網址 hash 進入 /collections/site 時才顯示。
+     4. （已移除）站點設定頁的浮動說明卡
      ============================================================ */
-  const ensureSiteHintCard = () => {
-    const isSitePage =
-      location.hash.includes('/collections/site') || location.hash.includes('/edit/site');
-    const existing = document.querySelector('.cms-hint-card');
-    if (!isSitePage) {
-      if (existing) existing.remove();
-      return;
-    }
-    if (existing) return;
-
-    const container =
-      document.querySelector("[class*='PreviewPaneContainer']")?.parentElement ||
-      document.querySelector("[class*='EditorContainer']") ||
-      document.body;
-
-    const card = document.createElement('div');
-    card.className = 'cms-hint-card';
-    card.innerHTML = `
-      <strong>站點設定說明</strong>：
-      欄位依 <code>「基本」</code> / <code>「導航」</code> / <code>「主題」</code> /
-      <code>「首頁」</code> / <code>「文章頁」</code> / <code>「期刊頁」</code> /
-      <code>「關於頁」</code> / <code>「舊版」</code> 前綴分組。
-      修改發佈後前端自動套用；帶有「舊版」字樣的欄位代表目前前端不再使用，僅保留避免既有部署失效。
-    `;
-    container.prepend(card);
-  };
 
   /* ============================================================
      5. 顏色欄位即時色塊
@@ -442,7 +415,6 @@
   });
 
   const onRouteChange = () => {
-    ensureSiteHintCard();
     // 色塊會在 CMS 重新渲染輸入框後失效，重綁一次
     attachColorSwatches();
   };
@@ -453,7 +425,6 @@
   const observer = new MutationObserver(() => {
     cancelAnimationFrame(tick);
     tick = requestAnimationFrame(() => {
-      ensureSiteHintCard();
       attachColorSwatches();
     });
   });
