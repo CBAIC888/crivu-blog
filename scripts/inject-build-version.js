@@ -18,6 +18,16 @@ const TARGETS = [
   path.join('functions', 'issues', '[id].js'),
 ];
 
+// Always regenerate rss.xml from the latest posts/posts.json before stamping
+// the build version. This makes RSS self-heal on every deploy regardless of
+// which Cloudflare Pages build command is configured.
+try {
+  require('./generate-rss.js');
+} catch (err) {
+  process.stderr.write(`[inject-build-version] RSS regeneration failed: ${err && err.message ? err.message : err}\n`);
+  process.exit(1);
+}
+
 const pad = (value) => String(value).padStart(2, '0');
 
 const makeTimestamp = () => {
