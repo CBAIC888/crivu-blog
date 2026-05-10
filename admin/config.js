@@ -248,7 +248,7 @@ const SITE_FIELDS = [
     required: false,
     min: 1,
     max: 30,
-    default: 8,
+    default: 4,
   },
 
   /* ===== ⑤ 文章頁 ===== */

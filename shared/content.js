@@ -255,12 +255,32 @@ export const simpleMarkdown = (raw, options = {}) => {
 
     const imageMatch = trimmed.match(/^!\[(.*?)\]\((.*?)\)$/);
     if (imageMatch) {
-      const blockHtml = renderImageBlock(imageMatch[2], imageMatch[1]);
+      let caption = '';
+      let skip = 0;
+      // 後一行若是 <!-- preset:... --> 就忽略
+      const nextLine = (lines[i + 1] || '').trim();
+      const presetMatch = nextLine.match(/^<!--\s*preset:.*?\s*-->$/);
+      if (presetMatch) skip = 1;
+      // 再往後若是 *caption* 則作為說明
+      const afterPresetLine = (lines[i + 1 + skip] || '').trim();
+      const captionMatch = afterPresetLine.match(/^\*(.*?)\*$/);
+      if (captionMatch) {
+        caption = captionMatch[1];
+        skip += 1;
+      }
+      const altText = caption || imageMatch[1];
+      const blockHtml = renderImageBlock(imageMatch[2], altText);
       if (blockHtml) {
         flushParagraph();
         closeList();
         out.push(blockHtml);
       }
+      i += skip;
+      continue;
+    }
+
+    // 孤立的 preset 註釋（無前置圖）直接跳過，避免漏出
+    if (/^<!--\s*preset:.*?\s*-->$/.test(trimmed)) {
       continue;
     }
 

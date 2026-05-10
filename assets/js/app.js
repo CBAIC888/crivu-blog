@@ -374,9 +374,11 @@ const renderCard = (post, index) => {
   const cover = safeCoverUrl(post.cover);
   const safeLink = articlePath(post.slug);
   const excerpt = buildDescription(post, 72);
+  const isHome = document.body.classList.contains('home-page');
   const metaBits = [
     post.date ? `<span class="cap">${escapeHtml(post.date)}</span>` : '',
-    post.issue ? `<span class="pill">${escapeHtml(post.issue)}</span>` : '',
+    // 只在首頁顯示期刊標籤；/articles.html 列表隱藏
+    isHome && post.issue ? `<span class="pill">${escapeHtml(post.issue)}</span>` : '',
   ].filter(Boolean);
   const num = String((index ?? 0) + 1).padStart(2, '0');
   return `
@@ -484,9 +486,14 @@ const setupFilters = () => {
   const grid = qs('#postGrid');
   if (!grid) return;
 
+  // 首頁限制顯示篇數（預設 4），其他頁不限
+  const isHome = document.body.classList.contains('home-page');
+  const homeLimit = Math.max(1, Number.parseInt(state.site.homeLatestLimit, 10) || 4);
+
   const apply = () => {
     const filtered = state.posts.filter((p) => matchesSearch(p, state.search));
-    renderGrid(grid, filtered);
+    const limited = isHome && !state.search ? filtered.slice(0, homeLimit) : filtered;
+    renderGrid(grid, limited);
   };
 
   state.applyHome = apply;

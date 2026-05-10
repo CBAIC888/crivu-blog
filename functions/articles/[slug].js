@@ -165,14 +165,13 @@ const renderPage = ({ currentPath, description, footerText, moreHtml, origin, po
       </header>
 
       <div class="reading__body post-body" id="postBody">${bodyHtml}</div>
-
-      <footer class="reading__foot">
-        ${post.issue ? `本文收錄於期刊 <a href="/issues/${escapeHtml(post.issue)}">${escapeHtml(post.issue)}</a>。` : ''}
-      </footer>
     </article>
 
-    <aside class="reading-more more more-bottom">
-      <p class="cap">${escapeHtml(moreTitle)}</p>
+    <aside class="reading-more more more-bottom" aria-label="更多閱讀">
+      <header class="reading-more__head">
+        <p class="kicker">More Reading</p>
+        <h2 class="reading-more__title">${escapeHtml(moreTitle)}</h2>
+      </header>
       <div id="moreList" class="more-list">${moreHtml}</div>
     </aside>
   </main>
