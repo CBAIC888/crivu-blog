@@ -51,26 +51,53 @@ export const loadSiteBundle = async (context) => {
   };
 };
 
-const fallbackSiteName = (site) => normalizeText(site.siteName, { allowPlaceholder: true }) || 'CRIVU';
+const fallbackSiteName = (site) =>
+  normalizeText(site.siteName, { allowPlaceholder: true }) || 'CRIVU';
 
-const fallbackFooter = (site) => normalizeText(site.footerText, { allowPlaceholder: true }) || `© ${new Date().getFullYear()} ${fallbackSiteName(site)}`;
+const fallbackFooter = (site) =>
+  normalizeText(site.footerText, { allowPlaceholder: true }) ||
+  `© ${new Date().getFullYear()} ${fallbackSiteName(site)}`;
 
-const navHtml = (site, currentPath) => renderNavItems(Array.isArray(site.nav) && site.nav.length > 0 ? site.nav : DEFAULT_NAV, currentPath, {});
+const navList = (site, currentPath) =>
+  renderNavItems(
+    Array.isArray(site.nav) && site.nav.length > 0 ? site.nav : DEFAULT_NAV,
+    currentPath,
+    {}
+  );
 
-const scriptTag = (src) => (src ? `\n  <script src="${escapeHtml(src)}?v=${BUILD_VERSION}" type="module"></script>` : '');
+const scriptTag = (src) =>
+  src ? `\n  <script src="${escapeHtml(src)}?v=${BUILD_VERSION}" type="module"></script>` : '';
 
-const shell = ({ bodyClass = '', currentPath, description, mainHtml, scriptSrc, site, title, ogImage }) => {
+const toInt = (value, fallback, min, max) => {
+  const n = Number.parseInt(value, 10);
+  if (Number.isNaN(n)) return fallback;
+  return Math.max(min, Math.min(max, n));
+};
+
+const shell = ({
+  bodyClass = '',
+  currentPath,
+  description,
+  mainHtml,
+  scriptSrc,
+  site,
+  title,
+  ogImage,
+}) => {
   const siteName = fallbackSiteName(site);
   const footerText = fallbackFooter(site);
-  const searchPlaceholder = normalizeText(site.searchPlaceholder) || '搜尋';
-  const faviconUrl = safeCoverUrl(site.favicon) !== '/assets/img/cover-01.svg'
-    ? safeCoverUrl(site.favicon)
-    : '/assets/img/favicon.png';
+  const searchPlaceholder = normalizeText(site.searchPlaceholder) || '搜尋文章';
+  const siteDesc = normalizeText(site.siteDescription) || '';
   const keywords = normalizeText(site.siteKeywords);
+  const favicon =
+    safeCoverUrl(site.favicon) !== '/assets/img/cover-01.svg'
+      ? safeCoverUrl(site.favicon)
+      : '/assets/img/favicon.png';
   const ogImg = ogImage || safeCoverUrl(site.ogImage);
-  const ogImgTag = ogImg && ogImg !== '/assets/img/cover-01.svg'
-    ? `\n  <meta property="og:image" content="${escapeHtml(ogImg)}" />\n  <meta name="twitter:image" content="${escapeHtml(ogImg)}" />`
-    : '';
+  const ogImgTag =
+    ogImg && ogImg !== '/assets/img/cover-01.svg'
+      ? `\n  <meta property="og:image" content="${escapeHtml(ogImg)}" />\n  <meta name="twitter:image" content="${escapeHtml(ogImg)}" />`
+      : '';
   const twitterCard = ogImgTag ? 'summary_large_image' : 'summary';
 
   return `<!doctype html>
@@ -90,197 +117,154 @@ const shell = ({ bodyClass = '', currentPath, description, mainHtml, scriptSrc, 
   <meta name="twitter:description" content="${escapeHtml(description)}" />
   <link rel="alternate" type="application/rss+xml" title="${escapeHtml(siteName)} RSS" href="/rss.xml" />
   <link rel="stylesheet" href="/assets/css/style.css?v=${BUILD_VERSION}" />
-  <link rel="icon" href="${escapeHtml(faviconUrl)}" type="image/png" />
+  <link rel="icon" href="${escapeHtml(favicon)}" type="image/png" />
+  <script src="/assets/js/theme.js?v=${BUILD_VERSION}"></script>
 </head>
 <body${bodyClass ? ` class="${escapeHtml(bodyClass)}"` : ''}>
   <header class="site-header">
-    <a class="logo" id="siteName" href="/">${escapeHtml(siteName)}</a>
-    <nav class="nav" id="primaryNav">
-      ${navHtml(site, currentPath)}
-    </nav>
-    <div class="header-actions">
-      <div class="search-box">
-        <input id="searchInput" class="search-input" type="search" placeholder="${escapeHtml(searchPlaceholder)}" aria-label="搜尋文章" />
-        <div id="searchResults" class="search-results"></div>
+    <div class="site-header__inner">
+      <a class="site-header__brand" href="/">${escapeHtml(siteName)}</a>
+      <nav class="site-header__nav" id="primaryNav">
+        ${navList(site, currentPath)}
+      </nav>
+      <div class="site-header__actions">
+        <form class="site-header__search" onsubmit="return false" role="search">
+          <span class="icon" aria-hidden="true"></span>
+          <input id="globalSearchInput" type="search" placeholder="${escapeHtml(searchPlaceholder)}" aria-label="搜尋文章" autocomplete="off" />
+          <div id="globalSearchResults" class="search-results" role="listbox"></div>
+        </form>
+        <button class="mobile-search-toggle" id="mobileSearchBtn" aria-label="搜尋">
+          <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="18" height="18">
+            <circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="1.8"/>
+            <line x1="16.2" y1="16.2" x2="20" y2="20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <button class="mobile-menu-toggle" id="mobileMenuBtn" aria-label="展開選單" aria-expanded="false" aria-controls="primaryNav">
+          <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="18" height="18">
+            <line class="mm-line mm-line-top" x1="4" y1="7" x2="20" y2="7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            <line class="mm-line mm-line-mid" x1="4" y1="12" x2="20" y2="12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            <line class="mm-line mm-line-bot" x1="4" y1="17" x2="20" y2="17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <button class="theme-toggle" data-theme-toggle aria-label="切換深色模式">
+          <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"/></svg>
+          <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+        </button>
       </div>
-      <button class="mobile-search-toggle" id="mobileSearchBtn" aria-label="搜尋">
-        <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="18" height="18">
-          <circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="1.8"/>
-          <line x1="16.2" y1="16.2" x2="20" y2="20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-        </svg>
-      </button>
-      <button class="mobile-menu-toggle" id="mobileMenuBtn" aria-label="展開選單" aria-expanded="false" aria-controls="primaryNav">
-        <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="18" height="18">
-          <line class="mm-line mm-line-top" x1="4" y1="7" x2="20" y2="7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-          <line class="mm-line mm-line-mid" x1="4" y1="12" x2="20" y2="12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-          <line class="mm-line mm-line-bot" x1="4" y1="17" x2="20" y2="17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-        </svg>
-      </button>
     </div>
   </header>
 
   ${mainHtml}
 
   <footer class="site-footer">
-    <div id="siteFooterText">${escapeHtml(footerText)}</div>
-  </footer>${scriptTag(scriptSrc)}
+    <div class="site-footer__inner">
+      <div>
+        <p class="cap">${escapeHtml(siteName)}</p>
+        ${siteDesc ? `<p>${escapeHtml(siteDesc)}</p>` : ''}
+      </div>
+      <div>
+        <p class="cap">Subscribe</p>
+        <p><a href="/rss.xml">RSS</a></p>
+      </div>
+      <div class="site-footer__copy" id="siteFooterText">${escapeHtml(footerText)}</div>
+    </div>
+  </footer>
+
+  <script src="/assets/js/search.js?v=${BUILD_VERSION}"></script>
+  <script src="/assets/js/mobile-nav.js?v=${BUILD_VERSION}"></script>${scriptTag(scriptSrc)}
 </body>
 </html>`;
 };
 
-const renderPostCard = (post, site) => {
-  const metaBits = [
-    post.issue ? `<span class="issue-pill">${escapeHtml(post.issue)}</span>` : '',
-    post.date ? `<small>${escapeHtml(post.date)}</small>` : '',
-  ].filter(Boolean);
+/* ---------- 共用片段 ---------- */
+
+const renderTocRow = (post, index) => {
   const href = articlePath(post.slug);
-  const excerpt = buildDescription(post, 72);
+  const num = String(index + 1).padStart(2, '0');
+  const metaBits = [
+    post.date ? `<span class="cap">${escapeHtml(post.date)}</span>` : '',
+    post.issue ? `<span class="pill">${escapeHtml(post.issue)}</span>` : '',
+  ]
+    .filter(Boolean)
+    .join('');
+  const excerpt = buildDescription(post, 80);
+  const cover = safeCoverUrl(post.cover);
   return `
-    <article class="post-card">
-      <a class="image" href="${escapeHtml(href)}"><img src="${escapeHtml(safeCoverUrl(post.cover))}" alt="${escapeHtml(post.title || '')}" loading="lazy" /></a>
-      <div class="content">
-        <div class="card-meta">${metaBits.join('')}</div>
-        <h3><a href="${escapeHtml(href)}">${escapeHtml(post.title || '')}</a></h3>
-        ${excerpt ? `<p>${escapeHtml(excerpt)}</p>` : ''}
+    <li class="toc__row">
+      <span class="toc__num">${num}</span>
+      <div class="toc__body">
+        <p class="toc__meta">${metaBits}</p>
+        <h3 class="toc__title"><a href="${escapeHtml(href)}">${escapeHtml(post.title || '')}</a></h3>
+        ${excerpt ? `<p class="toc__excerpt">${escapeHtml(excerpt)}</p>` : ''}
       </div>
-    </article>
-  `;
+      <a class="toc__thumb" href="${escapeHtml(href)}" aria-hidden="true">
+        <img src="${escapeHtml(cover)}" alt="" loading="lazy" />
+      </a>
+    </li>`;
 };
 
-const renderIssueCard = (issue, posts, site) => {
+const renderBook = (issue, posts, site) => {
   const linkedSlugs = Array.isArray(issue.posts)
     ? issue.posts
-        .map((item) => {
-          if (typeof item === 'string') return item;
-          if (item && typeof item.slug === 'string') return item.slug;
-          return '';
-        })
+        .map((item) => (typeof item === 'string' ? item : item && item.slug))
         .filter(Boolean)
     : [];
-  const linkedPosts = linkedSlugs.map((slug) => posts.find((post) => post.slug === slug)).filter(Boolean);
-  const leadPost = linkedPosts[0];
-  const leadHref = leadPost ? articlePath(leadPost.slug) : '/articles.html';
-  const postCards = linkedPosts
-    .map(
-      (post) => `
-        <a class="issue-post" href="${escapeHtml(articlePath(post.slug))}">
-          <span>${escapeHtml(post.title || '')}</span>
-          <small>${escapeHtml(post.date || '')}</small>
-        </a>
-      `
-    )
-    .join('');
+  const count = linkedSlugs
+    .map((slug) => posts.find((p) => p.slug === slug))
+    .filter(Boolean).length;
   const countTemplate = normalizeText(site.issueCountTemplate) || '收錄 {count} 篇文章';
-  const note = normalizeText(issue.editorNote, { allowPlaceholder: true });
+  const countText = countTemplate.replace('{count}', `<strong>${count}</strong>`);
+  const sealChar = (issue.title || '期').trim().charAt(0);
+  const href = `/issues/${encodeURIComponent(issue.id || '')}`;
+  const cover = safeCoverUrl(issue.cover);
 
   return `
-    <article class="issue-card">
-      <div class="issue-book-visual">
-        <a class="issue-book-link" href="${escapeHtml(leadHref)}" aria-label="${escapeHtml(issue.title || '')}">
-          <div class="issue-book-object">
-            <div class="issue-book-spine"></div>
-            <div class="issue-cover">
-              <img class="issue-cover-image" src="${escapeHtml(safeCoverUrl(issue.cover))}" alt="${escapeHtml(issue.title || '')}" loading="lazy" />
-              <div class="issue-cover-copy">
-                <div class="book-kicker">Issue ${escapeHtml(issue.id || '')}</div>
-                <h2>${escapeHtml(issue.title || '')}</h2>
-                <p>${escapeHtml(issue.theme || '')}</p>
-              </div>
-            </div>
-            <div class="issue-book-shadow"></div>
-          </div>
-        </a>
+    <a class="book" href="${escapeHtml(href)}" aria-label="${escapeHtml(issue.title || '')}">
+      <div class="book__cover">
+        <img src="${escapeHtml(cover)}" alt="" loading="lazy" />
+        <span class="book__seal" aria-hidden="true">${escapeHtml(sealChar)}</span>
       </div>
-      <div class="issue-body">
-        <div class="issue-meta">
-          <span class="pill">${escapeHtml(issue.id || '')}</span>
-          <span class="issue-date">${escapeHtml(issue.publishDate || '')}</span>
-        </div>
-        <h2>${escapeHtml(issue.title || '')}</h2>
-        <p>${escapeHtml(issue.theme || '')}</p>
-        <div class="issue-count">${escapeHtml(countTemplate.replace('{count}', String(linkedPosts.length)))}</div>
-        ${note ? `<div class="issue-note">${escapeHtml(note)}</div>` : ''}
-        <div class="issue-actions">
-          <a class="issue-link" href="${escapeHtml(leadHref)}">${escapeHtml(normalizeText(site.issueReadLabel) || '閱讀首篇')}</a>
-        </div>
-        <details class="issue-expand"${site.issueDetailsOpen ? ' open' : ''}>
-          <summary>${escapeHtml(normalizeText(site.issueExpandLabel) || '查看收錄文章')}</summary>
-          <div class="issue-posts">${postCards || `<div class="issue-post">${escapeHtml(normalizeText(site.issueEmptyText) || '暫無文章')}</div>`}</div>
-        </details>
+      <div class="book__meta">
+        <p class="book__id">Issue ${escapeHtml(issue.id || '')}${issue.publishDate ? ` · ${escapeHtml(issue.publishDate)}` : ''}</p>
+        <p class="book__title">${escapeHtml(issue.title || '')}</p>
+        ${issue.theme ? `<p class="book__theme">${escapeHtml(issue.theme)}</p>` : ''}
+        <p class="book__count">${countText}</p>
       </div>
-    </article>
-  `;
+    </a>`;
 };
 
-const renderFilterOptions = (items, allLabel) =>
-  [allLabel, ...items]
-    .map((item) => `<option value="${escapeHtml(item)}">${escapeHtml(item)}</option>`)
-    .join('');
+/* ---------- 頁面渲染 ---------- */
 
-export const renderHomePage = ({ issues, posts, site }) => {
-  const featuredIssueId = String(site.homeFeaturedIssueId || '').trim();
-  const featuredIssue = issues.find((issue) => issue.id === featuredIssueId) || issues.find((issue) => issue.id === 'jq01') || issues[0] || null;
-  const featuredPost = featuredIssue
-    ? posts.find((post) => Array.isArray(featuredIssue.posts) && featuredIssue.posts.includes(post.slug))
-    : posts[0] || null;
-  const heroImage = safeCoverUrl(site.homeHeroImage || featuredPost?.cover || featuredIssue?.cover);
-  const issueCover = safeCoverUrl(featuredIssue?.cover || heroImage);
-  const latestPosts = posts.slice(0, 12);
-  const creditLines = [
-    normalizeText(site.homeHeroCreditLine1, { allowPlaceholder: true }),
-    normalizeText(site.homeHeroCreditLine2, { allowPlaceholder: true }),
-  ].filter(Boolean);
+export const renderHomePage = ({ posts, site }) => {
+  const limit = toInt(site.homeLatestLimit, 8, 1, 30);
+  const latest = posts.slice(0, limit);
 
   const mainHtml = `<main>
-    <section class="hero hero-magazine" id="homeHero">
-      <div class="hero-backdrop" id="homeHeroBackdrop">
-        <img id="homeHeroBackdropImage" class="hero-backdrop-image" src="${escapeHtml(heroImage)}" alt="" />
-      </div>
-      <div class="hero-frame${!(normalizeText(site.homeKicker) || normalizeText(site.homeTitle) || normalizeText(site.homeSubtitle)) ? ' hero-frame--book-only' : ''}">
-        <div class="hero-copy"${!(normalizeText(site.homeKicker) || normalizeText(site.homeTitle) || normalizeText(site.homeSubtitle)) ? ' hidden' : ''}>
-          <p class="kicker" id="homeKicker"${normalizeText(site.homeKicker) ? '' : ' hidden'}>${escapeHtml(normalizeText(site.homeKicker))}</p>
-          <h1 id="homeTitle"${normalizeText(site.homeTitle) ? '' : ' hidden'}>${escapeHtml(normalizeText(site.homeTitle))}</h1>
-          <p class="subtitle" id="homeSubtitle"${normalizeText(site.homeSubtitle) ? '' : ' hidden'}>${escapeHtml(normalizeText(site.homeSubtitle))}</p>
-          <div class="hero-cta">
-            <a class="btn" id="homeLatestButton" href="#latest">${escapeHtml(normalizeText(site.homeLatestButtonText) || '最新文章')}</a>
-          </div>
-          <p class="hero-note" id="homeHeroNote" hidden></p>
-        </div>
-        <aside class="hero-book">
-          <a class="book-link" id="homeIssueLink" href="/issues.html" aria-label="查看推薦期刊">
-            <div class="book-object">
-              <div class="book-spine"></div>
-              <div class="book-cover" id="homeIssueCover">
-                <img id="homeIssueCoverImage" class="book-cover-image" src="${escapeHtml(issueCover)}" alt="" />
-                <div class="book-cover-copy">
-                  <div class="book-kicker" id="homeIssueKicker">${escapeHtml(normalizeText(site.homeIssueKicker) || 'Featured Issue')}</div>
-                  <h2 id="homeIssueTitle">${escapeHtml(featuredIssue?.title || '')}</h2>
-                  <p id="homeIssueMeta">${escapeHtml([featuredIssue?.theme, featuredIssue?.publishDate].filter(Boolean).join(' · '))}</p>
-                </div>
-              </div>
-              <div class="book-shadow"></div>
-            </div>
-          </a>
-        </aside>
-      </div>
-      <div class="hero-credit" id="homeHeroCredit"${creditLines.length > 0 ? '' : ' hidden'}>${creditLines.map((line) => `<span>${escapeHtml(line)}</span>`).join('')}</div>
-    </section>
-
-    <section id="latest" class="latest latest-list">
-      <div class="section-title">
+    <section class="section section--flush">
+      <header class="section__head">
         <div>
-          <h2 id="latestTitle">${escapeHtml(normalizeText(site.latestTitle) || '最新文章')}</h2>
-          <p id="latestIntro">${escapeHtml(normalizeText(site.latestIntro) || '按時間展開近期更新。')}</p>
+          <p class="kicker">Latest</p>
+          <h1 class="section__title" id="latestTitle">${escapeHtml(normalizeText(site.latestTitle) || '最新文章')}</h1>
         </div>
+        <p class="section__intro" id="latestIntro">${escapeHtml(normalizeText(site.latestIntro) || '按時間展開近期更新。')}</p>
+      </header>
+
+      <ol class="toc" id="postGrid">${latest.map(renderTocRow).join('')}</ol>
+
+      <div class="section__more">
+        <a href="/articles.html" class="ghost-link">查看全部文章 →</a>
       </div>
-      <div id="postGrid" class="post-grid list-mode">${latestPosts.map((post) => renderPostCard(post, site)).join('')}</div>
     </section>
   </main>`;
 
   return shell({
     bodyClass: 'home-page',
     currentPath: '/',
-    description: normalizeText(site.homeSubtitle) || normalizeText(site.aboutIntro) || normalizeText(site.latestIntro) || 'CRIVU',
+    description:
+      normalizeText(site.siteDescription) ||
+      normalizeText(site.homeSubtitle) ||
+      normalizeText(site.latestIntro) ||
+      'CRIVU · 隨記 · 節氣 · 戲曲 · 閱讀',
     mainHtml,
     scriptSrc: '/assets/js/app.js',
     site,
@@ -289,19 +273,21 @@ export const renderHomePage = ({ issues, posts, site }) => {
 };
 
 export const renderArticlesPage = ({ posts, site }) => {
-  const mainHtml = `<main class="list-page">
-    <section class="section-title">
-      <div>
-        <h1 id="articlesPageTitle">${escapeHtml(normalizeText(site.articlesPageTitle) || '文章')}</h1>
-        <p id="articlesPageIntro">${escapeHtml(normalizeText(site.articlesPageIntro) || '按時間順序閱讀全部文章。')}</p>
-      </div>
-    </section>
-    <div id="postGrid" class="post-grid list-mode">${posts.map((post) => renderPostCard(post, site)).join('')}</div>
+  const mainHtml = `<main class="page-list list-page">
+    <header class="page-head">
+      <p class="kicker">Articles</p>
+      <h1 class="page-title" id="articlesPageTitle">${escapeHtml(normalizeText(site.articlesPageTitle) || '文章')}</h1>
+      <p class="page-intro" id="articlesPageIntro">${escapeHtml(normalizeText(site.articlesPageIntro) || '按時間順序閱讀全部文章。')}</p>
+    </header>
+
+    <ol class="toc" id="postGrid">${posts.map(renderTocRow).join('')}</ol>
   </main>`;
 
   return shell({
     currentPath: '/articles.html',
-    description: normalizeText(site.articlesPageIntro) || '按時間順序閱讀 CRIVU 的全部文章。',
+    description:
+      normalizeText(site.articlesPageIntro) ||
+      '按時間順序閱讀 CRIVU 的全部文章。',
     mainHtml,
     scriptSrc: '/assets/js/app.js',
     site,
@@ -310,20 +296,22 @@ export const renderArticlesPage = ({ posts, site }) => {
 };
 
 export const renderIssuesPage = ({ issues, posts, site }) => {
-  const mainHtml = `<main class="issues-page">
-    <section class="section-title">
-      <div>
-        <h1 id="issuesPageTitle">${escapeHtml(normalizeText(site.issuesPageTitle) || '期刊')}</h1>
-        <p id="issuesPageIntro">${escapeHtml(normalizeText(site.issuesPageIntro) || '以期刊方式編排主題與收錄文章。')}</p>
-      </div>
-    </section>
-    <div id="issuesGrid" class="issues-grid">${issues.map((issue) => renderIssueCard(issue, posts, site)).join('')}</div>
+  const mainHtml = `<main class="page-list issues-page">
+    <header class="page-head">
+      <p class="kicker">Issues</p>
+      <h1 class="page-title" id="issuesPageTitle">${escapeHtml(normalizeText(site.issuesPageTitle) || '期刊')}</h1>
+      <p class="page-intro" id="issuesPageIntro">${escapeHtml(normalizeText(site.issuesPageIntro) || '以期刊方式編排主題與收錄文章。點擊書本進入該期目錄。')}</p>
+    </header>
+
+    <div class="issue-shelf issues-grid" id="issuesGrid">${issues.map((issue) => renderBook(issue, posts, site)).join('')}</div>
   </main>`;
 
   return shell({
     bodyClass: 'page-issues',
     currentPath: '/issues.html',
-    description: normalizeText(site.issuesPageIntro) || '以期刊方式整理主題、編者語與收錄文章。',
+    description:
+      normalizeText(site.issuesPageIntro) ||
+      '以期刊方式整理主題、編者語與收錄文章。',
     mainHtml,
     scriptSrc: '/assets/js/issues.js',
     site,
@@ -336,46 +324,48 @@ export const renderAboutPage = ({ site }) => {
   const aboutTitle = normalizeText(site.aboutTitle) || '關於';
   const aboutIntro =
     normalizeText(site.aboutIntro) ||
-    '我是CRIVU。這個網站是我的個人博客：把日常裡的靈感、技術實作、旅途見聞與閱讀思考等，整理成一期一期的內容。';
+    '我是 CRIVU。這個網站是我的個人博客：把日常裡的靈感、技術實作、旅途見聞與閱讀思考等，整理成一期一期的內容。';
   const aboutStyle = normalizeText(site.aboutStyle);
-  const aboutInfoTitle = normalizeText(site.aboutInfoTitle);
+  const aboutInfoTitle = normalizeText(site.aboutInfoTitle) || '資訊';
   const aboutCity = normalizeText(site.city);
   const aboutEmail = normalizeText(site.email, { allowPlaceholder: true });
   const aboutTopics = normalizeText(site.topics);
   const validEmail = isValidEmail(aboutEmail);
+
   const facts = [
     aboutCity
-      ? `<li class="about-fact"><div class="meta-label">${escapeHtml(normalizeText(site.aboutCityLabel) || '城市')}</div><div class="meta-value">${escapeHtml(aboutCity)}</div></li>`
+      ? `<div><dt>${escapeHtml(normalizeText(site.aboutCityLabel) || '城市')}</dt><dd>${escapeHtml(aboutCity)}</dd></div>`
       : '',
     validEmail
-      ? `<li class="about-fact"><div class="meta-label">${escapeHtml(normalizeText(site.aboutEmailLabel) || 'Email')}</div><div class="meta-value">${escapeHtml(aboutEmail)}</div></li>`
+      ? `<div><dt>${escapeHtml(normalizeText(site.aboutEmailLabel) || 'Email')}</dt><dd>${escapeHtml(aboutEmail)}</dd></div>`
       : '',
     aboutTopics
-      ? `<li class="about-fact"><div class="meta-label">${escapeHtml(normalizeText(site.aboutTopicsLabel) || '主題')}</div><div class="meta-value">${escapeHtml(aboutTopics)}</div></li>`
+      ? `<div><dt>${escapeHtml(normalizeText(site.aboutTopicsLabel) || '主題')}</dt><dd>${escapeHtml(aboutTopics)}</dd></div>`
       : '',
   ].filter(Boolean);
+
   const mailLink = validEmail
     ? `<a class="about-mail" href="${escapeHtml(sanitizeUrl(`mailto:${aboutEmail}`))}">${escapeHtml(normalizeText(site.aboutMailLabel) || '聯絡我')}</a>`
     : '';
 
   const asideHtml =
-    facts.length > 0 || mailLink || aboutInfoTitle
+    facts.length > 0 || mailLink
       ? `
-      <aside class="about-card about-side">
-        ${aboutInfoTitle ? `<h2>${escapeHtml(aboutInfoTitle)}</h2>` : ''}
-        ${facts.length > 0 ? `<ul class="about-facts">${facts.join('')}</ul>` : ''}
+      <aside class="about-side">
+        <h2>${escapeHtml(aboutInfoTitle)}</h2>
+        ${facts.length > 0 ? `<dl class="about-facts">${facts.join('')}</dl>` : ''}
         ${mailLink}
       </aside>`
       : '';
 
-  const mainHtml = `<main class="about">
+  const mainHtml = `<main class="page-about about">
     <section class="about-shell">
-      <article class="about-card about-main">
+      <div class="about-main">
         <p class="about-kicker">${escapeHtml(aboutKicker)}</p>
         <h1>${escapeHtml(aboutTitle)}</h1>
         <p class="about-lead">${escapeHtml(aboutIntro)}</p>
         ${aboutStyle ? `<p class="about-detail">${escapeHtml(aboutStyle)}</p>` : ''}
-      </article>${asideHtml}
+      </div>${asideHtml}
     </section>
   </main>`;
 

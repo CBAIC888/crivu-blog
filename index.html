@@ -5,91 +5,83 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="build-version" content="__BUILD_VERSION__" />
   <title>CRIVU</title>
-  <meta name="description" content="我是CRIVU。這個網站是我的個人博客，記錄日常裡的靈感、技術實作、旅途見聞與閱讀思考等。" />
+  <meta name="description" content="CRIVU 是一座個人的文字棲居之所，收錄隨筆、節氣書寫、小說連載、京劇札記與日常思索。" />
   <link rel="alternate" type="application/rss+xml" title="CRIVU RSS" href="/rss.xml" />
   <link rel="stylesheet" href="/assets/css/style.css?v=__BUILD_VERSION__" />
   <link rel="icon" href="/assets/img/favicon.png" type="image/png" />
+  <script src="/assets/js/theme.js?v=__BUILD_VERSION__"></script>
 </head>
-<body class="home-page site-loading">
+<body class="home-page">
   <header class="site-header">
-    <a class="logo" id="siteName" href="/">CRIVU</a>
-    <nav class="nav" id="primaryNav">
-      <a href="/">首頁</a>
-      <a href="/issues.html">期刊</a>
-      <a href="/articles.html">文章</a>
-      <a href="/about.html">關於</a>
-    </nav>
-    <div class="header-actions">
-      <div class="search-box">
-        <input id="searchInput" class="search-input" type="search" placeholder="搜尋" aria-label="搜尋文章" />
-        <div id="searchResults" class="search-results"></div>
+    <div class="site-header__inner">
+      <a class="site-header__brand" href="/">CRIVU</a>
+      <nav class="site-header__nav" id="primaryNav">
+        <a class="active" href="/">首頁</a>
+        <a href="/issues.html">期刊</a>
+        <a href="/articles.html">文章</a>
+        <a href="/about.html">關於</a>
+      </nav>
+      <div class="site-header__actions">
+        <form class="site-header__search" onsubmit="return false" role="search">
+          <span class="icon" aria-hidden="true"></span>
+          <input id="globalSearchInput" type="search" placeholder="搜尋文章" aria-label="搜尋文章" autocomplete="off" />
+          <div id="globalSearchResults" class="search-results" role="listbox"></div>
+        </form>
+        <button class="mobile-search-toggle" id="mobileSearchBtn" aria-label="搜尋">
+          <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="18" height="18">
+            <circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="1.8"/>
+            <line x1="16.2" y1="16.2" x2="20" y2="20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <button class="mobile-menu-toggle" id="mobileMenuBtn" aria-label="展開選單" aria-expanded="false" aria-controls="primaryNav">
+          <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="18" height="18">
+            <line class="mm-line mm-line-top" x1="4" y1="7" x2="20" y2="7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            <line class="mm-line mm-line-mid" x1="4" y1="12" x2="20" y2="12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            <line class="mm-line mm-line-bot" x1="4" y1="17" x2="20" y2="17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <button class="theme-toggle" data-theme-toggle aria-label="切換深色模式">
+          <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"/></svg>
+          <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+        </button>
       </div>
-      <button class="mobile-search-toggle" id="mobileSearchBtn" aria-label="搜尋">
-        <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="18" height="18">
-          <circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="1.8"/>
-          <line x1="16.2" y1="16.2" x2="20" y2="20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-        </svg>
-      </button>
-      <button class="mobile-menu-toggle" id="mobileMenuBtn" aria-label="展開選單" aria-expanded="false" aria-controls="primaryNav">
-        <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="18" height="18">
-          <line class="mm-line mm-line-top" x1="4" y1="7" x2="20" y2="7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-          <line class="mm-line mm-line-mid" x1="4" y1="12" x2="20" y2="12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-          <line class="mm-line mm-line-bot" x1="4" y1="17" x2="20" y2="17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-        </svg>
-      </button>
     </div>
   </header>
 
   <main>
-    <section class="hero hero-magazine" id="homeHero">
-      <div class="hero-backdrop" id="homeHeroBackdrop">
-        <img id="homeHeroBackdropImage" class="hero-backdrop-image" src="/assets/img/uploads/程派—春閨夢-3-.png" alt="" />
-      </div>
-      <div class="hero-frame hero-frame--book-only">
-        <div class="hero-copy">
-          <p class="kicker" id="homeKicker" hidden></p>
-          <h1 id="homeTitle" hidden></h1>
-          <p class="subtitle" id="homeSubtitle" hidden></p>
-          <div class="hero-cta">
-            <a class="btn" id="homeLatestButton" href="#latest">最新文章</a>
-          </div>
-          <p class="hero-note" id="homeHeroNote" hidden></p>
-        </div>
-        <aside class="hero-book">
-          <a class="book-link" id="homeIssueLink" href="/issues.html" aria-label="查看推薦期刊">
-            <div class="book-object">
-              <div class="book-spine"></div>
-              <div class="book-cover" id="homeIssueCover">
-                <img id="homeIssueCoverImage" class="book-cover-image" src="/assets/img/uploads/未命名設計-1-.png" alt="" />
-                <div class="book-cover-copy">
-                  <div class="book-kicker" id="homeIssueKicker">Featured Issue</div>
-                  <h2 id="homeIssueTitle">二十四節氣</h2>
-                  <p id="homeIssueMeta">傳統-書信 · 2026-02-11</p>
-                </div>
-              </div>
-              <div class="book-shadow"></div>
-            </div>
-          </a>
-        </aside>
-      </div>
-      <div class="hero-credit" id="homeHeroCredit" hidden></div>
-    </section>
-
-    <section id="latest" class="latest latest-list">
-      <div class="section-title">
+    <section class="section section--flush">
+      <header class="section__head">
         <div>
-          <h2 id="latestTitle">最新文章</h2>
-          <p id="latestIntro">按時間展開近期更新。</p>
+          <p class="kicker">Latest</p>
+          <h1 class="section__title" id="latestTitle">最新文章</h1>
         </div>
+        <p class="section__intro" id="latestIntro">按時間展開近期更新。</p>
+      </header>
+
+      <ol class="toc" id="postGrid"></ol>
+
+      <div class="section__more">
+        <a href="/articles.html" class="ghost-link">查看全部文章 →</a>
       </div>
-      <div id="postGrid" class="post-grid list-mode"></div>
     </section>
   </main>
 
   <footer class="site-footer">
-    <div id="siteFooterText">© 2026 CRIVU</div>
+    <div class="site-footer__inner">
+      <div>
+        <p class="cap" id="siteName">CRIVU</p>
+        <p>隨記 · 節氣 · 戲曲 · 閱讀。</p>
+      </div>
+      <div>
+        <p class="cap">Subscribe</p>
+        <p><a href="/rss.xml">RSS</a></p>
+      </div>
+      <div class="site-footer__copy" id="siteFooterText">© 2026 CRIVU</div>
+    </div>
   </footer>
 
+  <script src="/assets/js/search.js?v=__BUILD_VERSION__"></script>
+  <script src="/assets/js/mobile-nav.js?v=__BUILD_VERSION__"></script>
   <script src="/assets/js/app.js?v=__BUILD_VERSION__" type="module"></script>
 </body>
 </html>

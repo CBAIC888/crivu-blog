@@ -165,11 +165,7 @@ const setupSearch = (posts) => {
 
 const renderIssue = (issue, posts) => {
   const cover = safeCoverUrl(issue.cover);
-  const expandLabel = escapeHtml(state.site.issueExpandLabel || '查看收錄文章');
-  const emptyText = escapeHtml(state.site.issueEmptyText || '暫無文章');
   const countTemplate = escapeHtml(state.site.issueCountTemplate || '收錄 {count} 篇文章');
-  const countText = countTemplate.replace('{count}', String((issue.posts || []).length));
-  const detailsOpen = state.site.issueDetailsOpen ? ' open' : '';
   const linkedPosts = Array.isArray(issue.posts)
     ? issue.posts
         .map((item) => {
@@ -179,58 +175,25 @@ const renderIssue = (issue, posts) => {
         })
         .filter(Boolean)
     : [];
-  const postCards = linkedPosts
-    .map((slug) => posts.find((p) => p.slug === slug))
-    .filter(Boolean)
-    .map(
-      (post) => `
-        <a class="issue-post" href="${escapeHtml(articlePath(post.slug))}">
-          <span>${escapeHtml(post.title)}</span>
-          <small>${escapeHtml(post.date || '')}</small>
-        </a>
-      `
-    )
-    .join('');
-  const leadPost = linkedPosts.map((slug) => posts.find((p) => p.slug === slug)).find(Boolean);
-  const leadHref = leadPost ? articlePath(leadPost.slug) : '/articles.html';
-  const leadLabel = escapeHtml(state.site.issueReadLabel || '閱讀首篇');
+  const count = linkedPosts.length;
+  const countText = countTemplate.replace('{count}', `<strong>${count}</strong>`);
+  // 印章字：取標題首字做視覺標記
+  const sealChar = (issue.title || '期').trim().charAt(0);
+  const href = `/issues/${encodeURIComponent(issue.id || '')}`;
 
   return `
-    <article class="issue-card">
-      <div class="issue-book-visual">
-        <a class="issue-book-link" href="${escapeHtml(leadHref)}" aria-label="${escapeHtml(issue.title)}">
-          <div class="issue-book-object">
-            <div class="issue-book-spine"></div>
-            <div class="issue-cover">
-              <img class="issue-cover-image" src="${escapeHtml(cover)}" alt="${escapeHtml(issue.title)}" loading="lazy" />
-              <div class="issue-cover-copy">
-                <div class="book-kicker">Issue ${escapeHtml(issue.id)}</div>
-                <h2>${escapeHtml(issue.title)}</h2>
-                <p>${escapeHtml(issue.theme)}</p>
-              </div>
-            </div>
-            <div class="issue-book-shadow"></div>
-          </div>
-        </a>
+    <a class="book" href="${escapeHtml(href)}" aria-label="${escapeHtml(issue.title || '')}">
+      <div class="book__cover">
+        <img src="${escapeHtml(cover)}" alt="" loading="lazy" />
+        <span class="book__seal" aria-hidden="true">${escapeHtml(sealChar)}</span>
       </div>
-      <div class="issue-body">
-        <div class="issue-meta">
-          <span class="pill">${escapeHtml(issue.id)}</span>
-          <span class="issue-date">${escapeHtml(issue.publishDate)}</span>
-        </div>
-        <h2>${escapeHtml(issue.title)}</h2>
-        <p>${escapeHtml(issue.theme)}</p>
-        <div class="issue-count">${countText}</div>
-        <div class="issue-note">${escapeHtml(issue.editorNote || '')}</div>
-        <div class="issue-actions">
-          <a class="issue-link" href="${escapeHtml(leadHref)}">${leadLabel}</a>
-        </div>
-        <details class="issue-expand"${detailsOpen}>
-          <summary>${expandLabel}</summary>
-          <div class="issue-posts">${postCards || `<div class="issue-post">${emptyText}</div>`}</div>
-        </details>
+      <div class="book__meta">
+        <p class="book__id">Issue ${escapeHtml(issue.id || '')}${issue.publishDate ? ` · ${escapeHtml(issue.publishDate)}` : ''}</p>
+        <p class="book__title">${escapeHtml(issue.title || '')}</p>
+        ${issue.theme ? `<p class="book__theme">${escapeHtml(issue.theme)}</p>` : ''}
+        <p class="book__count">${countText}</p>
       </div>
-    </article>
+    </a>
   `;
 };
 

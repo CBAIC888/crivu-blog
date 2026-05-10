@@ -15,6 +15,7 @@ const TARGETS = [
   'post.html',
   path.join('shared', 'site-pages.js'),
   path.join('functions', 'articles', '[slug].js'),
+  path.join('functions', 'issues', '[id].js'),
 ];
 
 const pad = (value) => String(value).padStart(2, '0');

@@ -370,29 +370,43 @@ const setupMobileMenu = () => {
   syncAria();
 };
 
-const renderCard = (post) => {
+const renderCard = (post, index) => {
   const cover = safeCoverUrl(post.cover);
   const safeLink = articlePath(post.slug);
   const excerpt = buildDescription(post, 72);
   const metaBits = [
-    post.issue ? `<span class="issue-pill">${escapeHtml(post.issue)}</span>` : '',
-    post.date ? `<small>${escapeHtml(post.date)}</small>` : '',
+    post.date ? `<span class="cap">${escapeHtml(post.date)}</span>` : '',
+    post.issue ? `<span class="pill">${escapeHtml(post.issue)}</span>` : '',
   ].filter(Boolean);
+  const num = String((index ?? 0) + 1).padStart(2, '0');
   return `
-    <article class="post-card">
-      <a class="image" href="${escapeHtml(safeLink)}"><img src="${escapeHtml(cover)}" alt="${escapeHtml(post.title || '')}" loading="lazy" /></a>
-      <div class="content">
-        <div class="card-meta">${metaBits.join('')}</div>
-        <h3><a href="${escapeHtml(safeLink)}">${escapeHtml(post.title)}</a></h3>
-        ${excerpt ? `<p>${escapeHtml(excerpt)}</p>` : ''}
+    <li class="toc__row">
+      <span class="toc__num">${num}</span>
+      <div class="toc__body">
+        <p class="toc__meta">${metaBits.join('')}</p>
+        <h3 class="toc__title"><a href="${escapeHtml(safeLink)}">${escapeHtml(post.title || '')}</a></h3>
+        ${excerpt ? `<p class="toc__excerpt">${escapeHtml(excerpt)}</p>` : ''}
       </div>
-    </article>
+      <a class="toc__thumb" href="${escapeHtml(safeLink)}" aria-hidden="true">
+        <img src="${escapeHtml(cover)}" alt="" loading="lazy" />
+      </a>
+    </li>
   `;
 };
 
 const renderGrid = (el, posts) => {
   if (!el) return;
-  el.innerHTML = posts.map(renderCard).join('');
+  // 確保容器是 <ol class="toc">
+  if (el.tagName !== 'OL') {
+    const ol = document.createElement('ol');
+    ol.className = 'toc';
+    el.parentNode.replaceChild(ol, el);
+    el = ol;
+  } else {
+    el.classList.add('toc');
+    el.classList.remove('post-grid', 'list-mode');
+  }
+  el.innerHTML = posts.map((p, i) => renderCard(p, i)).join('');
 };
 
 const matchesSearch = (post, query) => {
