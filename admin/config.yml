@@ -15,6 +15,8 @@ backend:
 
 media_folder: "assets/img/uploads"
 public_folder: "/assets/img/uploads"
+media_library:
+  name: "crivu-r2-images"
 publish_mode: editorial_workflow
 logo_url: "/assets/img/favicon.png"
 display_url: "https://cbc688.com"

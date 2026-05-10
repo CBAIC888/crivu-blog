@@ -178,3 +178,116 @@ label[class*='ControlLabel'] {
   background: #fff;
   flex: 0 0 auto;
 }
+
+/* R2 圖片媒體庫 */
+.r2-media-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+}
+.r2-media-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(26, 24, 20, 0.42);
+}
+.r2-media-dialog {
+  position: relative;
+  width: min(560px, 100%);
+  overflow: hidden;
+  border-radius: 12px;
+  background: var(--cms-card);
+  border: 1px solid var(--cms-line);
+  box-shadow: 0 24px 80px -28px rgba(26, 24, 20, 0.45);
+}
+.r2-media-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--cms-line);
+  background: var(--cms-card-alt);
+}
+.r2-media-header h2 {
+  margin: 0 0 6px;
+  font-size: 18px;
+  line-height: 1.2;
+}
+.r2-media-header p {
+  margin: 0;
+  color: var(--cms-muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.r2-media-close {
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--cms-line);
+  background: #fff;
+  color: var(--cms-ink);
+  font-size: 22px;
+  line-height: 1;
+}
+.r2-media-body {
+  padding: 20px;
+}
+.r2-media-drop {
+  display: grid;
+  gap: 8px;
+  place-items: center;
+  min-height: 150px;
+  padding: 22px;
+  border: 1px dashed var(--cms-line-strong);
+  border-radius: 10px;
+  background: #fff;
+  cursor: pointer;
+  text-align: center;
+}
+.r2-media-drop.is-busy {
+  pointer-events: none;
+  opacity: 0.66;
+}
+.r2-media-drop input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+.r2-media-drop span {
+  font-weight: 700;
+  color: var(--cms-accent);
+}
+.r2-media-drop small {
+  max-width: 360px;
+  color: var(--cms-muted);
+  line-height: 1.5;
+}
+.r2-media-url-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  margin-top: 14px;
+}
+.r2-media-url-row input {
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--cms-line);
+  border-radius: 8px;
+}
+.r2-media-url-row button {
+  padding: 10px 14px;
+  border: 0;
+  background: var(--cms-ink);
+  color: #fff;
+}
+.r2-media-status {
+  min-height: 20px;
+  margin-top: 12px;
+  color: var(--cms-muted);
+  font-size: 13px;
+}
+.r2-media-status.is-error {
+  color: #a12f2f;
+}

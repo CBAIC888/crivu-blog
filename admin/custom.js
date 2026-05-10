@@ -161,6 +161,137 @@
     return '';
   };
 
+  const uploadImageToCloudflare = async (file, onProgress) => {
+    const token = getCmsToken();
+    if (!token) throw new Error('尚未登入 CMS，請先登入後再上傳圖片');
+    if (!file || !String(file.type || '').startsWith('image/')) {
+      throw new Error('請選擇圖片檔案');
+    }
+
+    const form = new FormData();
+    form.append('file', file, file.name || 'image.png');
+    if (typeof onProgress === 'function') onProgress('正在上傳圖片…');
+
+    const res = await fetch('/api/r2-media-upload', {
+      method: 'POST',
+      headers: { Authorization: 'Bearer ' + token },
+      body: form
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || '圖片上傳到 Cloudflare 失敗');
+    if (!data.publicUrl) throw new Error('圖片上傳成功但缺少公開網址');
+    return data.publicUrl;
+  };
+
+  const createR2ImageMediaLibrary = () => ({
+    name: 'crivu-r2-images',
+    init({ handleInsert }) {
+      let modal = null;
+      let activeControlId = '';
+
+      const removeModal = () => {
+        if (modal) modal.remove();
+        modal = null;
+        activeControlId = '';
+      };
+
+      const setStatus = (message, isError) => {
+        if (!modal) return;
+        const status = modal.querySelector('[data-r2-media-status]');
+        if (!status) return;
+        status.textContent = message || '';
+        status.classList.toggle('is-error', Boolean(isError));
+      };
+
+      const insertUrl = (url) => {
+        const cleanUrl = String(url || '').trim();
+        if (!cleanUrl) {
+          setStatus('請先上傳圖片或輸入圖片網址', true);
+          return;
+        }
+        handleInsert(cleanUrl);
+        removeModal();
+      };
+
+      const buildModal = (options = {}) => {
+        removeModal();
+        activeControlId = options.id || '';
+
+        modal = document.createElement('div');
+        modal.className = 'r2-media-modal';
+        modal.innerHTML = `
+          <div class="r2-media-backdrop" data-r2-media-close></div>
+          <section class="r2-media-dialog" role="dialog" aria-modal="true" aria-labelledby="r2MediaTitle">
+            <header class="r2-media-header">
+              <div>
+                <h2 id="r2MediaTitle">選擇圖片</h2>
+                <p>圖片會上傳到 Cloudflare R2，內容保存時只寫入圖片網址。</p>
+              </div>
+              <button type="button" class="r2-media-close" data-r2-media-close aria-label="關閉">×</button>
+            </header>
+            <div class="r2-media-body">
+              <label class="r2-media-drop">
+                <input type="file" accept="image/*" data-r2-media-file />
+                <span>點擊選擇圖片</span>
+                <small>支援 JPG、PNG、WebP、GIF、SVG、AVIF，單檔上限依部署環境設定。</small>
+              </label>
+              <div class="r2-media-url-row">
+                <input type="url" placeholder="或貼上現有圖片網址" value="${escapeHtml(options.value || '')}" data-r2-media-url />
+                <button type="button" data-r2-media-insert-url>使用網址</button>
+              </div>
+              <div class="r2-media-status" data-r2-media-status></div>
+            </div>
+          </section>
+        `;
+
+        modal.addEventListener('click', (event) => {
+          const target = event.target;
+          if (!(target instanceof HTMLElement)) return;
+          if (target.matches('[data-r2-media-close]')) removeModal();
+          if (target.matches('[data-r2-media-insert-url]')) {
+            insertUrl(modal.querySelector('[data-r2-media-url]')?.value || '');
+          }
+        });
+
+        modal.querySelector('[data-r2-media-file]')?.addEventListener('change', async (event) => {
+          const input = event.target;
+          const file = input && input.files && input.files[0];
+          if (!file) return;
+          const drop = modal.querySelector('.r2-media-drop');
+          if (drop) drop.classList.add('is-busy');
+          try {
+            const url = await uploadImageToCloudflare(file, (message) => setStatus(message, false));
+            setStatus('圖片已上傳，正在插入…', false);
+            insertUrl(url);
+          } catch (err) {
+            console.error(err);
+            setStatus(err && err.message ? err.message : '圖片上傳失敗', true);
+          } finally {
+            if (drop) drop.classList.remove('is-busy');
+            input.value = '';
+          }
+        });
+
+        document.body.appendChild(modal);
+        setTimeout(() => modal?.querySelector('[data-r2-media-file]')?.focus(), 0);
+      };
+
+      return {
+        show: buildModal,
+        hide: removeModal,
+        enableStandalone() {},
+        onClearControl({ id } = {}) {
+          if (!id || id === activeControlId) removeModal();
+        },
+        onRemoveControl({ id } = {}) {
+          if (!id || id === activeControlId) removeModal();
+        }
+      };
+    }
+  });
+
+  CMS.registerMediaLibrary(createR2ImageMediaLibrary());
+
   const uploadAudioToCloudflare = async (file) => {
     const token = getCmsToken();
     if (!token) throw new Error('尚未登入 CMS，請先登入後再上傳音訊');

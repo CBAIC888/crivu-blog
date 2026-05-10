@@ -398,6 +398,9 @@ window.DECAP_CMS_CONFIG = {
   backend: REPO_CONFIG,
   media_folder: 'assets/img/uploads',
   public_folder: '/assets/img/uploads',
+  media_library: {
+    name: 'crivu-r2-images',
+  },
   publish_mode: 'editorial_workflow',
   slug: {
     encoding: 'ascii',
