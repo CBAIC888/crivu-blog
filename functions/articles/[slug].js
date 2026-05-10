@@ -38,7 +38,6 @@ const renderMoreItem = (post) => {
   const excerpt = buildDescription(post, 64);
   const metaBits = [
     post.date ? `<span class="cap">${escapeHtml(post.date)}</span>` : '',
-    post.issue ? `<span class="pill">${escapeHtml(post.issue)}</span>` : '',
   ].filter(Boolean);
   return `
     <a class="more-item" href="${escapeHtml(safeLink)}">

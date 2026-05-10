@@ -29,7 +29,6 @@ const renderTocRow = (post, index) => {
   const num = String(index + 1).padStart(2, '0');
   const metaBits = [
     post.date ? `<span class="cap">${escapeHtml(post.date)}</span>` : '',
-    post.category ? `<span class="pill">${escapeHtml(post.category)}</span>` : '',
   ]
     .filter(Boolean)
     .join('');

@@ -178,13 +178,11 @@ const shell = ({
 
 /* ---------- 共用片段 ---------- */
 
-const renderTocRow = (post, index, options = {}) => {
-  const { showIssue = true } = options;
+const renderTocRow = (post, index) => {
   const href = articlePath(post.slug);
   const num = String(index + 1).padStart(2, '0');
   const metaBits = [
     post.date ? `<span class="cap">${escapeHtml(post.date)}</span>` : '',
-    showIssue && post.issue ? `<span class="pill">${escapeHtml(post.issue)}</span>` : '',
   ]
     .filter(Boolean)
     .join('');
@@ -250,7 +248,7 @@ export const renderHomePage = ({ posts, site }) => {
         <p class="section__intro" id="latestIntro">${escapeHtml(normalizeText(site.latestIntro) || '按時間展開近期更新。')}</p>
       </header>
 
-      <ol class="toc" id="postGrid">${latest.map((p, i) => renderTocRow(p, i, { showIssue: true })).join('')}</ol>
+      <ol class="toc" id="postGrid">${latest.map(renderTocRow).join('')}</ol>
 
       <div class="section__more">
         <a href="/articles.html" class="ghost-link">查看全部文章 →</a>
@@ -281,7 +279,7 @@ export const renderArticlesPage = ({ posts, site }) => {
       <p class="page-intro" id="articlesPageIntro">${escapeHtml(normalizeText(site.articlesPageIntro) || '按時間順序閱讀全部文章。')}</p>
     </header>
 
-    <ol class="toc" id="postGrid">${posts.map((p, i) => renderTocRow(p, i, { showIssue: false })).join('')}</ol>
+    <ol class="toc" id="postGrid">${posts.map(renderTocRow).join('')}</ol>
   </main>`;
 
   return shell({

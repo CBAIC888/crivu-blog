@@ -121,7 +121,7 @@
       .map(({ post }) => {
         const href = articlePath(post.slug || '');
         const title = highlight(post.title || '', q);
-        const meta = [post.date, post.issue].filter(Boolean).map(escapeHtml).join(' · ');
+        const meta = post.date ? escapeHtml(post.date) : '';
         const snip = highlight(snippet(post.excerpt || post.body, q), q);
         return `
           <a class="search-hit search-item" href="${href}">
