@@ -5,7 +5,7 @@
       "id": "hsm",
       "title": "七日雨浸畫室迷",
       "theme": "小說",
-      "cover": "/assets/img/uploads/4-0d2c751c13ba.png",
+      "cover": "https://raw.githubusercontent.com/CBAIC888/crivu-blog/main/assets/img/uploads/20260510/4-0813aabf7490.png",
       "editorNote": " ",
       "posts": [
         "hsm"
@@ -16,7 +16,7 @@
       "id": "jq01",
       "title": "二十四節氣",
       "theme": "傳統-書信",
-      "cover": "/assets/img/uploads/程派—春閨夢-1-.png",
+      "cover": "https://raw.githubusercontent.com/CBAIC888/crivu-blog/main/assets/img/uploads/20260510/2-0d9cb87ac8b1.png",
       "editorNote": "收錄從甲辰年開始",
       "posts": [
         "bwqm",
@@ -37,7 +37,7 @@
       "id": "opera",
       "title": "京劇",
       "theme": "傳統",
-      "cover": "/assets/img/uploads/劇本-1-.png",
+      "cover": "https://raw.githubusercontent.com/CBAIC888/crivu-blog/main/assets/img/uploads/20260510/1-f904cc202ce7.png",
       "editorNote": "收錄京劇劇本等",
       "posts": [
         "hsl",
@@ -49,7 +49,7 @@
       "id": "2026Q1",
       "title": "雜記",
       "theme": "隨記",
-      "cover": "/assets/img/uploads/劇本-2-.png",
+      "cover": "https://raw.githubusercontent.com/CBAIC888/crivu-blog/main/assets/img/uploads/20260510/3-7387cccba43b.png",
       "publishDate": "2026-02-01",
       "editorNote": "第一期時間為2025年12月-2026年4月",
       "posts": [
