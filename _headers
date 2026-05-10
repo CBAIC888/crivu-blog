@@ -36,7 +36,7 @@
 
 /admin/*
   Cache-Control: no-cache, max-age=0
-  Content-Security-Policy: default-src 'self'; base-uri 'self'; frame-ancestors 'none'; img-src 'self' data: https: blob:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://api.github.com https://github.com; form-action 'self'
+  Content-Security-Policy: default-src 'self'; base-uri 'self'; frame-ancestors 'none'; img-src 'self' data: https: blob:; media-src 'self' blob:; font-src 'self' data:; script-src 'self' 'unsafe-inline' 'unsafe-eval' blob:; style-src 'self' 'unsafe-inline'; connect-src 'self' https://api.github.com https://github.com; form-action 'self'
 
 /admin/config.yml
   Cache-Control: no-store, no-cache, must-revalidate, max-age=0
