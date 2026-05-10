@@ -1296,7 +1296,7 @@ main > .section:first-child {
   max-width: var(--content-width);
   margin: 0 auto;
   display: grid;
-  grid-template-columns: 2fr 1.2fr 1fr 1fr;
+  grid-template-columns: 2fr 1.4fr 1fr;
   gap: 40px;
   align-items: start;
   padding-bottom: 36px;
@@ -1342,20 +1342,6 @@ main > .section:first-child {
   color: var(--footer-ink);
   border-bottom-color: var(--footer-ink-dim);
 }
-.site-footer__nav {
-  display: grid;
-  gap: 6px;
-}
-.site-footer__nav a {
-  display: inline-block;
-  font-family: var(--sans);
-  font-size: 13px;
-  letter-spacing: 0.1em;
-  border-bottom: none;
-  padding: 2px 0;
-  opacity: 0.85;
-}
-.site-footer__nav a:hover { opacity: 1; border-bottom: none; }
 
 /* 社群圖示 */
 .social-links {

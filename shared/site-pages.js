@@ -137,11 +137,6 @@ const renderFooter = (site, currentPath) => {
     .replace(/ /g, '');
   const validEmail = email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? email : '';
   const socialHtml = renderSocialLinks(site);
-  const navHtml = renderNavItems(
-    Array.isArray(site.nav) && site.nav.length > 0 ? site.nav : DEFAULT_NAV,
-    currentPath || '',
-    {}
-  );
 
   const brandCol = `
     <div class="site-footer__col site-footer__col--brand">
@@ -159,14 +154,6 @@ const renderFooter = (site, currentPath) => {
     </div>`
       : '';
 
-  const navCol = navHtml
-    ? `
-    <div class="site-footer__col site-footer__col--nav">
-      <p class="cap">Navigate</p>
-      <nav class="site-footer__nav">${navHtml}</nav>
-    </div>`
-    : '';
-
   const subscribeCol = `
     <div class="site-footer__col site-footer__col--subscribe">
       <p class="cap">Subscribe</p>
@@ -178,7 +165,6 @@ const renderFooter = (site, currentPath) => {
     <div class="site-footer__inner">
       ${brandCol}
       ${contactCol}
-      ${navCol}
       ${subscribeCol}
     </div>
     <div class="site-footer__copy" id="siteFooterText">${escapeHtml(footerText)}</div>
