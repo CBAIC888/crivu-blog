@@ -6,18 +6,18 @@
       "title": "七日雨浸畫室迷",
       "theme": "小說",
       "cover": "https://raw.githubusercontent.com/CBAIC888/crivu-blog/main/assets/img/uploads/20260510/4-0813aabf7490.png",
-      "editorNote": " ",
+      "editorNote": "雨連下七日，畫家沈青失蹤。警方循著線索找尋；作家林硯之在第八夜回到畫室，掀開沈青留下的最後一幅畫。\n\n畫中，是同一間畫室，同一束不該出現的月光，以及牆角一個蜷縮的人影。\n\n舊鏡蒙塵，畫布未乾，門聲在雨夜裡反覆響起。林硯之試圖記住沈青離開的那一刻，卻發現自己的記憶正在鬆動。有人失蹤，有人沉默；有人被留在畫裡，有人把真相寫成另一種開頭。",
       "posts": [
         "hsm"
       ]
     },
     {
       "publishDate": "2026-02-11",
-      "id": "jq01",
+      "id": "solar-term",
       "title": "二十四節氣",
       "theme": "傳統-書信",
       "cover": "https://raw.githubusercontent.com/CBAIC888/crivu-blog/main/assets/img/uploads/20260510/2-0d9cb87ac8b1.png",
-      "editorNote": "收錄從甲辰年開始",
+      "editorNote": "甲辰年末，我立下這一項目，並非欲作嚴整的歲時考證，乃是想借節氣記心事，藉某一個日子、某一番天氣，說說自己在時序中的感受。\n\n",
       "posts": [
         "bwqm",
         "bwcf",
@@ -38,7 +38,7 @@
       "title": "京劇",
       "theme": "傳統",
       "cover": "https://raw.githubusercontent.com/CBAIC888/crivu-blog/main/assets/img/uploads/20260510/1-f904cc202ce7.png",
-      "editorNote": "收錄京劇劇本等",
+      "editorNote": "",
       "posts": [
         "hsl",
         "cgm",
@@ -46,12 +46,12 @@
       ]
     },
     {
-      "id": "2026Q1",
+      "id": "miscellany",
       "title": "雜記",
       "theme": "隨記",
       "cover": "https://raw.githubusercontent.com/CBAIC888/crivu-blog/main/assets/img/uploads/20260510/3-7387cccba43b.png",
       "publishDate": "2026-02-01",
-      "editorNote": "第一期時間為2025年12月-2026年4月",
+      "editorNote": "",
       "posts": [
         "tuise-zhesi",
         "bei-suiji",
