@@ -386,6 +386,13 @@ const SITE_FIELDS = [
     required: false,
   },
   {
+    label: '「社群」微信（公眾號 / 視頻號 / 名片連結）',
+    name: 'socialWeChat',
+    widget: 'string',
+    required: false,
+    hint: '貼公開可訪問的連結（例如公眾號文章主頁、視頻號連結或你的個人名片頁）。純 ID 無法連結，會被忽略。',
+  },
+  {
     label: '「社群」Mastodon',
     name: 'socialMastodon',
     widget: 'string',
