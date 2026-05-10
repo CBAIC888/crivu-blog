@@ -47,7 +47,10 @@ for (const relativePath of TARGETS) {
   const absolutePath = path.join(ROOT, relativePath);
   const source = fs.readFileSync(absolutePath, 'utf8');
   if (!source.includes(PLACEHOLDER)) {
-    throw new Error(`Missing ${PLACEHOLDER} in ${relativePath}`);
+    // 容錯：已經被替換過（例如同一檔案再次呼叫，或 Pages 二次 build），
+    // 靜靜跳過，不讓流程失敗。
+    process.stdout.write(`[inject-build-version] skip: ${relativePath} has no placeholder\n`);
+    continue;
   }
   fs.writeFileSync(absolutePath, source.replaceAll(PLACEHOLDER, buildVersion));
 }
