@@ -1,17 +1,52 @@
 /* =========================================================
    CRIVU · 正式版樣式
    -------------------------------------------------
-   - 頂部黑底導航 + 搜尋 + 深淺模式切換
+   - 頂部導航 + 搜尋 + 三段背景切換
    - 首頁只顯示最新文章（目次列表風格）
    - 期刊 = 立體書本 + 獨立詳情頁
    - 文章 = 極簡排版，大字、圖片對齊段落
    - Sticky footer
    - 手機版：漢堡選單 + 折疊搜尋 + 跨平台 SVG 圖示
-   - 深色模式：墨青夜色，與紙色互為反相
+   - 主題：白色、紙黃、墨青夜色
    ========================================================= */
 
 /* ---------- 顏色令牌 ---------- */
 :root,
+:root[data-theme="white"] {
+  --paper: #ffffff;
+  --paper-warm: #f7f7f4;
+  --paper-edge: #ecebe6;
+  --ink: #1a1814;
+  --ink-soft: #2a2520;
+  --muted: #7a7168;
+  --line: rgba(26, 24, 20, 0.12);
+  --line-strong: rgba(26, 24, 20, 0.42);
+  --hairline: rgba(26, 24, 20, 0.08);
+
+  --seal: #9f3c3c;
+  --seal-ink: #7a2c2c;
+
+  /* Header：毛玻璃白 */
+  --nav-bg: rgba(255, 255, 255, 0.76);
+  --nav-bg-fallback: rgba(255, 255, 255, 0.96);
+  --nav-ink: #1a1814;
+  --nav-ink-dim: rgba(26, 24, 20, 0.58);
+  --nav-line: rgba(26, 24, 20, 0.1);
+  --nav-field: rgba(26, 24, 20, 0.04);
+  --nav-field-focus: rgba(26, 24, 20, 0.08);
+
+  --dropdown-bg: #ffffff;
+  --dropdown-line: rgba(26, 24, 20, 0.1);
+
+  /* Footer：深棕而非純黑 */
+  --footer-bg: #2a2520;
+  --footer-ink: #ece5d4;
+  --footer-ink-dim: rgba(236, 229, 212, 0.6);
+  --footer-line: rgba(236, 229, 212, 0.12);
+
+  color-scheme: light;
+}
+
 :root[data-theme="light"] {
   --paper: #f5f1e8;
   --paper-warm: #ece5d4;
@@ -350,6 +385,8 @@ img { -webkit-user-drag: none; -webkit-touch-callout: none; }
 .theme-toggle svg { width: 16px; height: 16px; display: block; }
 .theme-toggle .sun { display: none; }
 .theme-toggle .moon { display: block; }
+[data-theme="light"] .theme-toggle .sun { display: block; }
+[data-theme="light"] .theme-toggle .moon { display: none; }
 [data-theme="dark"] .theme-toggle .sun { display: block; }
 [data-theme="dark"] .theme-toggle .moon { display: none; }
 

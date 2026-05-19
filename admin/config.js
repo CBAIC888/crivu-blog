@@ -189,13 +189,13 @@ const SITE_FIELDS = [
     name: 'themeDefault',
     widget: 'select',
     required: false,
-    default: 'auto',
+    default: 'white',
     options: [
-      { label: '跟隨系統（推薦）', value: 'auto' },
-      { label: '淺色', value: 'light' },
+      { label: '白色（推薦）', value: 'white' },
+      { label: '紙黃', value: 'light' },
       { label: '深色', value: 'dark' },
     ],
-    hint: '讀者第一次到站的預設模式；讀者仍可自行切換。',
+    hint: '讀者第一次到站的預設背景；讀者仍可自行切換。',
   },
   {
     label: '「主題」顯示深淺切換按鈕',
