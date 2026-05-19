@@ -173,21 +173,6 @@ const applyProgress = () => {
   onScroll();
 };
 
-const setupMarkdownSourceToggle = () => {
-  const btn = qs('[data-post-format-toggle]');
-  const body = qs('#postBody');
-  const source = qs('#postMarkdown');
-  if (!btn || !body || !source) return;
-
-  btn.addEventListener('click', () => {
-    const showingSource = !source.hidden;
-    source.hidden = showingSource;
-    body.hidden = !showingSource;
-    btn.textContent = showingSource ? '查看 Markdown' : '返回排版文章';
-    btn.setAttribute('aria-pressed', showingSource ? 'false' : 'true');
-  });
-};
-
 const applySite = async () => {
   try {
     const [siteRes, postsRes] = await Promise.all([
@@ -225,7 +210,6 @@ const init = async () => {
   setupHeaderOffset();
   setupMobileSearch();
   setupMobileMenu();
-  setupMarkdownSourceToggle();
   applyProgress();
   await applySite();
 };

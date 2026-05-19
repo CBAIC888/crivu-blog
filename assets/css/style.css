@@ -1009,31 +1009,6 @@ main > .section:first-child {
   object-fit: cover;
 }
 
-.post-format-toggle {
-  display: flex;
-  justify-content: flex-end;
-  margin: -18px 0 24px;
-}
-.post-format-toggle button {
-  appearance: none;
-  -webkit-appearance: none;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  background: var(--paper-warm);
-  color: var(--ink-soft);
-  cursor: pointer;
-  font-family: var(--sans);
-  font-size: 12px;
-  letter-spacing: 0.08em;
-  padding: 7px 13px;
-  transition: background .2s, border-color .2s, color .2s;
-}
-.post-format-toggle button:hover {
-  background: var(--nav-field-focus);
-  border-color: var(--line-strong);
-  color: var(--ink);
-}
-
 .reading__body,
 .post-body {
   font-family: var(--serif);
@@ -1109,8 +1084,7 @@ main > .section:first-child {
 [data-theme="dark"] .post-body code { background: rgba(255,255,255,0.08); }
 
 .reading__body pre,
-.post-body pre,
-.post-markdown-source {
+.post-body pre {
   overflow: auto;
   border: 1px solid var(--hairline);
   border-radius: 10px;

@@ -146,11 +146,7 @@ const renderPage = ({ currentPath, description, moreHtml, origin, post, site }) 
         ${post.cover ? `<div class="post-cover" id="postCover"><img src="${escapeHtml(safeCoverUrl(post.cover))}" alt="${escapeHtml(post.title || '')}" loading="lazy" /></div>` : ''}
       </header>
 
-      <div class="post-format-toggle" aria-label="文章格式切換">
-        <button type="button" data-post-format-toggle aria-controls="postBody postMarkdown">查看 Markdown</button>
-      </div>
       <div class="reading__body post-body" id="postBody">${bodyHtml}</div>
-      <pre class="post-markdown-source" id="postMarkdown" hidden><code>${escapeHtml(post.body || '')}</code></pre>
     </article>
 
     <aside class="reading-more more more-bottom" aria-label="更多閱讀">
