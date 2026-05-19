@@ -82,7 +82,7 @@ const POST_ITEM_FIELDS = [
     label: '內文',
     name: 'body',
     widget: 'markdown',
-    hint: '支援 Markdown，可直接寫 **粗體**、## 標題、> 引用、- 列表；右側可即時預覽，發布後文章也可切換查看 Markdown 原文。',
+    hint: '支援 Markdown，可寫 **粗體**、## 標題、> 引用、- 列表、[紅字]{red}、==標記==；右側可即時預覽，發布後直接渲染為正式文章。',
   },
 ];
 

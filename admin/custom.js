@@ -374,6 +374,8 @@
       <button type="button" data-md-action="list">- 列表</button>
       <button type="button" data-md-action="link">[連結](url)</button>
       <button type="button" data-md-action="code">\`代碼\`</button>
+      <button type="button" data-md-action="red">[紅字]{red}</button>
+      <button type="button" data-md-action="mark">==標記==</button>
     `;
     mdTools.addEventListener('click', (event) => {
       const target = event.target;
@@ -387,6 +389,8 @@
         if (action === 'list') prefixLine('- ', '列表項目');
         if (action === 'link') wrapSelection('[', '](https://)', '連結文字');
         if (action === 'code') wrapSelection('`', '`', '代碼');
+        if (action === 'red') wrapSelection('[', ']{red}', '紅色文字');
+        if (action === 'mark') wrapSelection('==', '==', '重點標記');
       } catch (err) {
         alert(err && err.message ? err.message : '插入 Markdown 失敗');
       }

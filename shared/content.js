@@ -188,19 +188,44 @@ const inlineMarkdownLink = (label, href, baseOrigin) => {
   return `<a href="${escapeHtml(safeHref)}" target="_blank" rel="noopener noreferrer nofollow">${escapeHtml(label)}</a>`;
 };
 
+const normalizeCmsMarkdown = (raw) =>
+  String(raw || '')
+    .replace(/\r\n/g, '\n')
+    // Some pasted/CMS-saved text contains protective slashes before Markdown
+    // markers. Remove those only where they block formatting syntax.
+    .replace(/^\\(#{1,6}\s+)/gm, '$1')
+    .replace(/^\\(>\s?)/gm, '$1')
+    .replace(/^\\([-*]\s+)/gm, '$1')
+    .replace(/^\\(\d+\.\s+)/gm, '$1')
+    .replace(/^\\(---+)$/gm, '$1')
+    .replace(/\\(\*\*[^*\n]+?\*\*)/g, '$1')
+    .replace(/\\(\*[^*\n]+?\*)/g, '$1')
+    .replace(/\\(~~[^~\n]+?~~)/g, '$1')
+    .replace(/\\(`[^`\n]+?`)/g, '$1')
+    .replace(/\\(!\[[^\]\n]*?\]\([^)]+?\))/g, '$1')
+    .replace(/\\(\[[^\]\n]+?\]\([^)]+?\))/g, '$1')
+    .replace(/\\\\([^\\\n]+?)\\\\/g, '**$1**')
+    .replace(/\\([^\\\n]+?)\\/g, '*$1*');
+
 const inlineMarkdown = (text, baseOrigin) => {
   const escaped = escapeHtml(text);
   return escaped
-    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*(.+?)\*/g, '<em>$1</em>')
-    .replace(/~~(.+?)~~/g, '<del>$1</del>')
     .replace(/`([^`]+?)`/g, '<code>$1</code>')
+    .replace(/\[([^\]\n]+?)\]\{(red|blue|green|gold|gray|seal)\}/g, '<span class="md-color md-color--$2">$1</span>')
+    .replace(/==(.*?)==/g, '<mark>$1</mark>')
+    .replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/__(.+?)__/g, '<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    .replace(/_(.+?)_/g, '<em>$1</em>')
+    .replace(/~~(.+?)~~/g, '<del>$1</del>')
+    .replace(/ {2,}$/gm, '<br />')
     .replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_match, label, href) => inlineMarkdownLink(label, href, baseOrigin));
 };
 
 export const simpleMarkdown = (raw, options = {}) => {
   const baseOrigin = resolveBaseOrigin(options.baseOrigin);
-  const src = String(raw || '').replace(/\r\n/g, '\n');
+  const src = normalizeCmsMarkdown(raw);
   const lines = src.split('\n');
   const out = [];
   let listType = '';
@@ -211,7 +236,15 @@ export const simpleMarkdown = (raw, options = {}) => {
 
   const flushParagraph = () => {
     if (paragraph.length === 0) return;
-    out.push(`<p>${inlineMarkdown(paragraph.join(' '), baseOrigin)}</p>`);
+    const html = paragraph
+      .map((item, index) => {
+        const hardBreak = /\\$/.test(item);
+        const clean = hardBreak ? item.replace(/\\$/, '') : item;
+        const separator = index < paragraph.length - 1 ? (hardBreak ? '<br />' : ' ') : '';
+        return `${inlineMarkdown(clean, baseOrigin)}${separator}`;
+      })
+      .join('');
+    out.push(`<p>${html}</p>`);
     paragraph = [];
   };
 
@@ -250,11 +283,47 @@ export const simpleMarkdown = (raw, options = {}) => {
     return `<figure class="post-image"><img src="${escapeHtml(safeSrc)}" alt="${safeAlt}" loading="lazy" />${captionHtml}</figure>`;
   };
 
+  const splitTableRow = (row) =>
+    row
+      .trim()
+      .replace(/^\|/, '')
+      .replace(/\|$/, '')
+      .split('|')
+      .map((cell) => cell.trim());
+
+  const isTableDivider = (row) => {
+    const cells = splitTableRow(row);
+    return cells.length > 1 && cells.every((cell) => /^:?-{3,}:?$/.test(cell));
+  };
+
+  const renderTable = (headerLine, dividerLine, rowLines) => {
+    const headers = splitTableRow(headerLine);
+    const aligns = splitTableRow(dividerLine).map((cell) => {
+      if (/^:-+:$/.test(cell)) return 'center';
+      if (/-+:$/.test(cell)) return 'right';
+      if (/^:-+/.test(cell)) return 'left';
+      return '';
+    });
+    const alignAttr = (index) => (aligns[index] ? ` style="text-align:${aligns[index]}"` : '');
+    const headHtml = headers
+      .map((cell, index) => `<th${alignAttr(index)}>${inlineMarkdown(cell, baseOrigin)}</th>`)
+      .join('');
+    const bodyHtml = rowLines
+      .map((row) => {
+        const cells = splitTableRow(row);
+        return `<tr>${headers
+          .map((_cell, index) => `<td${alignAttr(index)}>${inlineMarkdown(cells[index] || '', baseOrigin)}</td>`)
+          .join('')}</tr>`;
+      })
+      .join('');
+    return `<table><thead><tr>${headHtml}</tr></thead><tbody>${bodyHtml}</tbody></table>`;
+  };
+
   for (let i = 0; i < lines.length; i += 1) {
     const line = lines[i];
     const trimmed = line.trim();
 
-    if (/^```/.test(trimmed)) {
+    if (/^(```|~~~)/.test(trimmed)) {
       if (inCode) {
         flushCode();
         inCode = false;
@@ -339,6 +408,29 @@ export const simpleMarkdown = (raw, options = {}) => {
       continue;
     }
 
+    if (trimmed.includes('|') && isTableDivider(lines[i + 1] || '')) {
+      const rows = [];
+      let cursor = i + 2;
+      while (cursor < lines.length && lines[cursor].trim().includes('|')) {
+        rows.push(lines[cursor]);
+        cursor += 1;
+      }
+      flushParagraph();
+      flushQuote();
+      closeList();
+      out.push(renderTable(line, lines[i + 1], rows));
+      i = cursor - 1;
+      continue;
+    }
+
+    if (/^(\*\*\*+|___+)$/.test(trimmed)) {
+      flushParagraph();
+      flushQuote();
+      closeList();
+      out.push('<hr />');
+      continue;
+    }
+
     if (/^>\s?/.test(trimmed)) {
       flushParagraph();
       closeList();
@@ -370,6 +462,14 @@ export const simpleMarkdown = (raw, options = {}) => {
       continue;
     }
 
+    if (/^第[一二三四五六七八九十百千〇零\d]+[场場回幕折]\s*$/.test(trimmed)) {
+      flushParagraph();
+      flushQuote();
+      closeList();
+      out.push(`<h2>${inlineMarkdown(trimmed, baseOrigin)}</h2>`);
+      continue;
+    }
+
     if (/^[-*]\s+/.test(trimmed) || /^\d+\.\s+/.test(trimmed)) {
       flushParagraph();
       flushQuote();
@@ -379,7 +479,15 @@ export const simpleMarkdown = (raw, options = {}) => {
         out.push(`<${nextListType}>`);
         listType = nextListType;
       }
-      out.push(`<li>${inlineMarkdown(trimmed.replace(/^([-*]|\d+\.)\s+/, ''), baseOrigin)}</li>`);
+      let itemText = trimmed.replace(/^([-*]|\d+\.)\s+/, '');
+      const taskMatch = itemText.match(/^\[( |x|X)\]\s+(.*)$/);
+      if (taskMatch) {
+        const checked = taskMatch[1].toLowerCase() === 'x' ? ' checked' : '';
+        itemText = `<input type="checkbox" disabled${checked} /> ${inlineMarkdown(taskMatch[2], baseOrigin)}`;
+        out.push(`<li class="task-list-item">${itemText}</li>`);
+      } else {
+        out.push(`<li>${inlineMarkdown(itemText, baseOrigin)}</li>`);
+      }
       continue;
     }
 
