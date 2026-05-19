@@ -204,8 +204,10 @@ const normalizeCmsMarkdown = (raw) =>
     .replace(/\\(`[^`\n]+?`)/g, '$1')
     .replace(/\\(!\[[^\]\n]*?\]\([^)]+?\))/g, '$1')
     .replace(/\\(\[[^\]\n]+?\]\([^)]+?\))/g, '$1')
+    .replace(/([。，、；：！？.,;:!?])\\\1/g, '$1')
     .replace(/\\\\([^\\\n]+?)\\\\/g, '**$1**')
-    .replace(/\\([^\\\n]+?)\\/g, '*$1*');
+    .replace(/\\([^\\\n]+?)\\/g, '*$1*')
+    .replace(/\\(?=。|，|、|；|：|！|？|）|」|』|》|〉|\.|,|;|:|!|\?|\)|\]|}|$)/gm, '');
 
 const inlineMarkdown = (text, baseOrigin) => {
   const escaped = escapeHtml(text);
