@@ -193,6 +193,7 @@ const inlineMarkdown = (text, baseOrigin) => {
   return escaped
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
     .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    .replace(/~~(.+?)~~/g, '<del>$1</del>')
     .replace(/`([^`]+?)`/g, '<code>$1</code>')
     .replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_match, label, href) => inlineMarkdownLink(label, href, baseOrigin));
 };
@@ -202,8 +203,11 @@ export const simpleMarkdown = (raw, options = {}) => {
   const src = String(raw || '').replace(/\r\n/g, '\n');
   const lines = src.split('\n');
   const out = [];
-  let inList = false;
+  let listType = '';
   let paragraph = [];
+  let quote = [];
+  let inCode = false;
+  let code = [];
 
   const flushParagraph = () => {
     if (paragraph.length === 0) return;
@@ -212,9 +216,20 @@ export const simpleMarkdown = (raw, options = {}) => {
   };
 
   const closeList = () => {
-    if (!inList) return;
-    out.push('</ul>');
-    inList = false;
+    if (!listType) return;
+    out.push(`</${listType}>`);
+    listType = '';
+  };
+
+  const flushQuote = () => {
+    if (quote.length === 0) return;
+    out.push(`<blockquote>${quote.map((item) => `<p>${inlineMarkdown(item, baseOrigin)}</p>`).join('')}</blockquote>`);
+    quote = [];
+  };
+
+  const flushCode = () => {
+    out.push(`<pre><code>${escapeHtml(code.join('\n'))}</code></pre>`);
+    code = [];
   };
 
   const renderAudioBlock = (audioSrc, title, caption) => {
@@ -239,8 +254,28 @@ export const simpleMarkdown = (raw, options = {}) => {
     const line = lines[i];
     const trimmed = line.trim();
 
+    if (/^```/.test(trimmed)) {
+      if (inCode) {
+        flushCode();
+        inCode = false;
+      } else {
+        flushParagraph();
+        flushQuote();
+        closeList();
+        inCode = true;
+        code = [];
+      }
+      continue;
+    }
+
+    if (inCode) {
+      code.push(line);
+      continue;
+    }
+
     if (!trimmed) {
       flushParagraph();
+      flushQuote();
       closeList();
       continue;
     }
@@ -255,6 +290,7 @@ export const simpleMarkdown = (raw, options = {}) => {
         const blockHtml = renderAudioBlock(audioMatch[1], titleMatch[1], captionMatch ? captionMatch[1] : '');
         if (blockHtml) {
           flushParagraph();
+          flushQuote();
           closeList();
           out.push(blockHtml);
         }
@@ -282,6 +318,7 @@ export const simpleMarkdown = (raw, options = {}) => {
       const blockHtml = renderImageBlock(imageMatch[2], altText);
       if (blockHtml) {
         flushParagraph();
+        flushQuote();
         closeList();
         out.push(blockHtml);
       }
@@ -294,8 +331,24 @@ export const simpleMarkdown = (raw, options = {}) => {
       continue;
     }
 
+    if (/^---+$/.test(trimmed)) {
+      flushParagraph();
+      flushQuote();
+      closeList();
+      out.push('<hr />');
+      continue;
+    }
+
+    if (/^>\s?/.test(trimmed)) {
+      flushParagraph();
+      closeList();
+      quote.push(trimmed.replace(/^>\s?/, ''));
+      continue;
+    }
+
     if (/^###\s+/.test(trimmed)) {
       flushParagraph();
+      flushQuote();
       closeList();
       out.push(`<h3>${inlineMarkdown(trimmed.replace(/^###\s+/, ''), baseOrigin)}</h3>`);
       continue;
@@ -303,6 +356,7 @@ export const simpleMarkdown = (raw, options = {}) => {
 
     if (/^##\s+/.test(trimmed)) {
       flushParagraph();
+      flushQuote();
       closeList();
       out.push(`<h2>${inlineMarkdown(trimmed.replace(/^##\s+/, ''), baseOrigin)}</h2>`);
       continue;
@@ -310,6 +364,7 @@ export const simpleMarkdown = (raw, options = {}) => {
 
     if (/^#\s+/.test(trimmed)) {
       flushParagraph();
+      flushQuote();
       closeList();
       out.push(`<h1>${inlineMarkdown(trimmed.replace(/^#\s+/, ''), baseOrigin)}</h1>`);
       continue;
@@ -317,19 +372,25 @@ export const simpleMarkdown = (raw, options = {}) => {
 
     if (/^[-*]\s+/.test(trimmed) || /^\d+\.\s+/.test(trimmed)) {
       flushParagraph();
-      if (!inList) {
-        out.push('<ul>');
-        inList = true;
+      flushQuote();
+      const nextListType = /^\d+\.\s+/.test(trimmed) ? 'ol' : 'ul';
+      if (listType && listType !== nextListType) closeList();
+      if (!listType) {
+        out.push(`<${nextListType}>`);
+        listType = nextListType;
       }
       out.push(`<li>${inlineMarkdown(trimmed.replace(/^([-*]|\d+\.)\s+/, ''), baseOrigin)}</li>`);
       continue;
     }
 
     closeList();
+    flushQuote();
     paragraph.push(trimmed);
   }
 
+  if (inCode) flushCode();
   flushParagraph();
+  flushQuote();
   closeList();
   return out.join('\n');
 };

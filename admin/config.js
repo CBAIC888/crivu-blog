@@ -82,7 +82,7 @@ const POST_ITEM_FIELDS = [
     label: '內文',
     name: 'body',
     widget: 'markdown',
-    hint: '支援 Markdown；右下角按鈕可上傳音訊；也可用工具列「圖片（含尺寸建議）」插入文內圖。',
+    hint: '支援 Markdown，可直接寫 **粗體**、## 標題、> 引用、- 列表；右側可即時預覽，發布後文章也可切換查看 Markdown 原文。',
   },
 ];
 

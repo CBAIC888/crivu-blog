@@ -140,6 +140,43 @@
     rememberSelection(el);
   };
 
+  const wrapSelection = (before, after = before, fallback = '文字') => {
+    const el = findEditorTextarea();
+    if (!el) throw new Error('找不到文章編輯區（textarea）');
+    const value = el.value || '';
+    const start = Number.isFinite(lastSelection.start) ? lastSelection.start : el.selectionStart || value.length;
+    const end = Number.isFinite(lastSelection.end) ? lastSelection.end : el.selectionEnd || start;
+    const selected = value.slice(start, end) || fallback;
+    const nextBlock = before + selected + after;
+    el.value = value.slice(0, start) + nextBlock + value.slice(end);
+    el.selectionStart = start + before.length;
+    el.selectionEnd = start + before.length + selected.length;
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+    el.dispatchEvent(new Event('change', { bubbles: true }));
+    el.focus();
+    rememberSelection(el);
+  };
+
+  const prefixLine = (prefix, fallback = '文字') => {
+    const el = findEditorTextarea();
+    if (!el) throw new Error('找不到文章編輯區（textarea）');
+    const value = el.value || '';
+    const start = Number.isFinite(lastSelection.start) ? lastSelection.start : el.selectionStart || value.length;
+    const end = Number.isFinite(lastSelection.end) ? lastSelection.end : el.selectionEnd || start;
+    const selected = value.slice(start, end) || fallback;
+    const block = selected
+      .split('\n')
+      .map((line) => prefix + line)
+      .join('\n');
+    el.value = value.slice(0, start) + block + value.slice(end);
+    el.selectionStart = start + prefix.length;
+    el.selectionEnd = start + block.length;
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+    el.dispatchEvent(new Event('change', { bubbles: true }));
+    el.focus();
+    rememberSelection(el);
+  };
+
   const escapeMd = (input) =>
     String(input == null ? '' : input).replaceAll('\n', ' ').replaceAll('\r', ' ').replaceAll('*', '\\*');
 
@@ -327,6 +364,34 @@
     const cluster = document.createElement('div');
     cluster.className = 'cms-fab-cluster';
 
+    const mdTools = document.createElement('div');
+    mdTools.className = 'cms-md-tools';
+    mdTools.innerHTML = `
+      <div class="cms-md-tools__title">Markdown 快捷</div>
+      <button type="button" data-md-action="bold">**粗體**</button>
+      <button type="button" data-md-action="h2">## 標題</button>
+      <button type="button" data-md-action="quote">&gt; 引用</button>
+      <button type="button" data-md-action="list">- 列表</button>
+      <button type="button" data-md-action="link">[連結](url)</button>
+      <button type="button" data-md-action="code">\`代碼\`</button>
+    `;
+    mdTools.addEventListener('click', (event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLElement)) return;
+      const action = target.getAttribute('data-md-action');
+      if (!action) return;
+      try {
+        if (action === 'bold') wrapSelection('**', '**', '重點文字');
+        if (action === 'h2') prefixLine('## ', '小標題');
+        if (action === 'quote') prefixLine('> ', '引用文字');
+        if (action === 'list') prefixLine('- ', '列表項目');
+        if (action === 'link') wrapSelection('[', '](https://)', '連結文字');
+        if (action === 'code') wrapSelection('`', '`', '代碼');
+      } catch (err) {
+        alert(err && err.message ? err.message : '插入 Markdown 失敗');
+      }
+    });
+
     // 音訊上傳按鈕（原本就有，保留）
     const audioBtn = document.createElement('button');
     audioBtn.type = 'button';
@@ -371,6 +436,7 @@
     siteLink.href = 'https://cbc688.com/';
     siteLink.innerHTML = '🌐 預覽網站';
 
+    cluster.appendChild(mdTools);
     cluster.appendChild(audioBtn);
     cluster.appendChild(siteLink);
     document.body.appendChild(cluster);

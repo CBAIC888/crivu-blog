@@ -1009,6 +1009,31 @@ main > .section:first-child {
   object-fit: cover;
 }
 
+.post-format-toggle {
+  display: flex;
+  justify-content: flex-end;
+  margin: -18px 0 24px;
+}
+.post-format-toggle button {
+  appearance: none;
+  -webkit-appearance: none;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--paper-warm);
+  color: var(--ink-soft);
+  cursor: pointer;
+  font-family: var(--sans);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  padding: 7px 13px;
+  transition: background .2s, border-color .2s, color .2s;
+}
+.post-format-toggle button:hover {
+  background: var(--nav-field-focus);
+  border-color: var(--line-strong);
+  color: var(--ink);
+}
+
 .reading__body,
 .post-body {
   font-family: var(--serif);
@@ -1024,13 +1049,17 @@ main > .section:first-child {
 .reading__body > figure,
 .reading__body > ul,
 .reading__body > ol,
+.reading__body > pre,
+.reading__body > hr,
 .post-body > p,
 .post-body > h2,
 .post-body > h3,
 .post-body > blockquote,
 .post-body > figure,
 .post-body > ul,
-.post-body > ol {
+.post-body > ol,
+.post-body > pre,
+.post-body > hr {
   margin: 0 0 1.3em;
 }
 .reading__body > p,
@@ -1078,6 +1107,38 @@ main > .section:first-child {
 }
 [data-theme="dark"] .reading__body code,
 [data-theme="dark"] .post-body code { background: rgba(255,255,255,0.08); }
+
+.reading__body pre,
+.post-body pre,
+.post-markdown-source {
+  overflow: auto;
+  border: 1px solid var(--hairline);
+  border-radius: 10px;
+  background: var(--paper-warm);
+  color: var(--ink);
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 14px;
+  line-height: 1.75;
+  padding: 18px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.reading__body pre code,
+.post-body pre code {
+  display: block;
+  padding: 0;
+  background: transparent;
+  border-radius: 0;
+  font-size: inherit;
+}
+.reading__body hr,
+.post-body hr {
+  border: 0;
+  border-top: 1px solid var(--line);
+  margin: 2em 0;
+}
+.reading__body del,
+.post-body del { color: var(--muted); }
 
 .reading__body a,
 .post-body a {
