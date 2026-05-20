@@ -198,6 +198,7 @@ const normalizeCmsMarkdown = (raw) =>
     .replace(/^\\([-*]\s+)/gm, '$1')
     .replace(/^\\(\d+\.\s+)/gm, '$1')
     .replace(/^\\(---+)$/gm, '$1')
+    .replace(/\\(\*{1,3})([^*\n]+?)\\\1/g, '$1$2$1')
     .replace(/\\(\*\*[^*\n]+?\*\*)/g, '$1')
     .replace(/\\(\*[^*\n]+?\*)/g, '$1')
     .replace(/\\(~~[^~\n]+?~~)/g, '$1')
