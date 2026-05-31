@@ -5,11 +5,10 @@ import {
   buildSearchSnippet,
   buildSearchText,
   escapeHtml,
-  isValidEmail,
   normalizeText,
   renderNavItems,
   safeCoverUrl,
-  sanitizeUrl,
+  simpleMarkdown,
   toDisplayDate,
 } from '../../shared/content.js?v=__BUILD_VERSION__';
 
@@ -26,6 +25,11 @@ const qsa = (sel) => Array.from(document.querySelectorAll(sel));
 const setText = (sel, value) => {
   const el = qs(sel);
   if (el && value !== undefined && value !== null && value !== '') el.textContent = value;
+};
+
+const setHtml = (sel, value) => {
+  const el = qs(sel);
+  if (el && value !== undefined && value !== null && value !== '') el.innerHTML = value;
 };
 
 const revealSiteContent = () => {
@@ -62,60 +66,8 @@ const applySiteSettings = () => {
   setText('#articlesPageIntro', site.articlesPageIntro);
   setText('#issuesPageTitle', site.issuesPageTitle);
   setText('#issuesPageIntro', site.issuesPageIntro);
-  setText('#aboutKicker', site.aboutKicker);
   setText('#aboutTitle', site.aboutTitle);
-  setText('#aboutIntro', site.aboutIntro);
-  setText('#aboutMailLink', site.aboutMailLabel);
-  setText('#aboutTopics', normalizeText(site.topics));
-  setText('#aboutTopicsLabel', site.aboutTopicsLabel);
-
-  const aboutStyle = normalizeText(site.aboutStyle);
-  const aboutStyleEl = qs('#aboutStyle');
-  if (aboutStyleEl) {
-    aboutStyleEl.hidden = !aboutStyle;
-    if (aboutStyle) aboutStyleEl.textContent = aboutStyle;
-  }
-
-  const aboutInfoTitle = normalizeText(site.aboutInfoTitle);
-  const aboutInfoTitleEl = qs('#aboutInfoTitle');
-  if (aboutInfoTitleEl) {
-    aboutInfoTitleEl.hidden = !aboutInfoTitle;
-    if (aboutInfoTitle) aboutInfoTitleEl.textContent = aboutInfoTitle;
-  }
-
-  const aboutCity = normalizeText(site.city);
-  const aboutCityItem = qs('#aboutCityItem');
-  if (aboutCityItem) {
-    aboutCityItem.hidden = !aboutCity;
-  }
-  if (aboutCity) {
-    setText('#aboutCity', aboutCity);
-    setText('#aboutCityLabel', site.aboutCityLabel);
-  }
-
-  const aboutEmail = normalizeText(site.email, { allowPlaceholder: true });
-  const validEmail = isValidEmail(aboutEmail);
-  const aboutEmailItem = qs('#aboutEmailItem');
-  if (aboutEmailItem) {
-    aboutEmailItem.hidden = !validEmail;
-  }
-  if (validEmail) {
-    setText('#aboutEmail', aboutEmail);
-    setText('#aboutEmailLabel', site.aboutEmailLabel);
-  }
-
-  const aboutTopicsItem = qs('#aboutTopicsItem');
-  if (aboutTopicsItem) {
-    aboutTopicsItem.hidden = !normalizeText(site.topics);
-  }
-
-  const mailLink = qs('#aboutMailLink');
-  if (mailLink) {
-    mailLink.hidden = !validEmail;
-    if (validEmail) {
-      mailLink.setAttribute('href', sanitizeUrl(`mailto:${aboutEmail}`));
-    }
-  }
+  setHtml('#aboutBody', simpleMarkdown(site.aboutBody || ''));
 
   qsa('#searchInput').forEach((input) => {
     if (site.searchPlaceholder) input.setAttribute('placeholder', site.searchPlaceholder);

@@ -5,6 +5,7 @@ import {
   normalizeText,
   renderNavItems,
   safeCoverUrl,
+  simpleMarkdown,
   toDisplayDate,
 } from './content.js';
 
@@ -281,46 +282,26 @@ export const renderIssuesPage = ({ issues, posts, site }) => {
 export const renderSiteFooter = (site, currentPath) => renderFooter(site, currentPath);
 
 export const renderAboutPage = ({ site }) => {
-  const aboutKicker = normalizeText(site.aboutKicker) || 'About';
   const aboutTitle = normalizeText(site.aboutTitle) || '關於';
-  const aboutIntro = normalizeText(site.aboutIntro);
-  const aboutStyle = normalizeText(site.aboutStyle);
-  const aboutInfoTitle = normalizeText(site.aboutInfoTitle);
-  const aboutCity = normalizeText(site.city);
-  const aboutTopics = normalizeText(site.topics);
+  const aboutBody = normalizeText(site.aboutBody, { allowPlaceholder: true });
+  const description = buildDescription({
+    body: aboutBody,
+    excerpt: normalizeText(site.aboutDescription),
+    title: aboutTitle,
+  });
+  const mainHtml = `<main class="page-about page-post__main post-page">
+    <article class="reading post-article">
+      <header class="reading__head post-hero">
+        <h1 class="reading__title" id="aboutTitle">${escapeHtml(aboutTitle)}</h1>
+      </header>
 
-  const facts = [
-    aboutCity
-      ? `<div><dt>${escapeHtml(normalizeText(site.aboutCityLabel) || '城市')}</dt><dd>${escapeHtml(aboutCity)}</dd></div>`
-      : '',
-    aboutTopics
-      ? `<div><dt>${escapeHtml(normalizeText(site.aboutTopicsLabel) || '主題')}</dt><dd>${escapeHtml(aboutTopics)}</dd></div>`
-      : '',
-  ].filter(Boolean);
-
-  const asideHtml =
-    facts.length > 0
-      ? `
-      <aside class="about-side">
-        ${aboutInfoTitle ? `<h2>${escapeHtml(aboutInfoTitle)}</h2>` : ''}
-        <dl class="about-facts">${facts.join('')}</dl>
-      </aside>`
-      : '';
-
-  const mainHtml = `<main class="page-about about">
-    <section class="about-shell">
-      <div class="about-main">
-        <p class="about-kicker">${escapeHtml(aboutKicker)}</p>
-        <h1>${escapeHtml(aboutTitle)}</h1>
-        ${aboutIntro ? `<p class="about-lead">${escapeHtml(aboutIntro)}</p>` : ''}
-        ${aboutStyle ? `<p class="about-detail">${escapeHtml(aboutStyle)}</p>` : ''}
-      </div>${asideHtml}
-    </section>
+      <div class="reading__body post-body" id="aboutBody">${simpleMarkdown(aboutBody)}</div>
+    </article>
   </main>`;
 
   return shell({
     currentPath: '/about.html',
-    description: aboutIntro || `${fallbackSiteName(site)} · 關於`,
+    description: description || `${fallbackSiteName(site)} · 關於`,
     mainHtml,
     scriptSrc: '/assets/js/app.js',
     site,

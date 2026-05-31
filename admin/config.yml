@@ -133,18 +133,8 @@ collections:
           - { label: "「期刊頁」空內容提示", name: "issueEmptyText", widget: "string", required: false }
           - { label: "「期刊頁」詳情按鈕", name: "issueExpandLabel", widget: "string", required: false }
           # 關於頁
-          - { label: "「關於頁」小標", name: "aboutKicker", widget: "string", required: false }
           - { label: "「關於頁」標題", name: "aboutTitle", widget: "string" }
-          - { label: "「關於頁」主敘述", name: "aboutIntro", widget: "text" }
-          - { label: "「關於頁」附註", name: "aboutStyle", widget: "text", required: false }
-          - { label: "「關於頁」資訊區塊標題", name: "aboutInfoTitle", widget: "string", required: false }
-          - { label: "「關於頁」聯絡按鈕文字", name: "aboutMailLabel", widget: "string", required: false }
-          - { label: "「關於頁」城市欄位", name: "aboutCityLabel", widget: "string", required: false }
-          - { label: "「關於頁」城市內容", name: "city", widget: "string", required: false }
-          - { label: "「關於頁」Email 欄位", name: "aboutEmailLabel", widget: "string", required: false }
-          - { label: "「關於頁」Email", name: "email", widget: "string", required: false }
-          - { label: "「關於頁」主題欄位", name: "aboutTopicsLabel", widget: "string", required: false }
-          - { label: "「關於頁」主題內容", name: "topics", widget: "string", required: false }
+          - { label: "「關於頁」正文", name: "aboutBody", widget: "markdown", required: false }
           # 舊版
           - { label: "「舊版」文章頁卡片欄數", name: "articleCardsDesktop", widget: "number", value_type: "int", required: false, min: 1, max: 4 }
           - { label: "「舊版」卡片最多標籤數", name: "maxTagsPerCard", widget: "number", value_type: "int", required: false, min: 1, max: 10 }

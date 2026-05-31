@@ -268,98 +268,13 @@ const SITE_FIELDS = [
   },
 
   /* ===== ⑥ 關於頁 ===== */
-  { label: '「關於頁」小標', name: 'aboutKicker', widget: 'string', required: false, default: 'About' },
   { label: '「關於頁」標題', name: 'aboutTitle', widget: 'string', default: '關於' },
-  { label: '「關於頁」主敘述', name: 'aboutIntro', widget: 'text' },
-  { label: '「關於頁」附註', name: 'aboutStyle', widget: 'text', required: false },
   {
-    label: '「關於頁」資訊區塊標題',
-    name: 'aboutInfoTitle',
-    widget: 'string',
+    label: '「關於頁」正文',
+    name: 'aboutBody',
+    widget: 'markdown',
     required: false,
-    default: '資訊',
-  },
-  { label: '「關於頁」聯絡按鈕文字', name: 'aboutMailLabel', widget: 'string', required: false, default: '聯絡我' },
-  { label: '「關於頁」城市欄位', name: 'aboutCityLabel', widget: 'string', required: false, default: '城市' },
-  { label: '「關於頁」城市內容', name: 'city', widget: 'string', required: false },
-  { label: '「關於頁」Email 欄位', name: 'aboutEmailLabel', widget: 'string', required: false, default: 'Email' },
-  {
-    label: '「關於頁」Email 內容',
-    name: 'email',
-    widget: 'string',
-    required: false,
-  },
-  { label: '「關於頁」主題欄位', name: 'aboutTopicsLabel', widget: 'string', required: false, default: '主題' },
-  { label: '「關於頁」主題內容', name: 'topics', widget: 'string', required: false, hint: '以逗號分隔，例如：寫作, 閱讀, 戲曲' },
-
-  /* ===== ⑧ 社群連結 ===== */
-  {
-    label: '「社群」GitHub',
-    name: 'socialGithub',
-    widget: 'string',
-    required: false,
-    hint: 'GitHub 個人頁網址，例如 https://github.com/your-handle',
-  },
-  {
-    label: '「社群」Twitter / X',
-    name: 'socialTwitter',
-    widget: 'string',
-    required: false,
-    hint: 'Twitter/X 網址，例如 https://twitter.com/your-handle',
-  },
-  {
-    label: '「社群」Instagram',
-    name: 'socialInstagram',
-    widget: 'string',
-    required: false,
-  },
-  {
-    label: '「社群」小紅書',
-    name: 'socialXiaohongshu',
-    widget: 'string',
-    required: false,
-  },
-  {
-    label: '「社群」微博',
-    name: 'socialWeibo',
-    widget: 'string',
-    required: false,
-  },
-  {
-    label: '「社群」微信（公眾號 / 視頻號 / 名片連結）',
-    name: 'socialWeChat',
-    widget: 'string',
-    required: false,
-    hint: '貼公開可訪問的連結（例如公眾號文章主頁、視頻號連結或你的個人名片頁）。純 ID 無法連結，會被忽略。',
-  },
-  {
-    label: '「社群」Mastodon',
-    name: 'socialMastodon',
-    widget: 'string',
-    required: false,
-    hint: '完整 URL，例如 https://mastodon.social/@you',
-  },
-  {
-    label: '「社群」自訂連結 1',
-    name: 'socialCustom1',
-    widget: 'object',
-    required: false,
-    collapsed: true,
-    fields: [
-      { label: '名稱', name: 'label', widget: 'string', required: false },
-      { label: '連結', name: 'href', widget: 'string', required: false },
-    ],
-  },
-  {
-    label: '「社群」自訂連結 2',
-    name: 'socialCustom2',
-    widget: 'object',
-    required: false,
-    collapsed: true,
-    fields: [
-      { label: '名稱', name: 'label', widget: 'string', required: false },
-      { label: '連結', name: 'href', widget: 'string', required: false },
-    ],
+    hint: '支援 Markdown，會以文章詳情頁的閱讀排版顯示。',
   },
 ];
 

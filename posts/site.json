@@ -1,5 +1,4 @@
 {
-  "aboutKicker": "About",
   "articlesPageIntro": "全部文章",
   "issueExpandLabel": "查看收錄文章",
   "issueEmptyText": "暫無文章",
@@ -17,34 +16,23 @@
       "href": "/about.html"
     }
   ],
-  "aboutTopicsLabel": "主題",
   "issuesPageIntro": "全部期刊",
-  "topics": "寫作、閱讀、戲曲、指南、小说",
   "themeToggleEnabled": false,
-  "aboutStyle": "*本站部分內容（文字、京劇劇本、圖片、期刊及文章封面）來源於公開資料、網路，僅供學習、研究與非商業欣賞使用。\n*資料可能存在差異或整理疏漏。",
-  "aboutEmailLabel": "Email",
   "issueReadLabel": "閱讀首篇",
-  "socialTwitter": "",
   "footerText": "© 2026 CRIVU",
-  "city": "TAIWAN",
   "searchPlaceholder": "搜尋",
   "aboutTitle": "關於",
+  "aboutBody": "出生於2006年。\n\n喜歡京劇、閱讀、亂寫一通。\n\n也想成為幸福者。\n\n｜\n\n最近在看《溫柔的夜》、《李煜詞集》和校課本...\n\n最近在聽張國榮的《至少還有你》...\n\n*本站部分內容（文字、京劇劇本、圖片、期刊及文章封面）來源於公開資料、網路，僅供學習、研究與非商業欣賞使用。*\n\n*資料可能存在差異或整理疏漏。*",
   "articlesPageTitle": "文章",
   "articleCardsDesktop": 3,
   "issuesPageTitle": "期刊",
   "issueCountTemplate": "收錄 {count} 篇文章",
-  "aboutMailLabel": "聯絡我",
   "maxTagsPerCard": 3,
   "issueBrowseLabel": "瀏覽全部文章",
   "siteName": "CRIVU",
   "issueDetailsOpen": true,
-  "socialWeChat": "https://mp.weixin.qq.com/mp/profile_ext?action=home&__biz=Mzk1Nzk3NDY0OA==&scene=124#wechat_redirect",
   "allCategoryLabel": "全部分類",
   "siteDescription": "",
   "themeDefault": "white",
-  "allTagLabel": "全部標籤",
-  "aboutCityLabel": "城市",
-  "email": "cbc88898@outlook.com",
-  "aboutInfoTitle": "",
-  "aboutIntro": "出生於2006年。\n喜歡京劇、閱讀、亂寫一通。\n也想成為幸福者☺️\n｜\n最近在看《溫柔的夜》、《李煜詞集》和校課本...\n最近在聽  張國榮 的《至少還有你》..."
+  "allTagLabel": "全部標籤"
 }

@@ -1223,106 +1223,6 @@ main > .section:first-child {
 .reading__foot a { color: var(--ink); border-bottom: 1px solid var(--line-strong); padding-bottom: 1px; }
 
 /* =========================================================
-   關於頁
-   ========================================================= */
-.about-shell {
-  display: grid;
-  grid-template-columns: 1.4fr 1fr;
-  gap: 64px;
-  align-items: start;
-}
-.about-main,
-.about-card.about-main { /* 兼容 SSR */
-  background: transparent;
-  border: none;
-  padding: 0;
-}
-.about-main h1 {
-  font-family: var(--serif);
-  font-weight: 500;
-  font-size: clamp(36px, 4.6vw, 54px);
-  margin: 0 0 24px;
-  letter-spacing: 0.06em;
-}
-.about-kicker {
-  font-family: var(--sans);
-  font-size: 12px;
-  letter-spacing: 0.3em;
-  text-transform: uppercase;
-  color: var(--seal);
-  margin: 0 0 14px;
-  font-weight: 600;
-}
-.about-lead {
-  font-family: var(--serif);
-  font-size: 19px;
-  line-height: 1.95;
-  color: var(--ink);
-  margin: 0 0 20px;
-}
-.about-detail {
-  color: var(--ink-soft);
-  font-size: 16px;
-  line-height: 1.9;
-  margin: 0;
-}
-.about-side,
-.about-card.about-side {
-  background: var(--paper-warm);
-  border: 1px solid var(--line);
-  padding: 28px 28px 22px;
-}
-.about-side h2 {
-  margin: 0 0 18px;
-  font-family: var(--sans);
-  font-size: 12px;
-  letter-spacing: 0.3em;
-  text-transform: uppercase;
-  color: var(--muted);
-  font-weight: 600;
-}
-.about-facts { margin: 0; padding: 0; display: grid; gap: 16px; list-style: none; }
-.about-facts > div,
-.about-facts .about-fact {
-  padding-top: 14px;
-  border-top: 1px solid var(--hairline);
-  display: grid;
-  gap: 4px;
-}
-.about-facts > div:first-child,
-.about-facts .about-fact:first-child { border-top: none; padding-top: 0; }
-.about-facts dt,
-.about-fact .meta-label {
-  font-family: var(--sans);
-  font-size: 11px;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: var(--muted);
-  font-weight: 600;
-  margin: 0;
-}
-.about-facts dd,
-.about-fact .meta-value {
-  margin: 0;
-  font-family: var(--serif);
-  font-size: 16px;
-}
-.about-mail {
-  display: inline-block;
-  margin-top: 16px;
-  padding: 8px 18px;
-  border: 1px solid var(--line-strong);
-  border-radius: 999px;
-  font-family: var(--sans);
-  font-size: 12px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  font-weight: 600;
-  color: var(--ink);
-}
-.about-mail:hover { background: var(--ink); color: var(--paper); }
-
-/* =========================================================
    Footer
    ========================================================= */
 .site-footer {
@@ -1373,7 +1273,6 @@ body::before { display: none !important; }
   .toc__thumb,
   .post-card .image { width: 140px; height: 100px; }
   .issue-hero__grid { grid-template-columns: 260px 1fr; gap: 36px; }
-  .about-shell { grid-template-columns: 1fr; gap: 32px; }
 }
 
 @media (max-width: 760px) {
@@ -1526,9 +1425,6 @@ body::before { display: none !important; }
   .post-body { font-size: 18px; line-height: 1.9; }
   .reading__title,
   .post-hero h1 { font-size: clamp(26px, 7vw, 34px); }
-
-  .about-side { padding: 22px 20px; }
-
   .site-footer { padding: 22px 4vw max(20px, calc(20px + env(safe-area-inset-bottom))); }
   .site-footer__copy { text-align: center; }
 }

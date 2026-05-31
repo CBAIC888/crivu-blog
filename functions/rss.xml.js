@@ -89,7 +89,7 @@ const buildRss = ({ posts, site }) => {
 
   const siteName = collapseWhitespace(site.siteName) || 'CRIVU';
   const siteDescription =
-    collapseWhitespace(site.aboutIntro) || `${siteName} 的個人博客更新。`;
+    collapseWhitespace(site.aboutBody) || `${siteName} 的個人博客更新。`;
   const lastBuildDate = validPosts[0]?.date
     ? pubDate(validPosts[0].date)
     : formatRfc822InBeijing(new Date());
