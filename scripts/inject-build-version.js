@@ -52,7 +52,10 @@ const shortSha = () => {
   }
 };
 
-const buildVersion = process.env.BUILD_VERSION || `${shortSha()}-${makeTimestamp()}`;
+const buildVersion =
+  process.env.CF_PAGES_COMMIT_SHA || process.env.GITHUB_SHA || process.env.COMMIT_REF
+    ? `${shortSha()}-${makeTimestamp()}`
+    : process.env.BUILD_VERSION || `${shortSha()}-${makeTimestamp()}`;
 
 fs.mkdirSync(path.dirname(VERSION_FILE), { recursive: true });
 fs.writeFileSync(VERSION_FILE, `${JSON.stringify({ version: buildVersion }, null, 2)}\n`);

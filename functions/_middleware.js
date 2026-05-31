@@ -19,9 +19,9 @@ const PLACEHOLDER = '__BUILD_VERSION__';
 const PLACEHOLDER_ENCODED = encodeURIComponent(PLACEHOLDER); // "__BUILD_VERSION__" 不會被 encode，但照樣處理保險起見
 
 const resolveBuildVersion = (env) => {
-  if (env && env.BUILD_VERSION) return String(env.BUILD_VERSION).slice(0, 40);
   const sha = env && (env.CF_PAGES_COMMIT_SHA || env.COMMIT_REF || env.GITHUB_SHA);
   if (sha) return String(sha).slice(0, 7);
+  if (env && env.BUILD_VERSION) return String(env.BUILD_VERSION).slice(0, 40);
   return 'runtime';
 };
 
