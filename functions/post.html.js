@@ -1,4 +1,5 @@
 import { articlePath, normalizeText } from '../shared/content.js';
+import { PUBLIC_CONTENT_SECURITY_POLICY } from '../shared/site-pages.js';
 
 const REDIRECT_HEADERS = {
   'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
@@ -9,8 +10,7 @@ const REDIRECT_HEADERS = {
   'Strict-Transport-Security': 'max-age=31536000; includeSubDomains; preload',
   'Cross-Origin-Opener-Policy': 'same-origin',
   'Cross-Origin-Resource-Policy': 'same-origin',
-  'Content-Security-Policy':
-    "default-src 'self'; base-uri 'self'; frame-ancestors 'none'; img-src 'self' data: https:; script-src 'self' https://static.cloudflareinsights.com; style-src 'self'; connect-src 'self' https://cloudflareinsights.com",
+  'Content-Security-Policy': PUBLIC_CONTENT_SECURITY_POLICY,
 };
 
 export async function onRequest({ request }) {

@@ -6,7 +6,11 @@ import {
   safeCoverUrl,
   toDisplayDate,
 } from '../../shared/content.js';
-import { renderSiteFooter } from '../../shared/site-pages.js';
+import {
+  PUBLIC_CONTENT_SECURITY_POLICY,
+  renderAnalyticsScript,
+  renderSiteFooter,
+} from '../../shared/site-pages.js';
 
 const HTML_HEADERS = {
   'Content-Type': 'text/html; charset=UTF-8',
@@ -18,8 +22,7 @@ const HTML_HEADERS = {
   'Strict-Transport-Security': 'max-age=31536000; includeSubDomains; preload',
   'Cross-Origin-Opener-Policy': 'same-origin',
   'Cross-Origin-Resource-Policy': 'same-origin',
-  'Content-Security-Policy':
-    "default-src 'self'; base-uri 'self'; frame-ancestors 'none'; img-src 'self' data: https:; script-src 'self' https://static.cloudflareinsights.com; style-src 'self'; connect-src 'self' https://cloudflareinsights.com",
+  'Content-Security-Policy': PUBLIC_CONTENT_SECURITY_POLICY,
 };
 
 const fetchStaticJson = async (context, pathname) => {
@@ -111,7 +114,7 @@ const renderShell = ({ bodyHtml, currentPath, description, origin, site, title }
   ${renderSiteFooter(site, currentPath)}
 
   <script src="/assets/js/search.js?v=__BUILD_VERSION__"></script>
-  <script src="/assets/js/mobile-nav.js?v=__BUILD_VERSION__"></script>
+  <script src="/assets/js/mobile-nav.js?v=__BUILD_VERSION__"></script>${renderAnalyticsScript()}
 </body>
 </html>`;
 };

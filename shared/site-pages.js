@@ -9,7 +9,10 @@ import {
   toDisplayDate,
 } from './content.js';
 
-const BUILD_VERSION = '__BUILD_VERSION__';
+const BUILD_VERSION = 'f4c1406-20260531-162032';
+export const GOATCOUNTER_URL = 'https://cbc688.goatcounter.com/count';
+export const PUBLIC_CONTENT_SECURITY_POLICY =
+  "default-src 'self'; base-uri 'self'; frame-ancestors 'none'; img-src 'self' data: https:; script-src 'self' https://static.cloudflareinsights.com https://gc.zgo.at; style-src 'self'; connect-src 'self' https://cloudflareinsights.com https://cbc688.goatcounter.com";
 
 export const PAGE_HEADERS = {
   'Content-Type': 'text/html; charset=UTF-8',
@@ -21,8 +24,7 @@ export const PAGE_HEADERS = {
   'Strict-Transport-Security': 'max-age=31536000; includeSubDomains; preload',
   'Cross-Origin-Opener-Policy': 'same-origin',
   'Cross-Origin-Resource-Policy': 'same-origin',
-  'Content-Security-Policy':
-    "default-src 'self'; base-uri 'self'; frame-ancestors 'none'; img-src 'self' data: https:; script-src 'self' https://static.cloudflareinsights.com; style-src 'self'; connect-src 'self' https://cloudflareinsights.com",
+  'Content-Security-Policy': PUBLIC_CONTENT_SECURITY_POLICY,
 };
 
 const DEFAULT_NAV = [
@@ -73,6 +75,9 @@ const navList = (site, currentPath) =>
 
 const scriptTag = (src) =>
   src ? `\n  <script src="${escapeHtml(src)}?v=${BUILD_VERSION}" type="module"></script>` : '';
+
+export const renderAnalyticsScript = () =>
+  `\n  <script data-goatcounter="${GOATCOUNTER_URL}" async src="https://gc.zgo.at/count.js"></script>`;
 
 const renderFooter = (site) => {
   const footerText = fallbackFooter(site);
@@ -166,7 +171,7 @@ const shell = ({
   ${renderFooter(site, currentPath)}
 
   <script src="/assets/js/search.js?v=${BUILD_VERSION}"></script>
-  <script src="/assets/js/mobile-nav.js?v=${BUILD_VERSION}"></script>${scriptTag(scriptSrc)}
+  <script src="/assets/js/mobile-nav.js?v=${BUILD_VERSION}"></script>${scriptTag(scriptSrc)}${renderAnalyticsScript()}
 </body>
 </html>`;
 };
