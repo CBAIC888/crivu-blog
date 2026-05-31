@@ -517,9 +517,11 @@ export const renderNavItems = (items, currentPath, options = {}) => {
       const normalized = new URL(safeHref, baseOrigin).pathname.replace(/\/index\.html$/, '/') || '/';
       const isHome = normalized === '/';
       const normalizedBase = normalized.endsWith('.html') ? normalized.replace(/\.html$/, '') : normalized;
+      const isArticlesRoot = currentPath === '/' && (normalized === '/articles.html' || normalizedBase === '/articles');
       const isActive = isHome
         ? currentPath === '/'
-        : currentPath === normalized ||
+        : isArticlesRoot ||
+          currentPath === normalized ||
           currentPath.startsWith(`${normalized}/`) ||
           (normalizedBase !== normalized && (currentPath === normalizedBase || currentPath.startsWith(`${normalizedBase}/`)));
       return `<a href="${escapeHtml(safeHref)}"${isActive ? ' class="active"' : ''}>${escapeHtml(item.label)}</a>`;

@@ -2,7 +2,7 @@
    CRIVU · 正式版樣式
    -------------------------------------------------
    - 頂部導航 + 搜尋 + 三段背景切換
-   - 首頁只顯示最新文章（目次列表風格）
+   - 文章列表採目次列表風格
    - 期刊 = 立體書本 + 獨立詳情頁
    - 文章 = 極簡排版，大字、圖片對齊段落
    - Sticky footer
@@ -489,7 +489,6 @@ img { -webkit-user-drag: none; -webkit-touch-callout: none; }
   width: 100%;
 }
 .section--flush,
-.home-page .latest,
 main > .section:first-child {
   border-top: none;
   padding-top: 56px;
@@ -533,13 +532,12 @@ main > .section:first-child {
   padding-top: 40px;
 }
 
-/* ---- TOC 目次列表（首頁、文章列表、期刊詳情共用） ---- */
+/* ---- TOC 目次列表（文章列表、期刊詳情共用） ---- */
 .toc,
 .post-grid {
   list-style: none;
   margin: 0;
   padding: 0;
-  border-top: 1px solid var(--hairline);
   display: block; /* 覆蓋舊 grid */
 }
 .toc__row,
@@ -1330,97 +1328,16 @@ main > .section:first-child {
 .site-footer {
   flex-shrink: 0;
   margin-top: 0;
-  padding: 28px 6vw 18px;
-  background: var(--footer-bg);
-  color: var(--footer-ink);
-  border-top: 1px solid var(--footer-line);
+  padding: 28px 6vw max(22px, calc(22px + env(safe-area-inset-bottom)));
+  background: var(--paper);
+  color: var(--muted);
 }
-.site-footer__inner {
-  max-width: var(--content-width);
-  margin: 0 auto;
-  display: grid;
-  grid-template-columns: 2fr 1.4fr 1fr;
-  gap: 28px;
-  align-items: start;
-  padding-bottom: 18px;
-  border-bottom: 1px solid var(--footer-line);
-}
-.site-footer__col { min-width: 0; }
-.site-footer__brand {
-  margin: 0 0 6px;
-  font-family: var(--serif);
-  font-size: 18px;
-  letter-spacing: 0.18em;
-  color: var(--footer-ink);
-  font-weight: 600;
-  padding-right: 0.18em;
-}
-.site-footer__desc {
-  margin: 0;
-  color: var(--footer-ink);
-  opacity: 0.72;
-  font-size: 11px;
-  line-height: 1.65;
-  max-width: 28em;
-}
-.site-footer .cap {
-  color: var(--footer-ink-dim);
-  margin-bottom: 8px;
-  display: block;
-}
-.site-footer p {
-  margin: 0 0 6px;
-  color: var(--footer-ink);
-  opacity: 0.88;
-  font-size: 13px;
-  line-height: 1.65;
-}
-.site-footer a {
-  color: var(--footer-ink);
-  border-bottom: 1px solid transparent;
-  padding-bottom: 1px;
-  transition: border-color .2s, opacity .2s;
-}
-.site-footer a:hover {
-  color: var(--footer-ink);
-  border-bottom-color: var(--footer-ink-dim);
-}
-
-/* 社群圖示 */
-.social-links {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin-top: 2px;
-}
-.social-link {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 999px;
-  border: 1px solid var(--footer-line);
-  color: var(--footer-ink);
-  opacity: 0.78;
-  transition: opacity .2s, background .2s, border-color .2s, transform .2s;
-  padding: 0;
-}
-.social-link svg { width: 15px; height: 15px; }
-.social-link:hover {
-  opacity: 1;
-  background: rgba(255, 255, 255, 0.06);
-  border-color: var(--footer-ink-dim);
-  transform: translateY(-1px);
-  border-bottom: 1px solid var(--footer-ink-dim); /* override generic a:hover */
-}
-
 /* Footer 底部版權 */
 .site-footer__copy,
 .site-footer #siteFooterText {
   max-width: var(--content-width);
-  margin: 12px auto 0;
-  color: var(--footer-ink-dim);
+  margin: 0 auto;
+  color: var(--muted);
   font-family: var(--sans);
   font-size: 11px;
   letter-spacing: 0.14em;
@@ -1430,26 +1347,16 @@ main > .section:first-child {
 /* =========================================================
    舊版相容：移除不再用的元件殘影
    ========================================================= */
-.hero, .hero-magazine, .hero-frame,
-.hero-backdrop, .hero-copy, .hero-book,
+.hero,
 .book-object, .book-spine, .book-shadow, .book-cover-copy,
 .issue-book-visual, .issue-book-object, .issue-book-link, .issue-book-shadow,
 .issue-cover-copy, .issue-post, .issue-posts, .issue-expand, .issue-meta,
 .issue-note, .issue-actions, .issue-link, .issue-date,
-.home-page::before, body::before,
+body::before,
 .site-loading,
 .about-kicker {
   /* 特別處理見下 */
 }
-/* 移除整頁 hero：如果頁面還掛著 hero 標籤，把它隱藏不顯示 */
-.hero-magazine,
-.hero-backdrop {
-  display: none !important;
-}
-.hero-frame--book-only { display: none !important; }
-/* 首頁保留給 latest 區，不要 hero 推內容下滑 */
-.home-page main { padding-top: 0; }
-.site-loading #homeHero,
 .site-loading #latest { visibility: visible !important; }
 body::before { display: none !important; }
 
@@ -1467,7 +1374,6 @@ body::before { display: none !important; }
   .post-card .image { width: 140px; height: 100px; }
   .issue-hero__grid { grid-template-columns: 260px 1fr; gap: 36px; }
   .about-shell { grid-template-columns: 1fr; gap: 32px; }
-  .site-footer__inner { grid-template-columns: 1fr 1fr; gap: 32px; }
 }
 
 @media (max-width: 760px) {
@@ -1623,9 +1529,8 @@ body::before { display: none !important; }
 
   .about-side { padding: 22px 20px; }
 
-  .site-footer { padding: 22px 4vw 16px; }
-  .site-footer__inner { grid-template-columns: 1fr; gap: 18px; padding-bottom: 16px; }
-  .site-footer__copy { text-align: left; }
+  .site-footer { padding: 22px 4vw max(20px, calc(20px + env(safe-area-inset-bottom))); }
+  .site-footer__copy { text-align: center; }
 }
 
 /* iPhone 瀏海安全島 */

@@ -1,4 +1,4 @@
-import { withBuildVersion } from '../../shared/content.js';
+import { withBuildVersion } from '../../shared/content.js?v=__BUILD_VERSION__';
 
 const qs = (sel) => document.querySelector(sel);
 

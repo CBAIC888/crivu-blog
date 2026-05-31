@@ -91,7 +91,7 @@ const posts = (Array.isArray(postsData.items) ? postsData.items : postsData)
   .slice(0, MAX_ITEMS);
 
 const siteName = collapseWhitespace(site.siteName) || 'CRIVU';
-const siteDescription = collapseWhitespace(site.aboutIntro) || collapseWhitespace(site.latestIntro) || `${siteName} 的個人博客更新。`;
+const siteDescription = collapseWhitespace(site.aboutIntro) || `${siteName} 的個人博客更新。`;
 const lastBuildDate = posts[0]?.date ? pubDate(posts[0].date) : formatRfc822InBeijing(new Date());
 
 const items = posts

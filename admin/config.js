@@ -137,7 +137,7 @@ const SITE_FIELDS = [
     name: 'siteDescription',
     widget: 'text',
     required: false,
-    hint: '各頁沒設自己的 description 時使用；同時作為首頁 meta description。',
+    hint: '各頁沒設自己的 description 時使用；也會作為預設 SEO 描述。',
   },
   {
     label: '「基本」關鍵字',
@@ -173,7 +173,7 @@ const SITE_FIELDS = [
       { label: '名稱', name: 'label', widget: 'string' },
       { label: '連結', name: 'href', widget: 'string', hint: '可用 /articles.html、/issues.html、/about.html 或外部 URL。' },
     ],
-    hint: '未填時使用預設（首頁／期刊／文章／關於）。',
+    hint: '未填時使用預設（文章／期刊／關於）。',
   },
   {
     label: '「導航」搜尋框提示文字',
@@ -213,50 +213,7 @@ const SITE_FIELDS = [
     hint: '用於連結 hover、分隔色。16 進位色碼，例如 #9f3c3c（印泥紅）。',
   },
 
-  /* ===== ④ 首頁 ===== */
-  {
-    label: '「首頁」焦點期刊 ID',
-    name: 'homeFeaturedIssueId',
-    widget: 'string',
-    required: false,
-    hint: '預留欄位；目前首頁僅顯示最新文章，不使用。',
-  },
-  { label: '「首頁」小標（kicker）', name: 'homeKicker', widget: 'string', required: false },
-  { label: '「首頁」主標', name: 'homeTitle', widget: 'string', required: false },
-  { label: '「首頁」副標', name: 'homeSubtitle', widget: 'text', required: false },
-  {
-    label: '「首頁」背景圖（保留）',
-    name: 'homeHeroImage',
-    widget: 'image',
-    required: false,
-    hint: '目前極簡版本不使用；若切回大圖模式會啟用。',
-  },
-  {
-    label: '「首頁」最新文章標題',
-    name: 'latestTitle',
-    widget: 'string',
-    required: false,
-    default: '最新文章',
-  },
-  {
-    label: '「首頁」最新文章說明',
-    name: 'latestIntro',
-    widget: 'text',
-    required: false,
-    default: '按時間展開近期更新。',
-  },
-  {
-    label: '「首頁」最新文章顯示篇數',
-    name: 'homeLatestLimit',
-    widget: 'number',
-    value_type: 'int',
-    required: false,
-    min: 1,
-    max: 30,
-    default: 4,
-  },
-
-  /* ===== ⑤ 文章頁 ===== */
+  /* ===== ④ 文章頁 ===== */
   {
     label: '「文章頁」標題',
     name: 'articlesPageTitle',
@@ -272,7 +229,7 @@ const SITE_FIELDS = [
     default: '按時間順序閱讀全部文章。',
   },
 
-  /* ===== ⑥ 期刊頁 ===== */
+  /* ===== ⑤ 期刊頁 ===== */
   {
     label: '「期刊頁」標題',
     name: 'issuesPageTitle',
@@ -310,7 +267,7 @@ const SITE_FIELDS = [
     default: '查看收錄文章',
   },
 
-  /* ===== ⑦ 關於頁 ===== */
+  /* ===== ⑥ 關於頁 ===== */
   { label: '「關於頁」小標', name: 'aboutKicker', widget: 'string', required: false, default: 'About' },
   { label: '「關於頁」標題', name: 'aboutTitle', widget: 'string', default: '關於' },
   { label: '「關於頁」主敘述', name: 'aboutIntro', widget: 'text' },
@@ -456,7 +413,7 @@ window.DECAP_CMS_CONFIG = {
       name: 'issues',
       label: '期刊',
       label_singular: '期刊',
-      description: '管理期刊。期刊頁與首頁都讀這份資料。',
+      description: '管理期刊。期刊頁與期刊詳情頁會讀這份資料。',
       sortable_fields: ['commit_date', 'commit_author'],
       files: [
         {
@@ -482,7 +439,7 @@ window.DECAP_CMS_CONFIG = {
       name: 'site',
       label: '站點設定',
       label_singular: '站點設定',
-      description: '站名、導航、SEO、主題配色、首頁與各頁文案。欄位前綴「基本/導航/主題/首頁/文章頁/期刊頁/關於頁/舊版」代表分組。',
+      description: '站名、導航、SEO、主題配色與各頁文案。欄位前綴「基本/導航/主題/文章頁/期刊頁/關於頁/舊版」代表分組。',
       sortable_fields: ['commit_date', 'commit_author'],
       files: [
         {

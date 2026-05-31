@@ -1,4 +1,4 @@
-import { articlePath, buildSearchSnippet, buildSearchText, escapeHtml, renderNavItems, safeCoverUrl, withBuildVersion } from '../../shared/content.js';
+import { articlePath, buildSearchSnippet, buildSearchText, escapeHtml, renderNavItems, safeCoverUrl, withBuildVersion } from '../../shared/content.js?v=__BUILD_VERSION__';
 
 const qs = (sel) => document.querySelector(sel);
 

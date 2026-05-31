@@ -55,7 +55,6 @@ label[class*='ControlLabel'] {
 [class*='ControlLabel']:has-text('「基本」'),
 [class*='ControlLabel']:has-text('「導航」'),
 [class*='ControlLabel']:has-text('「主題」'),
-[class*='ControlLabel']:has-text('「首頁」'),
 [class*='ControlLabel']:has-text('「文章頁」'),
 [class*='ControlLabel']:has-text('「期刊頁」'),
 [class*='ControlLabel']:has-text('「關於頁」'),

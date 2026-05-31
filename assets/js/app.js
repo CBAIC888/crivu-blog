@@ -1,4 +1,3 @@
-import { applyAdaptivePalette, getFeaturedPaletteSource } from './palette.js';
 import {
   articlePath,
   buildDescription,
@@ -12,14 +11,13 @@ import {
   safeCoverUrl,
   sanitizeUrl,
   toDisplayDate,
-} from '../../shared/content.js';
+} from '../../shared/content.js?v=__BUILD_VERSION__';
 
 const state = {
   posts: [],
-  issues: [],
   site: {},
   search: '',
-  applyHome: null,
+  applyPosts: null,
 };
 
 const qs = (sel) => document.querySelector(sel);
@@ -28,21 +26,6 @@ const qsa = (sel) => Array.from(document.querySelectorAll(sel));
 const setText = (sel, value) => {
   const el = qs(sel);
   if (el && value !== undefined && value !== null && value !== '') el.textContent = value;
-};
-
-const setOptionalText = (sel, value) => {
-  const el = qs(sel);
-  if (!el) return '';
-  const text = normalizeText(value, { allowPlaceholder: true });
-  el.hidden = !text;
-  if (text) el.textContent = text;
-  return text;
-};
-
-const toInt = (value, fallback, min, max) => {
-  const num = Number.parseInt(value, 10);
-  if (Number.isNaN(num)) return fallback;
-  return Math.max(min, Math.min(max, num));
 };
 
 const revealSiteContent = () => {
@@ -66,17 +49,6 @@ const loadSite = async () => {
   }
 };
 
-const loadIssues = async () => {
-  try {
-    const res = await fetch(withBuildVersion('/posts/issues.json'));
-    if (!res.ok) return;
-    const data = await res.json();
-    state.issues = Array.isArray(data.issues) ? data.issues.slice() : [];
-  } catch {
-    state.issues = [];
-  }
-};
-
 const applySiteSettings = () => {
   const site = state.site;
   qsa('#siteName').forEach((el) => {
@@ -86,13 +58,6 @@ const applySiteSettings = () => {
     if (site.footerText) el.textContent = site.footerText;
   });
 
-  setOptionalText('#homeKicker', site.homeKicker);
-  setOptionalText('#homeTitle', site.homeTitle);
-  setOptionalText('#homeSubtitle', site.homeSubtitle);
-  setText('#homeLatestButton', site.homeLatestButtonText);
-  setText('#homeIssueKicker', site.homeIssueKicker);
-  setText('#latestTitle', site.latestTitle);
-  setText('#latestIntro', site.latestIntro);
   setText('#articlesPageTitle', site.articlesPageTitle);
   setText('#articlesPageIntro', site.articlesPageIntro);
   setText('#issuesPageTitle', site.issuesPageTitle);
@@ -155,88 +120,10 @@ const applySiteSettings = () => {
   qsa('#searchInput').forEach((input) => {
     if (site.searchPlaceholder) input.setAttribute('placeholder', site.searchPlaceholder);
   });
-
-  const root = document.documentElement;
-  root.style.setProperty('--home-cols', String(toInt(site.homeCardsDesktop, 3, 1, 4)));
-  root.style.setProperty('--list-cols', String(toInt(site.articleCardsDesktop, 3, 1, 4)));
-};
-
-const getFeaturedIssue = () => {
-  if (!Array.isArray(state.issues) || state.issues.length === 0) return null;
-  const preferredId = String(state.site.homeFeaturedIssueId || '').trim();
-  if (preferredId) {
-    const matched = state.issues.find((issue) => issue.id === preferredId);
-    if (matched) return matched;
-  }
-  return state.issues.find((issue) => issue.id === 'jq01') || state.issues[0];
-};
-
-const applyHomeFeature = async () => {
-  const hero = qs('#homeHero');
-  if (!hero) return null;
-
-  const featuredIssue = getFeaturedIssue();
-  const featuredPost =
-    featuredIssue && Array.isArray(featuredIssue.posts)
-      ? state.posts.find((post) => featuredIssue.posts.includes(post.slug))
-      : null;
-
-  const backdropImage = qs('#homeHeroBackdropImage');
-  const issueLink = qs('#homeIssueLink');
-  const issueCoverImage = qs('#homeIssueCoverImage');
-  const issueTitle = qs('#homeIssueTitle');
-  const issueMeta = qs('#homeIssueMeta');
-  const heroNote = qs('#homeHeroNote');
-  const heroCredit = qs('#homeHeroCredit');
-  const heroFrame = hero.querySelector('.hero-frame');
-  const heroCopy = hero.querySelector('.hero-copy');
-
-  const backgroundImage = safeCoverUrl(state.site.homeHeroImage || getFeaturedPaletteSource(state.posts, state.issues, undefined));
-  const coverImage = safeCoverUrl((featuredIssue && featuredIssue.cover) || backgroundImage);
-
-  if (backdropImage) {
-    backdropImage.setAttribute('src', backgroundImage);
-  }
-  if (issueCoverImage) {
-    issueCoverImage.setAttribute('src', coverImage);
-  }
-  if (issueLink) {
-    issueLink.setAttribute('href', '/issues.html');
-  }
-  if (issueTitle && featuredIssue) {
-    issueTitle.textContent = featuredIssue.title || '新刊';
-  }
-  if (issueMeta && featuredIssue) {
-    issueMeta.textContent = [featuredIssue.theme, featuredIssue.publishDate].filter(Boolean).join(' · ');
-  }
-  if (heroNote) {
-    heroNote.textContent = '';
-    heroNote.hidden = true;
-  }
-  if (heroCredit) {
-    const creditLine1 = normalizeText(state.site.homeHeroCreditLine1, { allowPlaceholder: true });
-    const creditLine2 = normalizeText(state.site.homeHeroCreditLine2, { allowPlaceholder: true });
-    heroCredit.hidden = !(creditLine1 || creditLine2);
-    heroCredit.innerHTML = [creditLine1, creditLine2].filter(Boolean).map((line) => `<span>${escapeHtml(line)}</span>`).join('');
-  }
-
-  const kickerText = setOptionalText('#homeKicker', state.site.homeKicker);
-  const titleText = setOptionalText('#homeTitle', state.site.homeTitle);
-  const subtitleText = setOptionalText('#homeSubtitle', state.site.homeSubtitle);
-  const hasLeadCopy = Boolean(kickerText || titleText || subtitleText);
-  if (heroCopy) {
-    heroCopy.hidden = !hasLeadCopy;
-  }
-  if (heroFrame) {
-    heroFrame.classList.toggle('hero-frame--book-only', !hasLeadCopy);
-  }
-
-  await applyAdaptivePalette(backgroundImage);
-  return backgroundImage;
 };
 
 const applyNavigation = (site) => {
-  const nav = qs('.nav');
+  const nav = qs('.site-header__nav') || qs('.nav');
   if (!nav || !Array.isArray(site.nav) || site.nav.length === 0) return;
 
   const currentPath = window.location.pathname.replace(/\/index\.html$/, '/') || '/';
@@ -461,7 +348,7 @@ const setupSearch = () => {
   };
 
   const applyAll = () => {
-    if (state.applyHome) state.applyHome();
+    if (state.applyPosts) state.applyPosts();
     renderResults();
   };
 
@@ -489,28 +376,19 @@ const setupFilters = () => {
   const grid = qs('#postGrid');
   if (!grid) return;
 
-  // 首頁限制顯示篇數（預設 4），其他頁不限
-  const isHome = document.body.classList.contains('home-page');
-  const homeLimit = Math.max(1, Number.parseInt(state.site.homeLatestLimit, 10) || 4);
-
   const apply = () => {
     const filtered = state.posts.filter((p) => matchesSearch(p, state.search));
-    const limited = isHome && !state.search ? filtered.slice(0, homeLimit) : filtered;
-    renderGrid(grid, limited);
+    renderGrid(grid, filtered);
   };
 
-  state.applyHome = apply;
+  state.applyPosts = apply;
   apply();
 };
 
 const init = async () => {
-  await Promise.all([loadPosts(), loadSite(), loadIssues()]);
+  await Promise.all([loadPosts(), loadSite()]);
 
   applySiteSettings();
-  const featureImage = await applyHomeFeature();
-  if (qs('#homeHero') && !featureImage && state.posts[0] && state.posts[0].cover) {
-    await applyAdaptivePalette(safeCoverUrl(state.posts[0].cover));
-  }
   applyNavigation(state.site);
   setupSearch();
   setupFilters();

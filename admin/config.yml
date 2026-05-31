@@ -86,7 +86,7 @@ collections:
   - name: "site"
     label: "站點設定"
     label_singular: "站點設定"
-    description: "欄位以「基本/導航/主題/首頁/文章頁/期刊頁/關於頁/舊版」前綴分組。"
+    description: "欄位以「基本/導航/主題/文章頁/期刊頁/關於頁/舊版」前綴分組。"
     sortable_fields: ["commit_date", "commit_author"]
     files:
       - name: "site"
@@ -123,15 +123,6 @@ collections:
               - { label: "深色", value: "dark" }
           - { label: "「主題」顯示切換按鈕", name: "themeToggleEnabled", widget: "boolean", required: false, default: true }
           - { label: "「主題」品牌強調色", name: "accentColor", widget: "string", required: false, default: "#9f3c3c" }
-          # 首頁
-          - { label: "「首頁」焦點期刊 ID", name: "homeFeaturedIssueId", widget: "string", required: false }
-          - { label: "「首頁」小標", name: "homeKicker", widget: "string", required: false }
-          - { label: "「首頁」主標", name: "homeTitle", widget: "string", required: false }
-          - { label: "「首頁」副標", name: "homeSubtitle", widget: "text", required: false }
-          - { label: "「首頁」背景圖（保留）", name: "homeHeroImage", widget: "image", required: false }
-          - { label: "「首頁」最新文章標題", name: "latestTitle", widget: "string", required: false }
-          - { label: "「首頁」最新文章說明", name: "latestIntro", widget: "text", required: false }
-          - { label: "「首頁」最新文章篇數", name: "homeLatestLimit", widget: "number", value_type: "int", required: false, min: 1, max: 30, default: 4 }
           # 文章頁
           - { label: "「文章頁」標題", name: "articlesPageTitle", widget: "string", required: false }
           - { label: "「文章頁」說明", name: "articlesPageIntro", widget: "text", required: false }
@@ -155,11 +146,6 @@ collections:
           - { label: "「關於頁」主題欄位", name: "aboutTopicsLabel", widget: "string", required: false }
           - { label: "「關於頁」主題內容", name: "topics", widget: "string", required: false }
           # 舊版
-          - { label: "「舊版」首頁主按鈕文字", name: "homeLatestButtonText", widget: "string", required: false }
-          - { label: "「舊版」首頁期刊 kicker", name: "homeIssueKicker", widget: "string", required: false }
-          - { label: "「舊版」首頁 Credit 行 1", name: "homeHeroCreditLine1", widget: "string", required: false }
-          - { label: "「舊版」首頁 Credit 行 2", name: "homeHeroCreditLine2", widget: "string", required: false }
-          - { label: "「舊版」首頁卡片欄數", name: "homeCardsDesktop", widget: "number", value_type: "int", required: false, min: 1, max: 4 }
           - { label: "「舊版」文章頁卡片欄數", name: "articleCardsDesktop", widget: "number", value_type: "int", required: false, min: 1, max: 4 }
           - { label: "「舊版」卡片最多標籤數", name: "maxTagsPerCard", widget: "number", value_type: "int", required: false, min: 1, max: 10 }
           - { label: "「舊版」全部分類文字", name: "allCategoryLabel", widget: "string", required: false }

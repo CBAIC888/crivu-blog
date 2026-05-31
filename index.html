@@ -4,21 +4,20 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="build-version" content="__BUILD_VERSION__" />
-  <title>CRIVU</title>
-  <meta name="description" content="CRIVU 是一座個人的文字棲居之所，收錄隨筆、節氣書寫、小說連載、京劇札記與日常思索。" />
+  <title>文章 · CRIVU</title>
+  <meta name="description" content="按時間順序閱讀 CRIVU 的全部文章。" />
   <link rel="alternate" type="application/rss+xml" title="CRIVU RSS" href="/rss.xml" />
   <link rel="stylesheet" href="/assets/css/style.css?v=__BUILD_VERSION__" />
   <link rel="icon" href="/assets/img/favicon.png" type="image/png" />
   <script src="/assets/js/theme.js?v=__BUILD_VERSION__"></script>
 </head>
-<body class="home-page">
+<body>
   <header class="site-header">
     <div class="site-header__inner">
       <a class="site-header__brand" href="/">CRIVU</a>
       <nav class="site-header__nav" id="primaryNav">
-        <a class="active" href="/">首頁</a>
+        <a class="active" href="/articles.html">文章</a>
         <a href="/issues.html">期刊</a>
-        <a href="/articles.html">文章</a>
         <a href="/about.html">關於</a>
       </nav>
       <div class="site-header__actions">
@@ -48,36 +47,17 @@
     </div>
   </header>
 
-  <main>
-    <section class="section section--flush">
-      <header class="section__head">
-        <div>
-          <p class="kicker">Latest</p>
-          <h1 class="section__title" id="latestTitle">最新文章</h1>
-        </div>
-        <p class="section__intro" id="latestIntro">按時間展開近期更新。</p>
-      </header>
-
-      <ol class="toc" id="postGrid"></ol>
-
-      <div class="section__more">
-        <a href="/articles.html" class="ghost-link">查看全部文章 →</a>
-      </div>
-    </section>
+  <main class="page-list list-page">
+    <header class="page-head">
+      <p class="kicker">Articles</p>
+      <h1 class="page-title" id="articlesPageTitle">文章</h1>
+      <p class="page-intro" id="articlesPageIntro">按時間順序閱讀全部文章。</p>
+    </header>
+    <ol class="toc" id="postGrid"></ol>
   </main>
 
   <footer class="site-footer">
-    <div class="site-footer__inner">
-      <div>
-        <p class="cap" id="siteName">CRIVU</p>
-        <p>隨記 · 節氣 · 戲曲 · 閱讀。</p>
-      </div>
-      <div>
-        <p class="cap">Subscribe</p>
-        <p><a href="/rss.xml">RSS</a></p>
-      </div>
-      <div class="site-footer__copy" id="siteFooterText">© 2026 CRIVU</div>
-    </div>
+    <div class="site-footer__copy" id="siteFooterText">© 2026 CRIVU</div>
   </footer>
 
   <script src="/assets/js/search.js?v=__BUILD_VERSION__"></script>
