@@ -12,7 +12,7 @@ import {
 const BUILD_VERSION = '__BUILD_VERSION__';
 export const GOATCOUNTER_URL = 'https://cbc688.goatcounter.com/count';
 export const PUBLIC_CONTENT_SECURITY_POLICY =
-  "default-src 'self'; base-uri 'self'; frame-ancestors 'none'; img-src 'self' data: https:; script-src 'self' https://static.cloudflareinsights.com https://gc.zgo.at; style-src 'self'; connect-src 'self' https://cloudflareinsights.com https://cbc688.goatcounter.com";
+  "default-src 'self'; base-uri 'self'; frame-ancestors 'none'; img-src 'self' data: https:; script-src 'self' https://static.cloudflareinsights.com; style-src 'self'; connect-src 'self' https://cloudflareinsights.com https://cbc688.goatcounter.com";
 
 export const PAGE_HEADERS = {
   'Content-Type': 'text/html; charset=UTF-8',
@@ -77,7 +77,7 @@ const scriptTag = (src) =>
   src ? `\n  <script src="${escapeHtml(src)}?v=${BUILD_VERSION}" type="module"></script>` : '';
 
 export const renderAnalyticsScript = () =>
-  `\n  <script data-goatcounter="${GOATCOUNTER_URL}" async src="https://gc.zgo.at/count.js"></script>`;
+  `\n  <script src="/assets/js/analytics.js?v=${BUILD_VERSION}" defer></script>`;
 
 const renderFooter = (site) => {
   const footerText = fallbackFooter(site);
@@ -238,6 +238,7 @@ const renderBook = (issue, posts, site) => {
 /* ---------- 頁面渲染 ---------- */
 
 export const renderArticlesPage = ({ posts, site }, options = {}) => {
+  const siteName = fallbackSiteName(site);
   const mainHtml = `<main class="page-list list-page">
     <header class="page-head">
       <p class="kicker">Articles</p>
@@ -256,7 +257,7 @@ export const renderArticlesPage = ({ posts, site }, options = {}) => {
     mainHtml,
     scriptSrc: '/assets/js/app.js',
     site,
-    title: `文章 · ${fallbackSiteName(site)}`,
+    title: options.isHome ? siteName : `文章 · ${siteName}`,
   });
 };
 
