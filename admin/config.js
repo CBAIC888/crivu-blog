@@ -271,23 +271,6 @@ const SITE_FIELDS = [
     required: false,
     default: '按時間順序閱讀全部文章。',
   },
-  {
-    label: '「文章頁」更多閱讀標題',
-    name: 'moreReadingTitle',
-    widget: 'string',
-    required: false,
-    default: '更多閱讀',
-  },
-  {
-    label: '「文章頁」更多閱讀數量',
-    name: 'moreReadingLimit',
-    widget: 'number',
-    value_type: 'int',
-    required: false,
-    min: 1,
-    max: 12,
-    default: 4,
-  },
 
   /* ===== ⑥ 期刊頁 ===== */
   {

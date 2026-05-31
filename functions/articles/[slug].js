@@ -7,7 +7,6 @@ import {
   renderNavItems,
   safeCoverUrl,
   simpleMarkdown,
-  toDisplayDate,
 } from '../../shared/content.js';
 import { renderSiteFooter } from '../../shared/site-pages.js';
 
@@ -27,28 +26,6 @@ const fetchStaticJson = async (context, pathname) => {
     throw new Error(`Failed to load ${pathname}: ${res.status}`);
   }
   return res.json();
-};
-
-const toInt = (value, fallback, min, max) => {
-  const num = Number.parseInt(value, 10);
-  if (Number.isNaN(num)) return fallback;
-  return Math.max(min, Math.min(max, num));
-};
-
-const renderMoreItem = (post) => {
-  const safeLink = articlePath(post.slug);
-  const excerpt = buildDescription(post, 64);
-  const displayDate = toDisplayDate(post.date);
-  const metaBits = [
-    displayDate ? `<span class="cap">${escapeHtml(displayDate)}</span>` : '',
-  ].filter(Boolean);
-  return `
-    <a class="more-item" href="${escapeHtml(safeLink)}">
-      <div class="more-meta">${metaBits.join('')}</div>
-      <h3>${escapeHtml(post.title || '')}</h3>
-      ${excerpt ? `<p>${escapeHtml(excerpt)}</p>` : ''}
-    </a>
-  `;
 };
 
 const renderHeader = (site, navHtml) => {
@@ -91,12 +68,11 @@ const renderHeader = (site, navHtml) => {
 
 const renderFooter = (site, currentPath) => renderSiteFooter(site, currentPath);
 
-const renderPage = ({ currentPath, description, moreHtml, origin, post, site }) => {
+const renderPage = ({ currentPath, description, origin, post, site }) => {
   const canonicalPath = articlePath(post.slug);
   const canonicalUrl = new URL(canonicalPath, origin).toString();
   const navHtml = renderNavItems(site.nav, currentPath, { baseOrigin: origin });
   const siteName = normalizeText(site.siteName, { allowPlaceholder: true }) || 'CRIVU';
-  const moreTitle = normalizeText(site.moreReadingTitle) || '更多閱讀';
   const excerpt = normalizeText(post.excerpt);
   const bodyHtml = simpleMarkdown(post.body || '', { baseOrigin: origin });
   const title = `${post.title} · ${siteName}`;
@@ -134,7 +110,6 @@ const renderPage = ({ currentPath, description, moreHtml, origin, post, site }) 
   <script src="/assets/js/theme.js?v=__BUILD_VERSION__"></script>
 </head>
 <body class="page-post">
-  <div class="progress" id="readProgress"></div>
   ${renderHeader(site, navHtml)}
 
   <main class="page-post__main post-page">
@@ -148,14 +123,6 @@ const renderPage = ({ currentPath, description, moreHtml, origin, post, site }) 
 
       <div class="reading__body post-body" id="postBody">${bodyHtml}</div>
     </article>
-
-    <aside class="reading-more more more-bottom" aria-label="更多閱讀">
-      <header class="reading-more__head">
-        <p class="kicker">More Reading</p>
-        <h2 class="reading-more__title">${escapeHtml(moreTitle)}</h2>
-      </header>
-      <div id="moreList" class="more-list">${moreHtml}</div>
-    </aside>
   </main>
 
   ${renderFooter(site, currentPath)}
@@ -223,18 +190,11 @@ export async function onRequest(context) {
   }
 
   const description = buildDescription(post);
-  const moreLimit = toInt(site.moreReadingLimit, 4, 1, 12);
-  const moreHtml = posts
-    .filter((item) => item.slug !== post.slug)
-    .slice(0, moreLimit)
-    .map(renderMoreItem)
-    .join('');
 
   return new Response(
     renderPage({
       currentPath,
       description,
-      moreHtml,
       origin,
       post,
       site,

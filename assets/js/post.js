@@ -158,21 +158,6 @@ const setupMobileMenu = () => {
   syncAria();
 };
 
-const applyProgress = () => {
-  const progress = qs('#readProgress');
-  if (!progress) return;
-
-  const onScroll = () => {
-    const doc = document.documentElement;
-    const total = doc.scrollHeight - doc.clientHeight;
-    const pct = total > 0 ? (doc.scrollTop / total) * 100 : 0;
-    progress.style.width = `${pct}%`;
-  };
-
-  window.addEventListener('scroll', onScroll, { passive: true });
-  onScroll();
-};
-
 const applySite = async () => {
   try {
     const [siteRes, postsRes] = await Promise.all([
@@ -195,11 +180,6 @@ const applySite = async () => {
       searchInput.setAttribute('placeholder', site.searchPlaceholder);
     }
 
-    const moreTitle = qs('#moreTitle');
-    if (moreTitle && site.moreReadingTitle) {
-      moreTitle.textContent = site.moreReadingTitle;
-    }
-
     setupSearch(Array.isArray(posts) ? posts : []);
   } catch {
     // keep server-rendered content as-is
@@ -210,7 +190,6 @@ const init = async () => {
   setupHeaderOffset();
   setupMobileSearch();
   setupMobileMenu();
-  applyProgress();
   await applySite();
 };
 
