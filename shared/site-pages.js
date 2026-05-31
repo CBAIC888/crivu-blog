@@ -9,7 +9,7 @@ import {
   toDisplayDate,
 } from './content.js';
 
-const BUILD_VERSION = 'f4c1406-20260531-162032';
+const BUILD_VERSION = '__BUILD_VERSION__';
 export const GOATCOUNTER_URL = 'https://cbc688.goatcounter.com/count';
 export const PUBLIC_CONTENT_SECURITY_POLICY =
   "default-src 'self'; base-uri 'self'; frame-ancestors 'none'; img-src 'self' data: https:; script-src 'self' https://static.cloudflareinsights.com https://gc.zgo.at; style-src 'self'; connect-src 'self' https://cloudflareinsights.com https://cbc688.goatcounter.com";
