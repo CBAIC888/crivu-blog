@@ -283,7 +283,7 @@ export const renderSiteFooter = (site, currentPath) => renderFooter(site, curren
 
 export const renderAboutPage = ({ site }) => {
   const aboutTitle = normalizeText(site.aboutTitle) || '關於';
-  const aboutBody = normalizeText(site.aboutBody, { allowPlaceholder: true });
+  const aboutBody = String(site.aboutBody || '').trim();
   const description = buildDescription({
     body: aboutBody,
     excerpt: normalizeText(site.aboutDescription),
