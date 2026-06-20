@@ -30,12 +30,14 @@
       "publishDate": "2026-02-01",
       "editorNote": "",
       "posts": [
+        "ng",
         "zw",
         "jiyi",
         "shu",
         "xinfu",
         "bei-suiji",
-        "tuise-zhesi"
+        "tuise-zhesi",
+        "gaob"
       ],
       "published": true
     },
