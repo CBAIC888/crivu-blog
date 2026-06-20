@@ -2,6 +2,8 @@ import {
   articlePath,
   buildDescription,
   escapeHtml,
+  isConfirmedRecord,
+  isPublished,
   normalizeText,
   renderNavItems,
   safeCoverUrl,
@@ -28,8 +30,10 @@ export const PAGE_HEADERS = {
 };
 
 const DEFAULT_NAV = [
+  { label: '首頁', href: '/' },
   { label: '文章', href: '/articles.html' },
   { label: '期刊', href: '/issues.html' },
+  { label: '紀錄', href: '/records.html' },
   { label: '關於', href: '/about.html' },
 ];
 
@@ -43,18 +47,22 @@ const fetchStaticJson = async (context, pathname) => {
 };
 
 export const loadSiteBundle = async (context) => {
-  const [postsData, issuesData, siteData] = await Promise.all([
+  const [postsData, issuesData, recordsData, siteData] = await Promise.all([
     fetchStaticJson(context, '/posts/posts.json'),
     fetchStaticJson(context, '/posts/issues.json').catch(() => ({ issues: [] })),
+    fetchStaticJson(context, '/posts/records.json').catch(() => ({ records: [] })),
     fetchStaticJson(context, '/posts/site.json').catch(() => ({})),
   ]);
 
-  const posts = (postsData.items || postsData || []).slice();
+  const posts = (postsData.items || postsData || []).filter(isPublished);
   posts.sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
 
   return {
     posts,
-    issues: Array.isArray(issuesData.issues) ? issuesData.issues.slice() : [],
+    issues: Array.isArray(issuesData.issues) ? issuesData.issues.filter(isPublished) : [],
+    records: Array.isArray(recordsData.records)
+      ? recordsData.records.filter(isConfirmedRecord)
+      : [],
     site: siteData || {},
   };
 };
@@ -88,7 +96,49 @@ const renderFooter = (site) => {
   </footer>`;
 };
 
-const shell = ({
+export const renderSiteHeader = (site, currentPath) => {
+  const siteName = fallbackSiteName(site);
+  const searchPlaceholder = normalizeText(site.searchPlaceholder) || '搜尋文章';
+  const themeToggle = site.themeToggleEnabled === false
+    ? ''
+    : `
+        <button class="theme-toggle" data-theme-toggle aria-label="切換背景主題">
+          <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"/></svg>
+          <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+        </button>`;
+
+  return `
+  <header class="site-header">
+    <div class="site-header__inner">
+      <a class="site-header__brand" href="/">${escapeHtml(siteName)}</a>
+      <nav class="site-header__nav" id="primaryNav">
+        ${navList(site, currentPath)}
+      </nav>
+      <div class="site-header__actions">
+        <form class="site-header__search" onsubmit="return false" role="search">
+          <span class="icon" aria-hidden="true"></span>
+          <input id="globalSearchInput" type="search" placeholder="${escapeHtml(searchPlaceholder)}" aria-label="搜尋文章" autocomplete="off" />
+          <div id="globalSearchResults" class="search-results" role="listbox"></div>
+        </form>
+        <button class="mobile-search-toggle" id="mobileSearchBtn" aria-label="搜尋">
+          <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="18" height="18">
+            <circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="1.8"/>
+            <line x1="16.2" y1="16.2" x2="20" y2="20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <button class="mobile-menu-toggle" id="mobileMenuBtn" aria-label="展開選單" aria-expanded="false" aria-controls="primaryNav">
+          <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="18" height="18">
+            <line class="mm-line mm-line-top" x1="4" y1="7" x2="20" y2="7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            <line class="mm-line mm-line-mid" x1="4" y1="12" x2="20" y2="12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            <line class="mm-line mm-line-bot" x1="4" y1="17" x2="20" y2="17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+        </button>${themeToggle}
+      </div>
+    </div>
+  </header>`;
+};
+
+export const renderPageShell = ({
   bodyClass = '',
   currentPath,
   description,
@@ -99,7 +149,6 @@ const shell = ({
   ogImage,
 }) => {
   const siteName = fallbackSiteName(site);
-  const searchPlaceholder = normalizeText(site.searchPlaceholder) || '搜尋文章';
   const keywords = normalizeText(site.siteKeywords);
   const favicon =
     safeCoverUrl(site.favicon) !== '/assets/img/cover-01.svg'
@@ -133,45 +182,15 @@ const shell = ({
   <script src="/assets/js/theme.js?v=${BUILD_VERSION}"></script>
 </head>
 <body${bodyClass ? ` class="${escapeHtml(bodyClass)}"` : ''}>
-  <header class="site-header">
-    <div class="site-header__inner">
-      <a class="site-header__brand" href="/">${escapeHtml(siteName)}</a>
-      <nav class="site-header__nav" id="primaryNav">
-        ${navList(site, currentPath)}
-      </nav>
-      <div class="site-header__actions">
-        <form class="site-header__search" onsubmit="return false" role="search">
-          <span class="icon" aria-hidden="true"></span>
-          <input id="globalSearchInput" type="search" placeholder="${escapeHtml(searchPlaceholder)}" aria-label="搜尋文章" autocomplete="off" />
-          <div id="globalSearchResults" class="search-results" role="listbox"></div>
-        </form>
-        <button class="mobile-search-toggle" id="mobileSearchBtn" aria-label="搜尋">
-          <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="18" height="18">
-            <circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="1.8"/>
-            <line x1="16.2" y1="16.2" x2="20" y2="20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-          </svg>
-        </button>
-        <button class="mobile-menu-toggle" id="mobileMenuBtn" aria-label="展開選單" aria-expanded="false" aria-controls="primaryNav">
-          <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="18" height="18">
-            <line class="mm-line mm-line-top" x1="4" y1="7" x2="20" y2="7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-            <line class="mm-line mm-line-mid" x1="4" y1="12" x2="20" y2="12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-            <line class="mm-line mm-line-bot" x1="4" y1="17" x2="20" y2="17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-          </svg>
-        </button>
-        <button class="theme-toggle" data-theme-toggle aria-label="切換深色模式">
-          <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"/></svg>
-          <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
-        </button>
-      </div>
-    </div>
-  </header>
+  ${renderSiteHeader(site, currentPath)}
 
   ${mainHtml}
 
   ${renderFooter(site, currentPath)}
 
   <script src="/assets/js/search.js?v=${BUILD_VERSION}"></script>
-  <script src="/assets/js/mobile-nav.js?v=${BUILD_VERSION}"></script>${scriptTag(scriptSrc)}${renderAnalyticsScript()}
+  <script src="/assets/js/mobile-nav.js?v=${BUILD_VERSION}"></script>
+  <script src="/assets/js/scroll-rails.js?v=${BUILD_VERSION}"></script>${scriptTag(scriptSrc)}${renderAnalyticsScript()}
 </body>
 </html>`;
 };
@@ -193,7 +212,7 @@ const renderTocRow = (post, index) => {
   const thumb = hasCover
     ? `
       <a class="toc__thumb" href="${escapeHtml(href)}" aria-hidden="true">
-        <img src="${escapeHtml(cover)}" alt="" loading="lazy" />
+        <img src="${escapeHtml(cover)}" alt="" loading="lazy" decoding="async" />
       </a>`
     : '';
   return `
@@ -224,7 +243,7 @@ const renderBook = (issue, posts, site) => {
   return `
     <a class="book" href="${escapeHtml(href)}" aria-label="${escapeHtml(issue.title || '')}">
       <div class="book__cover">
-        <img src="${escapeHtml(cover)}" alt="" loading="lazy" />
+        <img src="${escapeHtml(cover)}" alt="" loading="lazy" decoding="async" />
       </div>
       <div class="book__meta">
         <p class="book__id">Issue ${escapeHtml(issue.id || '')}${issue.publishDate ? ` · ${escapeHtml(issue.publishDate)}` : ''}</p>
@@ -235,21 +254,34 @@ const renderBook = (issue, posts, site) => {
     </a>`;
 };
 
+const renderIssueCover = (issue) => `
+  <a class="home-cover" href="/issues/${encodeURIComponent(issue.id || '')}" aria-label="${escapeHtml(issue.title || '')}">
+    <img src="${escapeHtml(safeCoverUrl(issue.cover))}" alt="${escapeHtml(issue.title || '')}" loading="lazy" decoding="async" />
+  </a>`;
+
+const renderRecordCard = (record, options = {}) => `
+  <a class="${options.rail ? 'record-card record-card--rail' : 'record-card'}" href="/records/${encodeURIComponent(record.id || '')}">
+    <span class="record-card__media">
+      <img src="${escapeHtml(safeCoverUrl(record.cover))}" alt="" loading="lazy" decoding="async" />
+    </span>
+    <span class="record-card__title">${escapeHtml(record.title || '')}</span>
+    ${!options.rail && normalizeText(record.summary) ? `<span class="record-card__summary">${escapeHtml(normalizeText(record.summary))}</span>` : ''}
+  </a>`;
+
 /* ---------- 頁面渲染 ---------- */
 
 export const renderArticlesPage = ({ posts, site }, options = {}) => {
   const siteName = fallbackSiteName(site);
   const mainHtml = `<main class="page-list list-page">
     <header class="page-head">
-      <p class="kicker">Articles</p>
       <h1 class="page-title" id="articlesPageTitle">${escapeHtml(normalizeText(site.articlesPageTitle) || '文章')}</h1>
-      <p class="page-intro" id="articlesPageIntro">${escapeHtml(normalizeText(site.articlesPageIntro) || '按時間順序閱讀全部文章。')}</p>
+      <p class="page-intro" id="articlesPageIntro">${escapeHtml(normalizeText(site.articlesPageIntro) || '全部文章')}</p>
     </header>
 
     <ol class="toc" id="postGrid">${posts.map(renderTocRow).join('')}</ol>
   </main>`;
 
-  return shell({
+  return renderPageShell({
     currentPath: options.currentPath || '/articles.html',
     description:
       normalizeText(site.articlesPageIntro) ||
@@ -261,18 +293,50 @@ export const renderArticlesPage = ({ posts, site }, options = {}) => {
   });
 };
 
+export const renderHomePage = ({ issues, posts, records, site }) => {
+  const featuredPosts = posts.slice(0, 5);
+  const mainHtml = `<main class="home-page">
+    <section class="home-section home-section--issues">
+      <h1 class="home-section__title">期刊</h1>
+      <div class="media-rail home-issue-rail" data-scroll-rail aria-label="期刊">${issues.map(renderIssueCover).join('')}</div>
+    </section>
+
+    <section class="home-section home-section--articles">
+      <h2 class="home-section__title">文章</h2>
+      <ol class="toc home-article-list" id="homePostList">
+        ${posts.map((post, index) => renderTocRow(post, index).replace('<li class="', `<li class="home-article-item${index >= 5 ? ' is-collapsed' : ''} `)).join('')}
+      </ol>
+      ${posts.length > featuredPosts.length ? '<div class="home-expand"><button class="text-button" id="homeExpandButton" type="button" aria-expanded="false">展開全部文章</button></div>' : ''}
+    </section>
+
+    ${records.length ? `<section class="home-section home-section--records">
+      <h2 class="home-section__title">專題紀錄</h2>
+      <div class="media-rail record-rail" data-scroll-rail aria-label="專題紀錄">${records.map((record) => renderRecordCard(record, { rail: true })).join('')}</div>
+    </section>` : ''}
+  </main>`;
+
+  return renderPageShell({
+    bodyClass: 'page-home',
+    currentPath: '/',
+    description: normalizeText(site.siteDescription) || 'CRIVU 的期刊、文章與專題紀錄。',
+    mainHtml,
+    scriptSrc: '/assets/js/home.js',
+    site,
+    title: fallbackSiteName(site),
+  });
+};
+
 export const renderIssuesPage = ({ issues, posts, site }) => {
   const mainHtml = `<main class="page-list issues-page">
     <header class="page-head">
-      <p class="kicker">Issues</p>
       <h1 class="page-title" id="issuesPageTitle">${escapeHtml(normalizeText(site.issuesPageTitle) || '期刊')}</h1>
-      <p class="page-intro" id="issuesPageIntro">${escapeHtml(normalizeText(site.issuesPageIntro) || '以期刊方式編排主題與收錄文章。點擊書本進入該期目錄。')}</p>
+      <p class="page-intro" id="issuesPageIntro">${escapeHtml(normalizeText(site.issuesPageIntro) || '全部期刊')}</p>
     </header>
 
     <div class="issue-shelf issues-grid" id="issuesGrid">${issues.map((issue) => renderBook(issue, posts, site)).join('')}</div>
   </main>`;
 
-  return shell({
+  return renderPageShell({
     bodyClass: 'page-issues',
     currentPath: '/issues.html',
     description:
@@ -282,6 +346,25 @@ export const renderIssuesPage = ({ issues, posts, site }) => {
     scriptSrc: '/assets/js/issues.js',
     site,
     title: `期刊 · ${fallbackSiteName(site)}`,
+  });
+};
+
+export const renderRecordsPage = ({ records, site }) => {
+  const mainHtml = `<main class="page-list records-page">
+    <header class="page-head">
+      <h1 class="page-title">紀錄</h1>
+      <p class="page-intro">全部紀錄</p>
+    </header>
+    <div class="records-grid">${records.map((record) => renderRecordCard(record)).join('')}</div>
+  </main>`;
+
+  return renderPageShell({
+    bodyClass: 'page-records',
+    currentPath: '/records.html',
+    description: 'CRIVU 專題紀錄。',
+    mainHtml,
+    site,
+    title: `紀錄 · ${fallbackSiteName(site)}`,
   });
 };
 
@@ -305,7 +388,7 @@ export const renderAboutPage = ({ site }) => {
     </article>
   </main>`;
 
-  return shell({
+  return renderPageShell({
     currentPath: '/about.html',
     description: description || `${fallbackSiteName(site)} · 關於`,
     mainHtml,

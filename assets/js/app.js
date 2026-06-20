@@ -39,7 +39,7 @@ const revealSiteContent = () => {
 const loadPosts = async () => {
   const res = await fetch(withBuildVersion('/posts/posts.json'));
   const data = await res.json();
-  state.posts = (data.items || data).slice();
+  state.posts = (data.items || data).filter((post) => post?.published !== false);
   state.posts.sort((a, b) => b.date.localeCompare(a.date));
 };
 

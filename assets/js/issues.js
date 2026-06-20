@@ -182,7 +182,7 @@ const renderIssue = (issue, posts) => {
   return `
     <a class="book" href="${escapeHtml(href)}" aria-label="${escapeHtml(issue.title || '')}">
       <div class="book__cover">
-        <img src="${escapeHtml(cover)}" alt="" loading="lazy" />
+        <img src="${escapeHtml(cover)}" alt="" loading="lazy" decoding="async" />
       </div>
       <div class="book__meta">
         <p class="book__id">Issue ${escapeHtml(issue.id || '')}${issue.publishDate ? ` · ${escapeHtml(issue.publishDate)}` : ''}</p>
@@ -228,8 +228,8 @@ const init = async () => {
   ]);
   const issuesData = await issuesRes.json();
   const postsData = await postsRes.json();
-  const issues = issuesData.issues || [];
-  const posts = postsData.items || postsData;
+  const issues = (issuesData.issues || []).filter((issue) => issue?.published !== false);
+  const posts = (postsData.items || postsData).filter((post) => post?.published !== false);
 
   const grid = qs('#issuesGrid');
   if (grid) {

@@ -24,7 +24,7 @@
     loading = fetch(withBuildVersion('/posts/posts.json'))
       .then((r) => (r.ok ? r.json() : { items: [] }))
       .then((data) => {
-        posts = (data.items || data || []).slice();
+        posts = (data.items || data || []).filter((post) => post?.published !== false);
         loaded = true;
       })
       .catch(() => {

@@ -86,6 +86,7 @@ const pubDate = (date) => {
 const postsData = readJson(POSTS_FILE, { items: [] });
 const site = readJson(SITE_FILE, {});
 const posts = (Array.isArray(postsData.items) ? postsData.items : postsData)
+  .filter((post) => post?.published !== false)
   .filter((post) => collapseWhitespace(post?.slug) && collapseWhitespace(post?.title))
   .sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')))
   .slice(0, MAX_ITEMS);

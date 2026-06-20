@@ -3,14 +3,15 @@ import {
   buildDescription,
   escapeHtml,
   formatDate,
+  isPublished,
   normalizeText,
-  renderNavItems,
   safeCoverUrl,
   simpleMarkdown,
 } from '../../shared/content.js';
 import {
   PUBLIC_CONTENT_SECURITY_POLICY,
   renderAnalyticsScript,
+  renderSiteHeader,
   renderSiteFooter,
 } from '../../shared/site-pages.js';
 
@@ -38,50 +39,11 @@ const fetchStaticJson = async (context, pathname) => {
   return res.json();
 };
 
-const renderHeader = (site, navHtml) => {
-  const siteName = normalizeText(site.siteName, { allowPlaceholder: true }) || 'CRIVU';
-  const searchPlaceholder = escapeHtml(normalizeText(site.searchPlaceholder) || '搜尋文章');
-  return `
-  <header class="site-header">
-    <div class="site-header__inner">
-      <a class="site-header__brand" href="/">${escapeHtml(siteName)}</a>
-      <nav class="site-header__nav" id="primaryNav">
-        ${navHtml}
-      </nav>
-      <div class="site-header__actions">
-        <form class="site-header__search" onsubmit="return false" role="search">
-          <span class="icon" aria-hidden="true"></span>
-          <input id="globalSearchInput" type="search" placeholder="${searchPlaceholder}" aria-label="搜尋文章" autocomplete="off" />
-          <div id="globalSearchResults" class="search-results" role="listbox"></div>
-        </form>
-        <button class="mobile-search-toggle" id="mobileSearchBtn" aria-label="搜尋">
-          <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="18" height="18">
-            <circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="1.8"/>
-            <line x1="16.2" y1="16.2" x2="20" y2="20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-          </svg>
-        </button>
-        <button class="mobile-menu-toggle" id="mobileMenuBtn" aria-label="展開選單" aria-expanded="false" aria-controls="primaryNav">
-          <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="18" height="18">
-            <line class="mm-line mm-line-top" x1="4" y1="7" x2="20" y2="7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-            <line class="mm-line mm-line-mid" x1="4" y1="12" x2="20" y2="12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-            <line class="mm-line mm-line-bot" x1="4" y1="17" x2="20" y2="17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-          </svg>
-        </button>
-        <button class="theme-toggle" data-theme-toggle aria-label="切換深色模式">
-          <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"/></svg>
-          <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
-        </button>
-      </div>
-    </div>
-  </header>`;
-};
-
 const renderFooter = (site, currentPath) => renderSiteFooter(site, currentPath);
 
 const renderPage = ({ currentPath, description, origin, post, site }) => {
   const canonicalPath = articlePath(post.slug);
   const canonicalUrl = new URL(canonicalPath, origin).toString();
-  const navHtml = renderNavItems(site.nav, currentPath, { baseOrigin: origin });
   const siteName = normalizeText(site.siteName, { allowPlaceholder: true }) || 'CRIVU';
   const excerpt = normalizeText(post.excerpt);
   const bodyHtml = simpleMarkdown(post.body || '', { baseOrigin: origin });
@@ -97,7 +59,6 @@ const renderPage = ({ currentPath, description, origin, post, site }) => {
       ? `\n  <meta property="og:image" content="${escapeHtml(ogImg)}" />\n  <meta name="twitter:image" content="${escapeHtml(ogImg)}" />`
       : '';
   const twitterCard = ogImgTag ? 'summary_large_image' : 'summary';
-
   return `<!doctype html>
 <html lang="zh-Hant">
 <head>
@@ -120,7 +81,7 @@ const renderPage = ({ currentPath, description, origin, post, site }) => {
   <script src="/assets/js/theme.js?v=__BUILD_VERSION__"></script>
 </head>
 <body class="page-post">
-  ${renderHeader(site, navHtml)}
+  ${renderSiteHeader(site, currentPath)}
 
   <main class="page-post__main post-page">
     <article class="reading post-article" id="post">
@@ -128,7 +89,7 @@ const renderPage = ({ currentPath, description, origin, post, site }) => {
         <time class="reading__date">${escapeHtml(formatDate(post.date || ''))}</time>
         <h1 class="reading__title" id="postTitle">${escapeHtml(post.title || '')}</h1>
         ${excerpt ? `<p class="post-excerpt" id="postExcerpt">${escapeHtml(excerpt)}</p>` : ''}
-        ${post.cover ? `<div class="post-cover" id="postCover"><img src="${escapeHtml(safeCoverUrl(post.cover))}" alt="${escapeHtml(post.title || '')}" loading="lazy" /></div>` : ''}
+        ${post.cover ? `<div class="post-cover" id="postCover"><img src="${escapeHtml(safeCoverUrl(post.cover))}" alt="${escapeHtml(post.title || '')}" decoding="async" /></div>` : ''}
       </header>
 
       <div class="reading__body post-body" id="postBody">${bodyHtml}</div>
@@ -139,13 +100,13 @@ const renderPage = ({ currentPath, description, origin, post, site }) => {
 
   <script src="/assets/js/search.js?v=__BUILD_VERSION__"></script>
   <script src="/assets/js/mobile-nav.js?v=__BUILD_VERSION__"></script>
+  <script src="/assets/js/scroll-rails.js?v=__BUILD_VERSION__"></script>
   <script src="/assets/js/post.js?v=__BUILD_VERSION__" type="module"></script>${renderAnalyticsScript()}
 </body>
 </html>`;
 };
 
 const renderNotFound = ({ currentPath, origin, site }) => {
-  const navHtml = renderNavItems(site.nav, currentPath, { baseOrigin: origin });
   const siteName = normalizeText(site.siteName, { allowPlaceholder: true }) || 'CRIVU';
   const favicon =
     safeCoverUrl(site.favicon) !== '/assets/img/cover-01.svg'
@@ -164,7 +125,7 @@ const renderNotFound = ({ currentPath, origin, site }) => {
   <script src="/assets/js/theme.js?v=__BUILD_VERSION__"></script>
 </head>
 <body>
-  ${renderHeader(site, navHtml)}
+  ${renderSiteHeader(site, currentPath)}
   <main class="page-list list-page">
     <header class="page-head">
       <p class="kicker">404</p>
@@ -174,7 +135,8 @@ const renderNotFound = ({ currentPath, origin, site }) => {
   </main>
   ${renderFooter(site, currentPath)}
   <script src="/assets/js/search.js?v=__BUILD_VERSION__"></script>
-  <script src="/assets/js/mobile-nav.js?v=__BUILD_VERSION__"></script>${renderAnalyticsScript()}
+  <script src="/assets/js/mobile-nav.js?v=__BUILD_VERSION__"></script>
+  <script src="/assets/js/scroll-rails.js?v=__BUILD_VERSION__"></script>${renderAnalyticsScript()}
 </body>
 </html>`;
 };
@@ -190,7 +152,9 @@ export async function onRequest(context) {
   ]);
 
   const posts = postsData.items || postsData;
-  const post = Array.isArray(posts) ? posts.find((item) => item.slug === slug) : null;
+  const post = Array.isArray(posts)
+    ? posts.find((item) => item.slug === slug && isPublished(item))
+    : null;
 
   if (!post) {
     return new Response(renderNotFound({ currentPath, origin, site }), {

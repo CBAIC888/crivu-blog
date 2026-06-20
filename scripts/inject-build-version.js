@@ -13,6 +13,7 @@ const TARGETS = [
   'index.html',
   'issues.html',
   'post.html',
+  'records.html',
   path.join('assets', 'js', 'app.js'),
   path.join('assets', 'js', 'issues.js'),
   path.join('assets', 'js', 'post.js'),

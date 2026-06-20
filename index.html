@@ -5,19 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="build-version" content="__BUILD_VERSION__" />
   <title>CRIVU</title>
-  <meta name="description" content="按時間順序閱讀 CRIVU 的全部文章。" />
+  <meta name="description" content="CRIVU 的期刊、文章與專題紀錄。" />
   <link rel="alternate" type="application/rss+xml" title="CRIVU RSS" href="/rss.xml" />
   <link rel="stylesheet" href="/assets/css/style.css?v=__BUILD_VERSION__" />
   <link rel="icon" href="/assets/img/favicon.png" type="image/png" />
   <script src="/assets/js/theme.js?v=__BUILD_VERSION__"></script>
 </head>
-<body>
+<body class="page-home">
   <header class="site-header">
     <div class="site-header__inner">
       <a class="site-header__brand" href="/">CRIVU</a>
       <nav class="site-header__nav" id="primaryNav">
-        <a class="active" href="/articles.html">文章</a>
+        <a class="active" href="/">首頁</a>
+        <a href="/articles.html">文章</a>
         <a href="/issues.html">期刊</a>
+        <a href="/records.html">紀錄</a>
         <a href="/about.html">關於</a>
       </nav>
       <div class="site-header__actions">
@@ -47,13 +49,19 @@
     </div>
   </header>
 
-  <main class="page-list list-page">
-    <header class="page-head">
-      <p class="kicker">Articles</p>
-      <h1 class="page-title" id="articlesPageTitle">文章</h1>
-      <p class="page-intro" id="articlesPageIntro">按時間順序閱讀全部文章。</p>
-    </header>
-    <ol class="toc" id="postGrid"></ol>
+  <main class="home-page">
+    <section class="home-section home-section--issues">
+      <h1 class="home-section__title">期刊</h1>
+      <div class="media-rail home-issue-rail" data-scroll-rail aria-label="期刊"></div>
+    </section>
+    <section class="home-section home-section--articles">
+      <h2 class="home-section__title">文章</h2>
+      <ol class="toc home-article-list" id="homePostList"></ol>
+    </section>
+    <section class="home-section home-section--records" hidden>
+      <h2 class="home-section__title">專題紀錄</h2>
+      <div class="media-rail record-rail" data-scroll-rail aria-label="專題紀錄"></div>
+    </section>
   </main>
 
   <footer class="site-footer">
@@ -62,7 +70,8 @@
 
   <script src="/assets/js/search.js?v=__BUILD_VERSION__"></script>
   <script src="/assets/js/mobile-nav.js?v=__BUILD_VERSION__"></script>
-  <script src="/assets/js/app.js?v=__BUILD_VERSION__" type="module"></script>
+  <script src="/assets/js/scroll-rails.js?v=__BUILD_VERSION__"></script>
+  <script src="/assets/js/home.js?v=__BUILD_VERSION__" type="module"></script>
   <script src="/assets/js/analytics.js?v=__BUILD_VERSION__" defer></script>
 </body>
 </html>

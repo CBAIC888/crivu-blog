@@ -166,7 +166,7 @@ const applySite = async () => {
     ]);
     const site = siteRes.ok ? await siteRes.json() : {};
     const postsData = postsRes.ok ? await postsRes.json() : [];
-    const posts = postsData.items || postsData;
+    const posts = (postsData.items || postsData).filter((post) => post?.published !== false);
 
     const nav = qs('.nav');
     if (nav && Array.isArray(site.nav) && site.nav.length > 0) {

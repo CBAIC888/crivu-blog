@@ -42,6 +42,7 @@ collections:
             minimize_collapsed: true
             add_to_top: true
             fields:
+              - { label: "前台發布", name: "published", widget: "boolean", required: false, default: false, hint: "確認內容完成後再開啟；未開啟時不會出現在前台。" }
               - { label: "標題", name: "title", widget: "string" }
               - { label: "日期", name: "date", widget: "datetime", format: "YYYY-MM-DDTHH:mm:ssZ", date_format: "YYYY-MM-DD", time_format: "HH:mm", picker_utc: false }
               - { label: "分類", name: "category", widget: "string", required: false }
@@ -69,6 +70,7 @@ collections:
             collapsed: true
             minimize_collapsed: true
             fields:
+              - { label: "前台發布", name: "published", widget: "boolean", required: false, default: false, hint: "確認封面、編者語及收錄文章後再開啟。" }
               - { label: "期刊 ID", name: "id", widget: "string" }
               - { label: "標題", name: "title", widget: "string" }
               - { label: "主題", name: "theme", widget: "string", required: false }
@@ -83,10 +85,59 @@ collections:
                 collapsed: false
                 field: { label: "文章 Slug", name: "slug", widget: "string" }
 
+  - name: "records"
+    label: "紀錄"
+    label_singular: "紀錄"
+    description: "管理專題紀錄、外部影片與照片介紹。"
+    sortable_fields: ["commit_date", "commit_author"]
+    files:
+      - name: "records"
+        label: "紀錄列表"
+        file: "posts/records.json"
+        format: "json"
+        fields:
+          - label: "紀錄"
+            name: "records"
+            widget: "list"
+            summary: "{{fields.date}} · {{fields.title}}"
+            collapsed: true
+            minimize_collapsed: true
+            add_to_top: true
+            fields:
+              - { label: "前台發布", name: "published", widget: "boolean", required: false, default: false, hint: "未開啟時首頁、紀錄頁及詳情頁均不顯示。" }
+              - { label: "紀錄 ID", name: "id", widget: "string", pattern: ["^[a-z0-9]+(?:-[a-z0-9]+)*$", "ID 只能包含小寫英文、數字和連字號"] }
+              - { label: "標題", name: "title", widget: "string" }
+              - { label: "建立日期", name: "date", widget: "datetime", format: "YYYY-MM-DDTHH:mm:ssZ", date_format: "YYYY-MM-DD", time_format: "HH:mm", picker_utc: false }
+              - { label: "封面", name: "cover", widget: "image" }
+              - { label: "專題介紹", name: "summary", widget: "text", required: false }
+              - label: "影片"
+                name: "videos"
+                widget: "list"
+                required: false
+                collapsed: true
+                summary: "{{fields.title}}"
+                fields:
+                  - { label: "前台顯示", name: "published", widget: "boolean", required: false, default: false }
+                  - { label: "標題", name: "title", widget: "string" }
+                  - { label: "封面", name: "cover", widget: "image" }
+                  - { label: "介紹", name: "description", widget: "text", required: false }
+                  - { label: "外部網址", name: "url", widget: "string", hint: "點擊後以新分頁開啟；請填完整 https:// 網址。", pattern: ["^https://.+$", "影片網址必須以 https:// 開頭"] }
+              - label: "照片"
+                name: "photos"
+                widget: "list"
+                required: false
+                collapsed: true
+                summary: "{{fields.alt}}"
+                fields:
+                  - { label: "前台顯示", name: "published", widget: "boolean", required: false, default: false }
+                  - { label: "圖片", name: "image", widget: "image" }
+                  - { label: "替代文字", name: "alt", widget: "string", required: false }
+                  - { label: "介紹", name: "description", widget: "text", required: false }
+
   - name: "site"
     label: "站點設定"
     label_singular: "站點設定"
-    description: "欄位以「基本/導航/主題/文章頁/期刊頁/關於頁/舊版」前綴分組。"
+    description: "管理站名、導航、SEO、主題配色與各頁文案。"
     sortable_fields: ["commit_date", "commit_author"]
     files:
       - name: "site"
@@ -112,17 +163,7 @@ collections:
               - { label: "連結", name: "href", widget: "string" }
           - { label: "「導航」搜尋框提示文字", name: "searchPlaceholder", widget: "string", required: false }
           # 主題
-          - label: "「主題」預設配色"
-            name: "themeDefault"
-            widget: "select"
-            required: false
-            default: "white"
-            options:
-              - { label: "白色", value: "white" }
-              - { label: "紙黃", value: "light" }
-              - { label: "深色", value: "dark" }
           - { label: "「主題」顯示切換按鈕", name: "themeToggleEnabled", widget: "boolean", required: false, default: true }
-          - { label: "「主題」品牌強調色", name: "accentColor", widget: "string", required: false, default: "#9f3c3c" }
           # 文章頁
           - { label: "「文章頁」標題", name: "articlesPageTitle", widget: "string", required: false }
           - { label: "「文章頁」說明", name: "articlesPageIntro", widget: "text", required: false }
@@ -131,15 +172,6 @@ collections:
           - { label: "「期刊頁」說明", name: "issuesPageIntro", widget: "text", required: false }
           - { label: "「期刊頁」文章數模板", name: "issueCountTemplate", widget: "string", required: false }
           - { label: "「期刊頁」空內容提示", name: "issueEmptyText", widget: "string", required: false }
-          - { label: "「期刊頁」詳情按鈕", name: "issueExpandLabel", widget: "string", required: false }
           # 關於頁
           - { label: "「關於頁」標題", name: "aboutTitle", widget: "string" }
           - { label: "「關於頁」正文", name: "aboutBody", widget: "markdown", required: false }
-          # 舊版
-          - { label: "「舊版」文章頁卡片欄數", name: "articleCardsDesktop", widget: "number", value_type: "int", required: false, min: 1, max: 4 }
-          - { label: "「舊版」卡片最多標籤數", name: "maxTagsPerCard", widget: "number", value_type: "int", required: false, min: 1, max: 10 }
-          - { label: "「舊版」全部分類文字", name: "allCategoryLabel", widget: "string", required: false }
-          - { label: "「舊版」全部標籤文字", name: "allTagLabel", widget: "string", required: false }
-          - { label: "「舊版」期刊首篇按鈕", name: "issueReadLabel", widget: "string", required: false }
-          - { label: "「舊版」期刊文章頁按鈕", name: "issueBrowseLabel", widget: "string", required: false }
-          - { label: "「舊版」期刊詳情預設展開", name: "issueDetailsOpen", widget: "boolean", required: false, default: false }

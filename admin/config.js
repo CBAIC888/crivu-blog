@@ -29,6 +29,14 @@ const REPO_CONFIG = {
 
 /* ---------- 文章欄位 ---------- */
 const POST_ITEM_FIELDS = [
+  {
+    label: '前台發布',
+    name: 'published',
+    widget: 'boolean',
+    required: false,
+    default: false,
+    hint: '確認內容完成後再開啟；未開啟時不會出現在列表、搜尋、RSS 或詳情頁。',
+  },
   { label: '標題', name: 'title', widget: 'string' },
   {
     label: '日期',
@@ -89,6 +97,14 @@ const POST_ITEM_FIELDS = [
 /* ---------- 期刊欄位 ---------- */
 const ISSUE_ITEM_FIELDS = [
   {
+    label: '前台發布',
+    name: 'published',
+    widget: 'boolean',
+    required: false,
+    default: false,
+    hint: '確認封面、編者語及收錄文章後再開啟。',
+  },
+  {
     label: '期刊 ID',
     name: 'id',
     widget: 'string',
@@ -125,6 +141,77 @@ const ISSUE_ITEM_FIELDS = [
     collapsed: false,
     field: { label: '文章 Slug', name: 'slug', widget: 'string' },
     hint: '依閱讀順序排列；填入文章 slug，可拖動調整順序。',
+  },
+];
+
+/* ---------- 專題紀錄欄位 ---------- */
+const RECORD_ITEM_FIELDS = [
+  {
+    label: '前台發布',
+    name: 'published',
+    widget: 'boolean',
+    required: false,
+    default: false,
+    hint: '紀錄採嚴格發布；未開啟時首頁、紀錄頁及詳情頁均不顯示。',
+  },
+  {
+    label: '紀錄 ID',
+    name: 'id',
+    widget: 'string',
+    pattern: ['^[a-z0-9]+(?:-[a-z0-9]+)*$', 'ID 只能包含小寫英文、數字和連字號 -'],
+    hint: '作為網址片段，例如 oral-history-01。',
+  },
+  { label: '標題', name: 'title', widget: 'string' },
+  {
+    label: '建立日期',
+    name: 'date',
+    widget: 'datetime',
+    format: 'YYYY-MM-DDTHH:mm:ssZ',
+    date_format: 'YYYY-MM-DD',
+    time_format: 'HH:mm',
+    picker_utc: false,
+  },
+  {
+    label: '封面',
+    name: 'cover',
+    widget: 'image',
+    hint: '建議 1080×1440 直式；首頁會裁切為統一比例。',
+  },
+  { label: '專題介紹', name: 'summary', widget: 'text', required: false },
+  {
+    label: '影片',
+    name: 'videos',
+    widget: 'list',
+    required: false,
+    collapsed: true,
+    summary: '{{fields.title}}',
+    fields: [
+      { label: '前台顯示', name: 'published', widget: 'boolean', required: false, default: false },
+      { label: '標題', name: 'title', widget: 'string' },
+      { label: '封面', name: 'cover', widget: 'image' },
+      { label: '介紹', name: 'description', widget: 'text', required: false },
+      {
+        label: '外部網址',
+        name: 'url',
+        widget: 'string',
+        hint: '點擊後以新分頁開啟；請填完整 https:// 網址。',
+        pattern: ['^https://.+$', '影片網址必須以 https:// 開頭'],
+      },
+    ],
+  },
+  {
+    label: '照片',
+    name: 'photos',
+    widget: 'list',
+    required: false,
+    collapsed: true,
+    summary: '{{fields.alt}}',
+    fields: [
+      { label: '前台顯示', name: 'published', widget: 'boolean', required: false, default: false },
+      { label: '圖片', name: 'image', widget: 'image' },
+      { label: '替代文字', name: 'alt', widget: 'string', required: false },
+      { label: '介紹', name: 'description', widget: 'text', required: false },
+    ],
   },
 ];
 
@@ -171,9 +258,9 @@ const SITE_FIELDS = [
     summary: '{{fields.label}} → {{fields.href}}',
     fields: [
       { label: '名稱', name: 'label', widget: 'string' },
-      { label: '連結', name: 'href', widget: 'string', hint: '可用 /articles.html、/issues.html、/about.html 或外部 URL。' },
+      { label: '連結', name: 'href', widget: 'string', hint: '可用 /、/articles.html、/issues.html、/records.html、/about.html 或外部 URL。' },
     ],
-    hint: '未填時使用預設（文章／期刊／關於）。',
+    hint: '未填時使用預設（首頁／文章／期刊／紀錄／關於）。',
   },
   {
     label: '「導航」搜尋框提示文字',
@@ -185,34 +272,12 @@ const SITE_FIELDS = [
 
   /* ===== ③ 主題外觀 ===== */
   {
-    label: '「主題」預設配色',
-    name: 'themeDefault',
-    widget: 'select',
-    required: false,
-    default: 'white',
-    options: [
-      { label: '白色（推薦）', value: 'white' },
-      { label: '紙黃', value: 'light' },
-      { label: '深色', value: 'dark' },
-    ],
-    hint: '讀者第一次到站的預設背景；讀者仍可自行切換。',
-  },
-  {
     label: '「主題」顯示深淺切換按鈕',
     name: 'themeToggleEnabled',
     widget: 'boolean',
     required: false,
     default: true,
   },
-  {
-    label: '「主題」品牌強調色',
-    name: 'accentColor',
-    widget: 'string',
-    required: false,
-    default: '#9f3c3c',
-    hint: '用於連結 hover、分隔色。16 進位色碼，例如 #9f3c3c（印泥紅）。',
-  },
-
   /* ===== ④ 文章頁 ===== */
   {
     label: '「文章頁」標題',
@@ -259,14 +324,6 @@ const SITE_FIELDS = [
     required: false,
     default: '暫無文章',
   },
-  {
-    label: '「期刊頁」詳情按鈕文字',
-    name: 'issueExpandLabel',
-    widget: 'string',
-    required: false,
-    default: '查看收錄文章',
-  },
-
   /* ===== ⑥ 關於頁 ===== */
   { label: '「關於頁」標題', name: 'aboutTitle', widget: 'string', default: '關於' },
   {
@@ -299,7 +356,7 @@ window.DECAP_CMS_CONFIG = {
       name: 'posts',
       label: '文章',
       label_singular: '文章',
-      description: '管理所有文章。每筆對應 posts.json 的一項。',
+      description: '管理文章；新內容預設不在前台顯示，確認後開啟「前台發布」。',
       sortable_fields: ['commit_date', 'commit_author'],
       files: [
         {
@@ -328,7 +385,7 @@ window.DECAP_CMS_CONFIG = {
       name: 'issues',
       label: '期刊',
       label_singular: '期刊',
-      description: '管理期刊。期刊頁與期刊詳情頁會讀這份資料。',
+      description: '管理期刊；新內容預設不在前台顯示，確認後開啟「前台發布」。',
       sortable_fields: ['commit_date', 'commit_author'],
       files: [
         {
@@ -351,10 +408,37 @@ window.DECAP_CMS_CONFIG = {
       ],
     },
     {
+      name: 'records',
+      label: '紀錄',
+      label_singular: '紀錄',
+      description: '管理專題紀錄、外部影片與照片；紀錄及其素材均可分別控制前台顯示。',
+      sortable_fields: ['commit_date', 'commit_author'],
+      files: [
+        {
+          name: 'records',
+          label: '紀錄列表',
+          file: 'posts/records.json',
+          format: 'json',
+          fields: [
+            {
+              label: '紀錄',
+              name: 'records',
+              widget: 'list',
+              summary: '{{fields.date}} · {{fields.title}}',
+              collapsed: true,
+              minimize_collapsed: true,
+              add_to_top: true,
+              fields: RECORD_ITEM_FIELDS,
+            },
+          ],
+        },
+      ],
+    },
+    {
       name: 'site',
       label: '站點設定',
       label_singular: '站點設定',
-      description: '站名、導航、SEO、主題配色與各頁文案。欄位前綴「基本/導航/主題/文章頁/期刊頁/關於頁/舊版」代表分組。',
+      description: '站名、導航、SEO、主題配色與各頁文案。',
       sortable_fields: ['commit_date', 'commit_author'],
       files: [
         {

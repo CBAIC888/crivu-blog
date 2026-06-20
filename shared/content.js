@@ -2,6 +2,9 @@ export const FALLBACK_COVER = '/assets/img/cover-01.svg';
 export const DEFAULT_SITE_ORIGIN = 'https://cbc688.com';
 export const BUILD_VERSION_PLACEHOLDER = '__BUILD_VERSION__';
 
+export const isPublished = (item) => item?.published !== false;
+export const isConfirmedRecord = (item) => item?.published === true;
+
 const PLACEHOLDER_PATTERNS = [
   /yourname/i,
   /your city/i,
@@ -517,11 +520,9 @@ export const renderNavItems = (items, currentPath, options = {}) => {
       const normalized = new URL(safeHref, baseOrigin).pathname.replace(/\/index\.html$/, '/') || '/';
       const isHome = normalized === '/';
       const normalizedBase = normalized.endsWith('.html') ? normalized.replace(/\.html$/, '') : normalized;
-      const isArticlesRoot = currentPath === '/' && (normalized === '/articles.html' || normalizedBase === '/articles');
       const isActive = isHome
         ? currentPath === '/'
-        : isArticlesRoot ||
-          currentPath === normalized ||
+        : currentPath === normalized ||
           currentPath.startsWith(`${normalized}/`) ||
           (normalizedBase !== normalized && (currentPath === normalizedBase || currentPath.startsWith(`${normalizedBase}/`)));
       return `<a href="${escapeHtml(safeHref)}"${isActive ? ' class="active"' : ''}>${escapeHtml(item.label)}</a>`;
