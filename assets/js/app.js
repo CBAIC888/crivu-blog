@@ -289,7 +289,7 @@ const setupSearch = () => {
           <a class="search-item" href="${escapeHtml(articlePath(p.slug))}">
             <span class="search-item-main">
               <span class="search-item-title">${escapeHtml(p.title)}</span>
-              <small class="search-item-meta">${escapeHtml([p.issue, p.date].filter(Boolean).join(' · '))}</small>
+              <small class="search-item-meta">${escapeHtml([p.issue, toDisplayDate(p.date)].filter(Boolean).join(' · '))}</small>
             </span>
             <small class="search-item-snippet">${escapeHtml(buildSearchSnippet(p, query, 68))}</small>
           </a>

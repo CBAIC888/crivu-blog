@@ -21,6 +21,10 @@
     {
       "label": "關於",
       "href": "/about.html"
+    },
+    {
+      "label": "rss",
+      "href": "/rss.xml"
     }
   ],
   "issuesPageIntro": "全部期刊",

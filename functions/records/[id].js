@@ -4,6 +4,7 @@ import {
   normalizeText,
   safeCoverUrl,
   sanitizeUrl,
+  toDisplayDate,
 } from '../../shared/content.js';
 import {
   PAGE_HEADERS,
@@ -78,7 +79,7 @@ export async function onRequest(context) {
         <h1>${escapeHtml(record.title || '')}</h1>
       </div>
       <dl class="record-hero__facts">
-        <div><dt>專題紀錄</dt><dd>建立日 ${escapeHtml(record.date || '')}</dd></div>
+        <div><dt>專題紀錄</dt><dd>建立日 ${escapeHtml(toDisplayDate(record.date))}</dd></div>
         <div><dt>主編</dt><dd>${escapeHtml(data.site.siteName || 'CRIVU')}</dd></div>
         <div><dt>收錄</dt><dd>${videos.length} 部影片 · ${photos.length} 張照片</dd></div>
       </dl>

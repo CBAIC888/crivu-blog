@@ -35,6 +35,7 @@ const DEFAULT_NAV = [
   { label: '期刊', href: '/issues.html' },
   { label: '紀錄', href: '/records.html' },
   { label: '關於', href: '/about.html' },
+  { label: 'rss', href: '/rss.xml' },
 ];
 
 const fetchStaticJson = async (context, pathname) => {
@@ -120,12 +121,6 @@ export const renderSiteHeader = (site, currentPath) => {
           <input id="globalSearchInput" type="search" placeholder="${escapeHtml(searchPlaceholder)}" aria-label="搜尋文章" autocomplete="off" />
           <div id="globalSearchResults" class="search-results" role="listbox"></div>
         </form>
-        <button class="mobile-search-toggle" id="mobileSearchBtn" aria-label="搜尋">
-          <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="18" height="18">
-            <circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="1.8"/>
-            <line x1="16.2" y1="16.2" x2="20" y2="20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-          </svg>
-        </button>
         <button class="mobile-menu-toggle" id="mobileMenuBtn" aria-label="展開選單" aria-expanded="false" aria-controls="primaryNav">
           <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="18" height="18">
             <line class="mm-line mm-line-top" x1="4" y1="7" x2="20" y2="7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
@@ -246,7 +241,7 @@ const renderBook = (issue, posts, site) => {
         <img src="${escapeHtml(cover)}" alt="" loading="lazy" decoding="async" />
       </div>
       <div class="book__meta">
-        <p class="book__id">Issue ${escapeHtml(issue.id || '')}${issue.publishDate ? ` · ${escapeHtml(issue.publishDate)}` : ''}</p>
+        <p class="book__id">Issue ${escapeHtml(issue.id || '')}${issue.publishDate ? ` · ${escapeHtml(toDisplayDate(issue.publishDate))}` : ''}</p>
         <p class="book__title">${escapeHtml(issue.title || '')}</p>
         ${issue.theme ? `<p class="book__theme">${escapeHtml(issue.theme)}</p>` : ''}
         <p class="book__count">${countText}</p>

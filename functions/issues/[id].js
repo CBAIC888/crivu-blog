@@ -159,7 +159,7 @@ export async function onRequest(context) {
           </div>
           <dl class="issue-hero__facts">
             ${issue.theme ? `<div><dt>${escapeHtml(issue.theme)}</dt></div>` : ''}
-            ${issue.publishDate ? `<div><dd>發刊日 ${escapeHtml(issue.publishDate)}</dd></div>` : ''}
+            ${issue.publishDate ? `<div><dd>發刊日 ${escapeHtml(toDisplayDate(issue.publishDate))}</dd></div>` : ''}
             <div><dd>主編 ${escapeHtml(siteName)}</dd></div>
             <div><dd>收錄 ${linkedPosts.length} 篇文章</dd></div>
           </dl>
