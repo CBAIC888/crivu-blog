@@ -40,6 +40,11 @@
 /rss.xml
   Cache-Control: public, max-age=3600
 
+/private/7a531e1b4bcab1950e2214b8/*
+  Cache-Control: public, max-age=31536000, immutable
+  X-Robots-Tag: noindex, nofollow, noarchive, nosnippet, noimageindex
+  Referrer-Policy: no-referrer
+
 /.well-known/security.txt
   Cache-Control: public, max-age=86400
   Content-Type: text/plain; charset=UTF-8

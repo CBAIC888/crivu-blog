@@ -65,6 +65,12 @@ export async function onRequest(context) {
     return context.next();
   }
 
+  // 內容尋址本身已帶版本後綴，可直接交給 Pages 靜態快取，
+  // 避免 middleware 每次讀取並重建較大的 HTML response body。
+  if (url.pathname.startsWith('/private/7a531e1b4bcab1950e2214b8/')) {
+    return context.next();
+  }
+
   const response = await context.next();
 
   if (!isHtml(response.headers.get('content-type'))) {
