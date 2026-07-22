@@ -41,7 +41,7 @@
   Cache-Control: public, max-age=3600
 
 /private/7a531e1b4bcab1950e2214b8/*
-  Cache-Control: public, max-age=31536000, immutable
+  Cache-Control: public, max-age=0, s-maxage=604800, must-revalidate
   X-Robots-Tag: noindex, nofollow, noarchive, nosnippet, noimageindex
   Referrer-Policy: no-referrer
 
