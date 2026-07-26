@@ -45,7 +45,7 @@
   X-Robots-Tag: noindex, nofollow, noarchive, nosnippet, noimageindex
   Referrer-Policy: no-referrer
 
-/records/world-word-exploration/museum
+/records/world-word-history/museum
   ! X-Frame-Options
   Content-Security-Policy: frame-ancestors 'self'
   Cache-Control: no-store, no-cache, must-revalidate, max-age=0
