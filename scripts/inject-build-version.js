@@ -2,7 +2,7 @@
 
 const fs = require('node:fs');
 const path = require('node:path');
-const { execSync } = require('node:child_process');
+const { execFileSync, execSync } = require('node:child_process');
 
 const ROOT = path.resolve(__dirname, '..');
 const PLACEHOLDER = '__BUILD_VERSION__';
@@ -23,6 +23,17 @@ const TARGETS = [
   path.join('functions', 'articles', '[slug].js'),
   path.join('functions', 'issues', '[id].js'),
 ];
+
+// 正式 build command 直接呼叫本腳本，故先生成所有獨立文章頁。
+try {
+  execFileSync(process.execPath, ['scripts/generate-standalone-articles.js'], {
+    cwd: ROOT,
+    stdio: ['ignore', 'pipe', 'inherit'],
+  });
+} catch (err) {
+  process.stderr.write(`[inject-build-version] standalone article generation failed: ${err && err.message ? err.message : err}\n`);
+  process.exit(1);
+}
 
 // Always regenerate rss.xml from the latest posts/posts.json before stamping
 // the build version. This makes RSS self-heal on every deploy regardless of

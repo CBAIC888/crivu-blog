@@ -37,6 +37,14 @@ const POST_ITEM_FIELDS = [
     default: false,
     hint: '確認內容完成後再開啟；未開啟時不會出現在列表、搜尋、RSS 或詳情頁。',
   },
+  {
+    label: '獨立離線 HTML',
+    name: 'standaloneHtml',
+    widget: 'boolean',
+    required: false,
+    default: true,
+    hint: '新文章預設開啟。發布時會生成單一 HTML，並把排版、圖片與音訊嵌入文件；舊文章不受影響。',
+  },
   { label: '標題', name: 'title', widget: 'string' },
   {
     label: '日期',

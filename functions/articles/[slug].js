@@ -28,6 +28,12 @@ const HTML_HEADERS = {
   'Content-Security-Policy': PUBLIC_CONTENT_SECURITY_POLICY,
 };
 
+const STANDALONE_HTML_HEADERS = {
+  ...HTML_HEADERS,
+  'Content-Security-Policy':
+    "default-src 'self' data:; base-uri 'self'; frame-ancestors 'none'; img-src 'self' data: https:; media-src 'self' data: https:; script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; connect-src 'self' https://cbc688.com https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com",
+};
+
 const fetchStaticJson = async (context, pathname) => {
   const assetUrl = new URL(pathname, context.request.url);
   const res = context.env?.ASSETS?.fetch
@@ -208,6 +214,20 @@ export async function onRequest(context) {
       status: 404,
       headers: HTML_HEADERS,
     });
+  }
+
+  if (post.standaloneHtml === true) {
+    const standalonePath = `/articles/${encodeURIComponent(post.slug)}/index.html`;
+    const assetUrl = new URL(standalonePath, context.request.url);
+    const assetResponse = context.env?.ASSETS?.fetch
+      ? await context.env.ASSETS.fetch(new Request(assetUrl.toString(), { method: 'GET' }))
+      : await fetch(assetUrl.toString());
+    if (assetResponse.ok) {
+      return new Response(assetResponse.body, {
+        status: 200,
+        headers: STANDALONE_HTML_HEADERS,
+      });
+    }
   }
 
   const description = buildDescription(post);

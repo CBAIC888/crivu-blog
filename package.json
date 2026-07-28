@@ -2,6 +2,7 @@
   "name": "crivu-blog",
   "private": true,
   "scripts": {
+    "generate:articles": "node scripts/generate-standalone-articles.js",
     "generate:rss": "node scripts/generate-rss.js",
     "build": "node scripts/inject-build-version.js && node scripts/build-edgeone.js",
     "build:edgeone": "node scripts/generate-rss.js && node scripts/build-edgeone.js"

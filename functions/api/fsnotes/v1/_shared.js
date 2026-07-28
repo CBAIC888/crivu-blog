@@ -339,6 +339,9 @@ export const normalizePostPayload = async (payload, posts, currentPost = null) =
     ...(currentPost || {}),
     id: ownerId || (await makeId('post')),
     published: status === 'published',
+    standaloneHtml: currentPost
+      ? currentPost.standaloneHtml === true
+      : true,
     title,
     slug,
     date,

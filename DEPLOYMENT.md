@@ -4,6 +4,8 @@
 - Use one deployment path only.
 - Avoid repeated trial-and-error pushes.
 - Stop immediately if the public site does not move to the pushed commit.
+- Deploy only the Cloudflare Pages main site. EdgeOne is no longer part of the release flow.
+- After GitHub accepts the production push, report completion without waiting for or polling the hosting build; the site owner checks the result.
 
 ## Standard Deploy Flow
 1. Confirm local state once:
@@ -23,6 +25,10 @@
      - `GIT_TERMINAL_PROMPT=0 git -C /Users/cbaic/Desktop/開發/網站/blog rebase origin/main`
 5. Push once:
    - `git -C /Users/cbaic/Desktop/開發/網站/blog push origin main`
+6. Stop after GitHub accepts the push:
+   - Do not wait for the Cloudflare Pages deployment to finish.
+   - Do not poll the deployment or public site unless the site owner explicitly asks for diagnosis.
+   - Tell the site owner that the deployment has been triggered so they can check it directly.
 
 ## Cloudflare Pages Build Settings
 - Root directory: `/Users/cbaic/Desktop/開發/網站/blog`
@@ -32,7 +38,10 @@
 - Cloudflare Cache Rules for `/assets/*` must respect query strings; do not enable ignore-query-string behavior for asset caching.
 - `_headers` must not put `Cache-Control: no-store` under `/*`; otherwise `/assets/*` will inherit no-store and Cloudflare will bypass cache. Keep no-store on HTML routes only.
 
-## EdgeOne Makers Test Deploy
+## EdgeOne Makers — Retired
+- Do not deploy or sync EdgeOne after a main-site release.
+- Do not cherry-pick production commits into `CBAIC888/crivu-blog-edgeone`.
+- Keep the following details only as historical reference; they are not an active deployment target.
 - Project: `crivu-blog-edgeone`
 - Project id: `makers-zbammqd5whtw`
 - Stable domain: `https://crivu-blog-edgeone-0zj7kihz.edgeone.dev`
@@ -42,22 +51,6 @@
 - Install command: `npm install`
 - Output directory: `.`
 - Bound GitHub repo: `CBAIC888/crivu-blog-edgeone`
-
-EdgeOne currently deploys from a separate GitHub repo, not the main `CBAIC888/crivu-blog` repo. After committing to the main repo, also sync the same content into the EdgeOne repo:
-
-1. Fetch the EdgeOne repo once:
-   - `git fetch https://github.com/CBAIC888/crivu-blog-edgeone.git main:refs/remotes/edgeone/main`
-2. Create a throwaway sync branch from the EdgeOne remote:
-   - `git switch -c edgeone-sync edgeone/main`
-3. Cherry-pick the main repo commit:
-   - `git cherry-pick <commit-sha>`
-4. Push fast-forward to EdgeOne:
-   - `git push https://github.com/CBAIC888/crivu-blog-edgeone.git edgeone-sync:main`
-5. Return local checkout to normal:
-   - `git switch main`
-   - `git branch -D edgeone-sync`
-
-Do not force-push EdgeOne unless intentionally replacing its history. The EdgeOne repo was created with its own initial commit, so direct `git push ... HEAD:main` from the main repo can fail with `fetch first`.
 
 ## Media Delivery Rules
 - Frontend content must use same-origin paths such as `/assets/img/uploads/example.jpeg`.
@@ -99,8 +92,9 @@ Do not force-push EdgeOne unless intentionally replacing its history. The EdgeOn
   - `_headers` / CSP allows `https://challenges.cloudflare.com`.
   - `/api/comments?config=1` returns `submissionEnabled: true`.
 
-## Post-Deploy Verification
-- Verify GitHub accepted the push and note the exact commit SHA.
+## Optional Post-Deploy Verification
+- By default, verify only that GitHub accepted the push and note the exact commit SHA.
+- The site owner checks the public result. Run the checks below only when explicitly asked to diagnose or verify:
 - Check these public URLs:
   - `/`
   - `/articles`
@@ -157,3 +151,5 @@ Do not force-push EdgeOne unless intentionally replacing its history. The EdgeOn
 - Never redeploy multiple times just to “see if it works”.
 - One code change batch should map to one commit and one push.
 - If one successful push does not change production, switch from “deploying” to “fixing deployment configuration”.
+- Never deploy EdgeOne as part of the normal release.
+- Do not wait for Cloudflare deployment completion or repeatedly poll its status after a successful GitHub push.
