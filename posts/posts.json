@@ -1,57 +1,23 @@
 {
   "items": [
     {
-      "published": true,
-      "standaloneHtml": true,
-      "title": "这些年，头一回梦见你",
-      "slug": "dream-of-you",
-      "date": "2026-07-28T19:39:00+08:00",
-      "category": "随记",
-      "cover": "/assets/img/uploads/20260728/img_1278-a81fdac3c031.jpg",
-      "tags": [],
-      "language": "zh-Hans",
-      "body": "我友：\n\n见信如晤。\n\n这些年，头一回梦见你。\n\n梦里，你我同在一屋。我先站在客厅，朝你房间望去，看你。\n\n后来回到另一屋换衣收拾。刚换好，你便拿着亲笔写的三页信进来，递到我手中。未及细看，只注意到你走去的背影。\n\n转头望向窗外，没来由已是六点（不知为何）。本想与你一道出去吃晚饭，却只能吃早饭了。\n\n欲开口唤你一同出去。\n\n这时，一杯水忽然洒落，流进沙发下，漫到贴地的插排旁。我急忙寻纸去擦，却只顾着擦拭沙发，擦了几下，才发觉错了地方。于是先断电源，再俯身把插排旁的积水一点点擦干。\n\n之后，便醒了。\n\n醒来，梦中人事仍然记得。\n\n不过你说过的话，前前后后似乎不过五句。\n\n我好想你呀。\n\n川。"
-    },
-    {
-      "id": "post_world_word_exploration",
-      "published": true,
-      "title": "「世界」一词真的是佛教带进汉语的吗？",
-      "slug": "world-word-history",
-      "page": "/records/world-word-history/",
-      "date": "2026-07-23T04:00:00+08:00",
-      "updatedAt": "2026-07-26T15:16:00+08:00",
-      "rssDate": "2026-07-26T15:16:00+08:00",
-      "rssGuid": "urn:crivu:world-word-history:2026-07-26",
-      "category": "语言史",
-      "issue": "专题纪录",
-      "cover": "/assets/img/uploads/20260723/world-word-exploration-cover.png",
-      "excerpt": "从先秦两汉的旧字、东汉译经与佛教宇宙论出发，追索「世界」一词近两千年的形成、传播与意义变化。",
-      "plainText": "从先秦两汉的旧字、东汉译经与佛教宇宙论出发，追索「世界」一词近两千年的形成、传播与意义变化。",
-      "tags": [
-        "语言史",
-        "佛教",
-        "翻译"
-      ],
-      "language": "zh-Hans"
-    },
-    {
-      "id": "post_5f70aff6dc99216e9c91aeb5bfc7d5d4",
-      "published": true,
-      "title": "2026年4月14日",
-      "slug": "dbyg",
-      "date": "2026-04-14T12:51:00+08:00",
-      "updatedAt": "2026-07-05T12:51:20+08:00",
       "body": "用豆包軟體，讓她唱歌，她唱了一首《在你的身邊》。聽完後又去聽原曲，思緒頓時就拉回到了三年多前。\n\n那時候在住院，客廳裡的電視播放著這首歌，外面天氣很好，我站在窗前望著電視。\n\n很多病友也在聽這首歌。不知道如果他們再聽此曲，會不會像我一樣把思緒拉回去呢。\n![](/assets/img/uploads/20260705/0cb8a15a5eba.jpg)\n\n",
-      "plainText": "用豆包軟體，讓她唱歌，她唱了一首《在你的身邊》。聽完後又去聽原曲，思緒頓時就拉回到了三年多前。\n\n那時候在住院，客廳裡的電視播放著這首歌，外面天氣很好，我站在窗前望著電視。\n\n很多病友也在聽這首歌。不知道如果他們再聽此曲，會不會像我一樣把思緒拉回去呢。\n￼\n\n",
-      "tags": [],
-      "category": "隨記",
-      "issue": "miscellany",
-      "language": "zh-Hant",
+      "slug": "dbyg",
+      "published": true,
+      "updatedAt": "2026-07-05T12:51:20+08:00",
+      "date": "2026-04-14T12:51:00+08:00",
       "_fsnotes": {
         "createKeyHash": "6e032c69b128599c220ba7de81690a2e0307668eeae02843c4c59559cedf7580",
         "createBodyHash": "fa03fe17a91a369e1a1cbed23a395d6011a756ca26dcbcce421072787aa44f80",
         "createdAtMs": 1783227080448
-      }
+      },
+      "plainText": "用豆包軟體，讓她唱歌，她唱了一首《在你的身邊》。聽完後又去聽原曲，思緒頓時就拉回到了三年多前。\n\n那時候在住院，客廳裡的電視播放著這首歌，外面天氣很好，我站在窗前望著電視。\n\n很多病友也在聽這首歌。不知道如果他們再聽此曲，會不會像我一樣把思緒拉回去呢。\n￼\n\n",
+      "title": "2026年4月14日",
+      "language": "zh-Hant",
+      "tags": [],
+      "issue": "miscellany",
+      "id": "post_5f70aff6dc99216e9c91aeb5bfc7d5d4",
+      "category": "隨記"
     },
     {
       "published": true,
