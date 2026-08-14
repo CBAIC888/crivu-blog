@@ -1,4 +1,9 @@
-const API_ORIGIN = window.location.hostname === 'eo.cbc688.com' ? 'https://cbc688.com' : window.location.origin;
+const LOCAL_PREVIEW = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+const API_ORIGIN = LOCAL_PREVIEW
+  ? 'https://cbc688.com'
+  : window.location.hostname === 'eo.cbc688.com'
+    ? 'https://cbc688.com'
+    : window.location.origin;
 const API_URL = `${API_ORIGIN}/api/comments`;
 const TURNSTILE_ACTION = 'comment_submit';
 
@@ -7,7 +12,7 @@ const qs = (selector, root = document) => root.querySelector(selector);
 const formatDate = (value) => {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return '';
-  return date.toLocaleDateString('zh-Hant', {
+  return date.toLocaleDateString(document.documentElement.lang === 'en' ? 'en' : 'zh-Hant', {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
@@ -61,7 +66,7 @@ const renderComments = (listEl, comments, emptyText = '暫無評論。') => {
     const head = document.createElement('header');
     head.className = 'comment-item__head';
     const author = document.createElement('strong');
-    author.textContent = comment.authorName || '讀者';
+    author.textContent = comment.authorName || (document.documentElement.lang === 'en' ? 'Reader' : '讀者');
     const time = document.createElement('time');
     time.dateTime = comment.createdAt || '';
     time.textContent = formatDate(comment.createdAt);
@@ -82,6 +87,7 @@ const setStatus = (el, message, tone = '') => {
 const initComments = async () => {
   const root = qs('[data-comments]');
   if (!root) return;
+  const isEnglish = document.documentElement.lang === 'en';
 
   const slug = root.getAttribute('data-comments-slug') || '';
   const listEl = qs('[data-comments-list]', root);
@@ -98,10 +104,26 @@ const initComments = async () => {
   let usesTurnstile = false;
   submitBtn.disabled = true;
 
+  if (LOCAL_PREVIEW && window.location.pathname.startsWith('/preview/')) {
+    try {
+      const response = await fetch('/preview/comments-cache.json', { cache: 'no-store' });
+      const snapshot = response.ok ? await response.json() : {};
+      const comments = Array.isArray(snapshot?.comments?.[slug]) ? snapshot.comments[slug] : [];
+      renderComments(listEl, comments, emptyText);
+      root.dispatchEvent(new CustomEvent('comments:loaded', { detail: { comments } }));
+      form.hidden = true;
+      setStatus(statusEl, isEnglish ? 'Local preview: comments are read-only.' : '本地預覽：評論僅供查看。', 'muted');
+    } catch {
+      renderComments(listEl, [], emptyText);
+      form.hidden = true;
+    }
+    return;
+  }
+
   const fetchJson = async (url, options) => {
     const res = await fetch(url, options);
     const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.error || '請求失敗');
+    if (!res.ok) throw new Error(data.error || (isEnglish ? 'Request failed' : '請求失敗'));
     return data;
   };
 
@@ -117,7 +139,7 @@ const initComments = async () => {
 
     if (!config.enabled || !config.submissionEnabled) {
       form.hidden = true;
-      setStatus(statusEl, '評論功能尚未完成配置。', 'muted');
+      setStatus(statusEl, isEnglish ? 'Comments are not configured.' : '評論功能尚未完成配置。', 'muted');
       return;
     }
 
@@ -141,12 +163,12 @@ const initComments = async () => {
         'expired-callback': () => {
           canSubmit = false;
           submitBtn.disabled = true;
-          setStatus(statusEl, '安全驗證已過期，請重新完成驗證。', 'error');
+          setStatus(statusEl, isEnglish ? 'Verification expired. Please try again.' : '安全驗證已過期，請重新完成驗證。', 'error');
         },
         'error-callback': () => {
           canSubmit = false;
           submitBtn.disabled = true;
-          setStatus(statusEl, '安全驗證暫不可用，請稍後再試。', 'error');
+          setStatus(statusEl, isEnglish ? 'Verification is temporarily unavailable.' : '安全驗證暫不可用，請稍後再試。', 'error');
         },
       });
     } else {
@@ -155,7 +177,7 @@ const initComments = async () => {
     }
   } catch (err) {
     form.hidden = true;
-    setStatus(statusEl, err && err.message ? err.message : '評論暫不可用。', 'error');
+    setStatus(statusEl, err && err.message ? err.message : (isEnglish ? 'Comments are unavailable.' : '評論暫不可用。'), 'error');
     return;
   }
 
@@ -172,7 +194,7 @@ const initComments = async () => {
     };
 
     submitBtn.disabled = true;
-    setStatus(statusEl, '正在提交…', 'muted');
+    setStatus(statusEl, isEnglish ? 'Submitting…' : '正在提交…', 'muted');
     try {
       await fetchJson(API_URL, {
         method: 'POST',
@@ -184,13 +206,13 @@ const initComments = async () => {
         canSubmit = false;
         window.turnstile.reset(turnstileWidget);
       }
-      setStatus(statusEl, '已提交，待審核後顯示。', 'success');
+      setStatus(statusEl, isEnglish ? 'Submitted for moderation.' : '已提交，待審核後顯示。', 'success');
     } catch (err) {
       if (usesTurnstile && window.turnstile && turnstileWidget) {
         canSubmit = false;
         window.turnstile.reset(turnstileWidget);
       }
-      setStatus(statusEl, err && err.message ? err.message : '提交失敗。', 'error');
+      setStatus(statusEl, err && err.message ? err.message : (isEnglish ? 'Submission failed.' : '提交失敗。'), 'error');
     } finally {
       submitBtn.disabled = !canSubmit;
     }

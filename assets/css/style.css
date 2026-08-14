@@ -686,6 +686,11 @@ main > .section:first-child {
   width: 100%;
 }
 
+/* 「全部文章」與文章閱讀區共用同一左右邊界 */
+.page-list.list-page {
+  max-width: calc(var(--reading-width) + 12vw);
+}
+
 .page-head {
   padding-bottom: 32px;
   margin-bottom: 40px;
@@ -1033,7 +1038,7 @@ main > .section:first-child {
 .reading__body,
 .post-body {
   font-family: var(--serif);
-  font-size: 20px;
+  font-size: 19px;
   line-height: 1.95;
   color: var(--ink);
   letter-spacing: 0.01em;
@@ -1623,7 +1628,7 @@ body::before { display: none !important; }
   .page-post__main,
   .post-page { padding: 40px 4vw 60px; }
   .reading__body,
-  .post-body { font-size: 18px; line-height: 1.9; }
+  .post-body { font-size: 17px; line-height: 1.9; }
   .reading__title,
   .post-hero h1 { font-size: clamp(26px, 7vw, 34px); }
   .comments { margin-top: 48px; }
