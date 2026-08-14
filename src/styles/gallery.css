@@ -1,0 +1,49 @@
+:root { color-scheme: dark; --black:#080808; --white:#f5f4ef; --muted:#9d9d98; --line:#292929; --sans:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+* { box-sizing:border-box; }
+html { background:var(--black); scroll-behavior:smooth; }
+body { margin:0; color:var(--white); background:var(--black); font-family:var(--serif); }
+a { color:inherit; text-decoration:none; }
+button { color:inherit; font:inherit; }
+.gallery-header { position:sticky; z-index:20; top:0; display:flex; justify-content:space-between; align-items:center; min-height:64px; padding:0 max(24px,calc((100vw - 1440px)/2)); background:color-mix(in srgb,var(--black) 88%,transparent); border-bottom:1px solid var(--line); backdrop-filter:blur(14px); font:12px/1.4 var(--sans); }
+.gallery-header p { display:flex; gap:10px; align-items:baseline; margin:0; }
+.gallery-header small { color:var(--muted); }
+.gallery-back:hover { color:var(--muted); }
+.gallery-page { width:min(calc(100% - 48px),1440px); margin:auto; padding:78px 0 120px; }
+.gallery-intro { display:grid; grid-template-columns:minmax(0,1fr) minmax(280px,420px); gap:72px; align-items:end; margin-bottom:90px; }
+.gallery-intro h1 { max-width:720px; margin:0; font-size:clamp(38px,6vw,78px); font-weight:450; line-height:1.12; letter-spacing:-.02em; }
+.gallery-intro p { margin:0; color:var(--muted); font:14px/1.9 var(--sans); }
+.gallery-grid { display:grid; grid-template-columns:repeat(12,minmax(0,1fr)); gap:92px 24px; }
+.gallery-card { grid-column:span 4; margin:0; }
+.gallery-card:nth-child(6n+1),.gallery-card:nth-child(6n+5) { grid-column:span 7; }
+.gallery-card:nth-child(6n+2),.gallery-card:nth-child(6n+6) { grid-column:span 5; }
+.gallery-image { display:block; width:100%; padding:0; overflow:hidden; border:0; background:#111; cursor:zoom-in; }
+.gallery-image img { display:block; width:100%; height:auto; max-height:78vh; object-fit:contain; transition:opacity .2s ease; }
+.gallery-image:hover img { opacity:.82; }
+.gallery-card figcaption { padding-top:18px; }
+.gallery-card h2 { margin:0; font-size:20px; font-weight:500; line-height:1.45; }
+.gallery-card .gallery-meta { margin:8px 0 0; color:var(--muted); font:11px/1.6 var(--sans); }
+.gallery-card .gallery-caption { max-width:44em; margin:12px 0 0; color:#c3c3bf; font-size:14px; line-height:1.8; }
+.gallery-card small { display:block; margin-top:10px; color:#777; font:10px/1.7 var(--sans); }
+footer { padding:40px 24px; color:#777; text-align:center; font:11px/1.5 var(--sans); }
+.gallery-lightbox { width:100vw; max-width:none; height:100dvh; max-height:none; margin:0; padding:0; border:0; color:var(--white); background:rgba(0,0,0,.96); }
+.gallery-lightbox::backdrop { background:#000; }
+.gallery-lightbox[open] { display:grid; grid-template-columns:72px minmax(0,1fr) 72px; align-items:center; }
+.gallery-lightbox figure { display:grid; grid-template-rows:minmax(0,1fr) auto; width:100%; height:100%; min-height:0; margin:0; padding:36px 0 24px; }
+.gallery-lightbox img { width:100%; height:100%; min-height:0; object-fit:contain; }
+.gallery-lightbox figcaption { padding-top:14px; color:var(--muted); text-align:center; font:11px/1.5 var(--sans); }
+.gallery-close,.gallery-turn { border:0; background:transparent; cursor:pointer; }
+.gallery-close { position:absolute; z-index:2; top:16px; right:20px; width:42px; height:42px; font:28px/1 var(--sans); }
+.gallery-turn { height:100%; color:#aaa; font:20px/1 var(--sans); }
+.gallery-turn:hover,.gallery-close:hover { color:#fff; }
+@media (max-width:760px) {
+  .gallery-header { min-height:56px; padding-inline:16px; }
+  .gallery-page { width:calc(100% - 32px); padding:52px 0 84px; }
+  .gallery-intro { grid-template-columns:1fr; gap:24px; margin-bottom:58px; }
+  .gallery-intro h1 { font-size:38px; }
+  .gallery-grid { display:block; }
+  .gallery-card { margin-bottom:64px; }
+  .gallery-card h2 { font-size:18px; }
+  .gallery-lightbox[open] { grid-template-columns:46px minmax(0,1fr) 46px; }
+  .gallery-lightbox figure { padding:52px 0 20px; }
+}
+@media (prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } * { transition:none !important; } }

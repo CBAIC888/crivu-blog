@@ -1,0 +1,9 @@
+const root=document.querySelector('[data-guestbook]');
+if(root){
+  const list=root.querySelector('[data-guestbook-list]'),form=root.querySelector('[data-guestbook-form]'),status=root.querySelector('[data-guestbook-status]');let turnstileToken='';
+  const safe=(value)=>String(value||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
+  const renderTurnstile=(sitekey)=>{const mount=()=>window.turnstile?.render(root.querySelector('[data-guestbook-turnstile]'),{sitekey,action:'guestbook_submit',callback:token=>{turnstileToken=token;}});if(window.turnstile)return mount();const script=document.createElement('script');script.src='https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';script.async=true;script.onload=mount;document.head.appendChild(script);};
+  const load=async()=>{const response=await fetch('/api/v1/guestbook'),data=await response.json();list.innerHTML=(data.entries||[]).map(x=>`<article class="guestbook-entry"><header class="guestbook-entry__head"><strong>${safe(x.authorName||'讀者')}</strong><time>${safe(String(x.createdAt||'').slice(0,10))}</time></header><p>${safe(x.body)}</p>${x.adminReply?`<p class="guestbook-reply"><strong>CRIVU：</strong>${safe(x.adminReply)}</p>`:''}</article>`).join('')||'<p class="guestbook-empty">暫無留言。</p>';if(data.turnstileSiteKey)renderTurnstile(data.turnstileSiteKey);};
+  form.addEventListener('submit',async event=>{event.preventDefault();status.textContent='提交中…';const values=Object.fromEntries(new FormData(form));values.turnstileToken=turnstileToken;const response=await fetch('/api/v1/guestbook',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(values)}),data=await response.json().catch(()=>({}));if(!response.ok){status.textContent=data.error?.message||'提交失敗';return;}form.reset();status.textContent='已送出，審核後會顯示。';});
+  load().catch(()=>{list.innerHTML='<p class="guestbook-empty">留言板暫時無法載入。</p>';});
+}

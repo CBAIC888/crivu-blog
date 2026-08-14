@@ -1,750 +1,129 @@
-/*
- * CRIVU 後台補強
- * - 兩個編輯器元件：圖片、音訊
- * - 右下角浮動工具列：音訊上傳、在新分頁預覽正式站
- * - 站點設定頁的浮動說明卡，提醒欄位前綴的分組規則
- * - 當使用者在「品牌強調色」欄位填入 #rrggbb 時，旁邊顯示即時色塊
- */
+const app = document.querySelector('#app');
+const state = { resource: 'articles', items: [], current: null, articles: [], dirty: false, saving: false, autosave: 0 };
+const resources = [
+  ['articles','文章'],['collections','期刊／合集'],['projects','專題紀錄'],['pages','頁面'],['media','媒體庫'],['guestbook','留言板'],['settings','設定'],
+];
+const escapeHtml = (v='') => String(v).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');
+const api = async (path, options={}) => {
+  const response = await fetch(`/api/v1/admin/${path}`, { ...options, headers: { ...(options.body && !(options.body instanceof FormData) ? {'Content-Type':'application/json'} : {}), ...(options.headers||{}) } });
+  const data = await response.json().catch(()=>({}));
+  if(!response.ok) throw new Error(data.error?.message || '操作失敗');
+  return data;
+};
+const field = (name) => document.querySelector(`[name="${name}"]`);
+const value = (name) => field(name)?.type === 'checkbox' ? field(name).checked : field(name)?.value || '';
+const lines = (v) => String(v||'').split('\n').map(x=>x.trim()).filter(Boolean);
+const notify = (message,error=false) => { const el=document.querySelector('[data-status]'); if(el){el.textContent=message;el.classList.toggle('error',error);} };
+const slugify = (v) => String(v||'').normalize('NFKD').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,100);
+const discardChanges = () => !state.dirty || confirm('尚未儲存的修改會遺失，繼續嗎？');
+window.addEventListener('beforeunload',(event)=>{if(state.dirty){event.preventDefault();event.returnValue='';}});
 
-(function () {
-  if (typeof CMS === 'undefined') return;
+const markdown = (source) => escapeHtml(source).replace(/^### (.+)$/gm,'<h3>$1</h3>').replace(/^## (.+)$/gm,'<h2>$1</h2>').replace(/^# (.+)$/gm,'<h1>$1</h1>').replace(/^> (.+)$/gm,'<blockquote>$1</blockquote>').replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\*(.+?)\*/g,'<em>$1</em>').replace(/\n{2,}/g,'</p><p>').replace(/^/,'<p>').replace(/$/,'</p>');
+const renderPreview = () => {
+  const preview=document.querySelector('[data-preview]'); if(!preview)return;
+  const title=value('title')||'未命名'; const body=value('bodyMarkdown');
+  preview.innerHTML=`<article><p class="preview-meta">${escapeHtml(value('type')||state.resource)}</p><h1>${escapeHtml(title)}</h1>${value('summary')?`<p class="preview-deck">${escapeHtml(value('summary'))}</p>`:''}<div class="preview-body">${value('metadataFormat')==='html'?body:markdown(body)}</div></article>`;
+};
+const label = (text,name,input,hint='') => `<label class="field"><span>${text}</span>${input}${hint?`<small>${hint}</small>`:''}</label>`;
+const input = (name,val='',type='text',attrs='') => `<input name="${name}" type="${type}" value="${escapeHtml(val)}" ${attrs}/>`;
+const textarea = (name,val='',rows=5,attrs='') => `<textarea name="${name}" rows="${rows}" ${attrs}>${escapeHtml(val)}</textarea>`;
+const select = (name,val,options) => `<select name="${name}">${options.map(([v,t])=>`<option value="${v}" ${v===val?'selected':''}>${t}</option>`).join('')}</select>`;
 
-  /* ============================================================
-     1. 兩個 Markdown 自訂元件（圖片、音訊）
-     ============================================================ */
-  const escapeHtml = (input) =>
-    String(input == null ? '' : input)
-      .replaceAll('&', '&amp;')
-      .replaceAll('<', '&lt;')
-      .replaceAll('>', '&gt;')
-      .replaceAll('"', '&quot;')
-      .replaceAll("'", '&#39;');
+const shell = (user) => {
+  app.innerHTML=`<div class="admin-shell"><aside class="sidebar"><a class="brand" href="/articles" target="_blank">CRIVU</a><nav>${resources.map(([id,name])=>`<button data-nav="${id}">${name}</button>`).join('')}</nav><div class="user"><span>${escapeHtml(user.name||user.login)}</span><button data-logout>登出</button></div></aside><main class="workspace"><header class="topbar"><div><h1 data-heading>文章</h1><p data-status>已連線</p></div><div class="top-actions"><button data-new>新增</button><button class="primary" data-save hidden>儲存</button></div></header><div class="surface" data-surface></div></main></div>`;
+  document.querySelectorAll('[data-nav]').forEach(button=>button.addEventListener('click',()=>openResource(button.dataset.nav)));
+  document.querySelector('[data-new]').addEventListener('click',newItem);
+  document.querySelector('[data-save]').addEventListener('click',()=>saveCurrent(false));
+  document.querySelector('[data-logout]').addEventListener('click',async()=>{await api('logout',{method:'POST'});location.reload();});
+};
 
-  CMS.registerEditorComponent({
-    id: 'image-block',
-    label: '圖片（含尺寸建議）',
-    fields: [
-      { name: 'src', label: '圖片', widget: 'image' },
-      { name: 'alt', label: '替代文字', widget: 'string', required: false },
-      {
-        name: 'preset',
-        label: '尺寸預設',
-        widget: 'select',
-        default: 'article-1200x800',
-        options: [
-          { label: '封面橫圖 1600x1000', value: 'cover-1600x1000' },
-          { label: '文內橫圖 1200x800', value: 'article-1200x800' },
-          { label: '社群直圖 1080x1350', value: 'portrait-1080x1350' }
-        ]
-      },
-      { name: 'caption', label: '圖片說明', widget: 'string', required: false }
-    ],
-    pattern: /!\[(.*?)\]\((.*?)\)\n<!--\s*preset:(.*?)\s*-->\n?(?:\*(.*?)\*)?/,
-    fromBlock(match) {
-      return {
-        alt: match[1] || '',
-        src: match[2] || '',
-        preset: match[3] || 'article-1200x800',
-        caption: match[4] || ''
-      };
-    },
-    toBlock(obj) {
-      const alt = obj.alt || '';
-      const src = obj.src || '';
-      const preset = obj.preset || 'article-1200x800';
-      const caption = obj.caption ? '\n*' + obj.caption + '*' : '';
-      return '![' + alt + '](' + src + ')\n<!-- preset:' + preset + ' -->' + caption;
-    },
-    toPreview(obj) {
-      const caption = obj.caption ? '<figcaption>' + escapeHtml(obj.caption) + '</figcaption>' : '';
-      return '<figure><img src="' + escapeHtml(obj.src || '') + '" alt="' + escapeHtml(obj.alt || '') + '"/>' + caption + '</figure>';
-    }
-  });
+const listTitle = (item) => item.title || item.filename || item.authorName || item.key || item.slug || item.id;
+const openResource = async (resource) => {
+  if(state.resource!==resource&&!discardChanges())return;
+  state.resource=resource; state.current=null; state.dirty=false;
+  document.querySelectorAll('[data-nav]').forEach(x=>x.classList.toggle('active',x.dataset.nav===resource));
+  document.querySelector('[data-heading]').textContent=resources.find(x=>x[0]===resource)?.[1]||resource;
+  document.querySelector('[data-new]').hidden=['settings','guestbook'].includes(resource);
+  document.querySelector('[data-save]').hidden=true;
+  notify('載入中…');
+  try {
+    const data=await api(resource);
+    if(resource==='settings'){renderSettings(data.settings||{});return;}
+    state.items=data.items||[];
+    if(resource==='articles') state.articles=state.items;
+    renderList(); notify(`${state.items.length} 項`);
+  } catch(error){document.querySelector('[data-surface]').innerHTML=`<div class="empty error">${escapeHtml(error.message)}</div>`;notify(error.message,true);}
+};
+const renderList = () => {
+  const surface=document.querySelector('[data-surface]');
+  if(state.resource==='media'){renderMedia(surface);return;}
+  surface.innerHTML=`<div class="list"><div class="list-head"><input type="search" placeholder="搜尋" data-list-search /></div><div data-list-rows>${state.items.map((item,index)=>`<button class="row" data-index="${index}"><span><strong>${escapeHtml(listTitle(item))}</strong><small>${escapeHtml(item.status||item.type||item.createdAt||'')}</small></span><time>${escapeHtml(String(item.updatedAt||item.createdAt||'').slice(0,10))}</time></button>`).join('')||'<p class="empty">暫無內容</p>'}</div></div>`;
+  surface.querySelectorAll('[data-index]').forEach(button=>button.addEventListener('click',()=>editItem(state.items[Number(button.dataset.index)].id)));
+  surface.querySelector('[data-list-search]').addEventListener('input',(event)=>{const q=event.target.value.toLowerCase();surface.querySelectorAll('[data-index]').forEach((row)=>row.hidden=!listTitle(state.items[Number(row.dataset.index)]).toLowerCase().includes(q));});
+};
 
-  CMS.registerEditorComponent({
-    id: 'audio-block',
-    label: '音訊（Cloudflare）',
-    fields: [
-      { name: 'src', label: '音訊 URL', widget: 'string', hint: '可用右下角「上傳音訊」按鈕自動插入' },
-      { name: 'title', label: '音訊標題', widget: 'string', required: false },
-      { name: 'caption', label: '音訊說明', widget: 'string', required: false }
-    ],
-    pattern: /\[audio\]\((.*?)\)\n<!--\s*title:(.*?)\s*-->\n?(?:\*(.*?)\*)?/,
-    fromBlock(match) {
-      return {
-        src: match[1] || '',
-        title: match[2] || '',
-        caption: match[3] || ''
-      };
-    },
-    toBlock(obj) {
-      const src = obj.src || '';
-      const title = obj.title || '';
-      const caption = obj.caption ? '\n*' + obj.caption + '*' : '';
-      return '[audio](' + src + ')\n<!-- title:' + title + ' -->' + caption;
-    },
-    toPreview(obj) {
-      const title = obj.title ? '<strong>' + escapeHtml(obj.title) + '</strong>' : '';
-      const caption = obj.caption ? '<div>' + escapeHtml(obj.caption) + '</div>' : '';
-      return (
-        '<figure>' +
-        title +
-        '<audio controls preload="metadata" src="' +
-        escapeHtml(obj.src || '') +
-        '"></audio>' +
-        caption +
-        '</figure>'
-      );
-    }
-  });
+const newItem = () => {
+  if(!discardChanges())return;
+  const defaults={articles:{type:'general',status:'draft',language:'zh-Hant',tags:[],metadata:{}},collections:{type:'collection',status:'draft',articleIds:[]},projects:{type:'project',status:'draft',relations:[]},pages:{status:'draft'}};
+  state.current=defaults[state.resource]||{}; renderEditor();
+};
+const editItem = async (id) => {
+  if(state.resource==='guestbook'){state.current=state.items.find(x=>x.id===id);renderGuestbookEditor();return;}
+  notify('載入中…'); try{state.current=(await api(`${state.resource}/${encodeURIComponent(id)}`)).item;renderEditor();notify('已載入');}catch(error){notify(error.message,true);}
+};
 
-  /* ============================================================
-     2. 插入到游標位置的工具（音訊上傳用）
-     ============================================================ */
-  const lastSelection = { textarea: null, start: 0, end: 0 };
+const articleForm = (item) => `<div class="editor-grid"><form class="form" data-form>
+  <div class="form-row">${label('內容類型','type',select('type',item.type||'general',[['general','一般文章'],['research','研究文章'],['script','劇本']]))}${label('狀態','status',select('status',item.status||'draft',[['draft','草稿'],['review','審閱'],['scheduled','排程'],['published','已發布'],['archived','封存']]))}</div>
+  ${label('標題','title',input('title',item.title,'text','required'))}${label('副標題','subtitle',input('subtitle',item.subtitle))}
+  <div class="form-row">${label('Slug','slug',input('slug',item.slug,'text','pattern="[a-z0-9]+(?:-[a-z0-9]+)*" required'))}${label('語言','language',input('language',item.language||'zh-Hant'))}</div>
+  ${label('摘要','summary',textarea('summary',item.summary,3))}
+  <div class="editor-toolbar"><button type="button" data-wrap="**">粗體</button><button type="button" data-prefix="## ">標題</button><button type="button" data-prefix="> ">引用</button><button type="button" data-insert-media>插入媒體</button><button type="button" data-fullscreen>全螢幕</button></div>
+  ${label(item.type==='script'?'劇本文本':'正文','bodyMarkdown',textarea('bodyMarkdown',item.bodyMarkdown,22,'data-body'))}
+  ${label('標籤（每行一個）','tags',textarea('tags',(item.tags||[]).map(x=>x.name||x).join('\n'),4))}
+  <details><summary>SEO 與進階資料</summary>${label('封面網址','coverUrl',input('coverUrl',item.coverUrl))}<div class="form-row">${label('發布時間','publishedAt',input('publishedAt',item.publishedAt,'datetime-local'))}${label('排程時間','scheduledAt',input('scheduledAt',item.scheduledAt,'datetime-local'))}</div>${label('SEO 標題','seoTitle',input('seoTitle',item.seoTitle))}${label('SEO 描述','seoDescription',textarea('seoDescription',item.seoDescription,3))}${label('Canonical','canonicalUrl',input('canonicalUrl',item.canonicalUrl))}${label('授權','license',input('license',item.license))}${label('進階資料 JSON','metadata',textarea('metadata',JSON.stringify(item.metadata||{},null,2),8))}</details>
+  ${item.revisions?.length?`<details><summary>修訂記錄</summary><div class="revisions">${item.revisions.map(r=>`<button type="button" data-restore="${r.id}">版本 ${r.version} · ${escapeHtml(String(r.createdAt).slice(0,16))}</button>`).join('')}</div></details>`:''}
+  </form><aside class="preview" data-preview></aside></div>`;
+const collectionForm = (item) => `<form class="form single" data-form><div class="form-row">${label('類型','type',select('type',item.type||'collection',[['collection','主題合集'],['journal_issue','正式卷期']]))}${label('狀態','status',select('status',item.status||'draft',[['draft','草稿'],['published','已發布'],['archived','封存']]))}</div><div class="form-row">${label('ID','id',input('id',item.id,'text','required'))}${label('標題','title',input('title',item.title,'text','required'))}</div>${label('主題','theme',input('theme',item.theme))}${label('封面網址','coverUrl',input('coverUrl',item.coverUrl))}${label('編者語','editorNote',textarea('editorNote',item.editorNote,7))}<div class="form-row">${label('年份','year',input('year',item.year,'number'))}${label('卷號','volume',input('volume',item.volume))}${label('期號','issueNumber',input('issueNumber',item.issueNumber))}</div>${label('發布時間','publishedAt',input('publishedAt',item.publishedAt,'datetime-local'))}${label('收錄文章順序','articleIds',`<div class="sortable" data-sortable>${(item.articleIds||[]).map(id=>{const a=state.articles.find(x=>x.id===id);return `<div draggable="true" data-id="${id}"><span>${escapeHtml(a?.title||id)}</span><button type="button" data-remove-id="${id}">移除</button></div>`;}).join('')}</div><select data-add-article><option value="">加入文章…</option>${state.articles.filter(a=>!(item.articleIds||[]).includes(a.id)).map(a=>`<option value="${a.id}">${escapeHtml(a.title)}</option>`).join('')}</select>`)}</form>`;
+const projectForm = (item) => `<form class="form single" data-form><div class="form-row">${label('ID','id',input('id',item.id,'text','required'))}${label('Slug','slug',input('slug',item.slug,'text','required'))}</div><div class="form-row">${label('狀態','status',select('status',item.status||'draft',[['draft','草稿'],['published','已發布'],['archived','封存']]))}${label('類型','type',input('type',item.type||'project'))}</div>${label('標題','title',input('title',item.title,'text','required'))}${label('摘要','summary',textarea('summary',item.summary,4))}${label('正文','bodyMarkdown',textarea('bodyMarkdown',item.bodyMarkdown,16))}<div class="form-row">${label('開始日期','startDate',input('startDate',item.startDate,'date'))}${label('結束日期','endDate',input('endDate',item.endDate,'date'))}</div>${label('地點','location',input('location',item.location))}${label('參與者','participants',textarea('participants',item.participants,3))}${label('整理者','editor',input('editor',item.editor))}${label('封面網址','coverUrl',input('coverUrl',item.coverUrl))}${label('關聯資料 JSON','relations',textarea('relations',JSON.stringify(item.relations||[],null,2),9),'可關聯 article、translation、gallery、exhibition、collection、media。')}</form>`;
+const pageForm = (item) => `<div class="editor-grid"><form class="form" data-form><div class="form-row">${label('標題','title',input('title',item.title,'text','required'))}${label('狀態','status',select('status',item.status||'draft',[['draft','草稿'],['published','已發布'],['archived','封存']]))}</div>${label('Slug','slug',input('slug',item.slug,'text','required'))}${label('正文','bodyMarkdown',textarea('bodyMarkdown',item.bodyMarkdown,22))}<details><summary>SEO</summary>${label('SEO 標題','seoTitle',input('seoTitle',item.seoTitle))}${label('SEO 描述','seoDescription',textarea('seoDescription',item.seoDescription,3))}</details></form><aside class="preview" data-preview></aside></div>`;
 
-  const rememberSelection = (el) => {
-    if (!el || el.tagName !== 'TEXTAREA') return;
-    lastSelection.textarea = el;
-    lastSelection.start = Number.isFinite(el.selectionStart) ? el.selectionStart : el.value.length;
-    lastSelection.end = Number.isFinite(el.selectionEnd) ? el.selectionEnd : el.value.length;
-  };
+const renderEditor = async () => {
+  if(state.resource==='collections'&&!state.articles.length){state.articles=(await api('articles')).items||[];}
+  const surface=document.querySelector('[data-surface]'),item=state.current;
+  surface.innerHTML=state.resource==='articles'?articleForm(item):state.resource==='collections'?collectionForm(item):state.resource==='projects'?projectForm(item):pageForm(item);
+  document.querySelector('[data-save]').hidden=false; state.dirty=false;
+  const formEl=surface.querySelector('[data-form]'); formEl.addEventListener('input',(event)=>{state.dirty=true;if(event.target.name==='title'&&!value('slug'))field('slug').value=slugify(event.target.value);renderPreview();scheduleAutosave();});
+  formEl.addEventListener('change',()=>{state.dirty=true;renderPreview();scheduleAutosave();});
+  surface.querySelectorAll('[data-wrap]').forEach(b=>b.addEventListener('click',()=>editText(b.dataset.wrap,b.dataset.wrap)));
+  surface.querySelectorAll('[data-prefix]').forEach(b=>b.addEventListener('click',()=>editText(b.dataset.prefix,'')));
+  surface.querySelector('[data-fullscreen]')?.addEventListener('click',()=>field('bodyMarkdown').classList.toggle('fullscreen'));
+  surface.querySelector('[data-insert-media]')?.addEventListener('click',()=>{const url=prompt('輸入媒體網址');if(url)editText(`![](${url})`,'');});
+  surface.querySelectorAll('[data-restore]').forEach(b=>b.addEventListener('click',()=>restoreRevision(b.dataset.restore)));
+  setupSortable(); renderPreview();
+};
+const editText = (before,after) => {const el=field('bodyMarkdown');if(!el)return;const start=el.selectionStart,end=el.selectionEnd,selected=el.value.slice(start,end);el.setRangeText(`${before}${selected}${after}`,start,end,'end');el.dispatchEvent(new Event('input',{bubbles:true}));el.focus();};
+const setupSortable = () => {
+  const list=document.querySelector('[data-sortable]'); if(!list)return; let dragged;
+  list.querySelectorAll('[draggable]').forEach(row=>{row.addEventListener('dragstart',()=>dragged=row);row.addEventListener('dragover',e=>e.preventDefault());row.addEventListener('drop',e=>{e.preventDefault();if(dragged!==row){list.insertBefore(dragged,row);state.dirty=true;scheduleAutosave();}});});
+  list.querySelectorAll('[data-remove-id]').forEach(b=>b.addEventListener('click',()=>{b.closest('[data-id]').remove();state.dirty=true;scheduleAutosave();}));
+  document.querySelector('[data-add-article]')?.addEventListener('change',async e=>{if(e.target.value){state.current.articleIds=[...document.querySelectorAll('[data-sortable] [data-id]')].map(x=>x.dataset.id).concat(e.target.value);await renderEditor();state.dirty=true;scheduleAutosave();}});
+};
+const payload = () => {
+  if(state.resource==='articles')return {type:value('type'),status:value('status'),title:value('title'),subtitle:value('subtitle'),slug:value('slug'),language:value('language'),summary:value('summary'),bodyMarkdown:value('bodyMarkdown'),tags:lines(value('tags')),coverUrl:value('coverUrl'),publishedAt:value('publishedAt'),scheduledAt:value('scheduledAt'),seoTitle:value('seoTitle'),seoDescription:value('seoDescription'),canonicalUrl:value('canonicalUrl'),license:value('license'),metadata:JSON.parse(value('metadata')||'{}'),version:state.current.version};
+  if(state.resource==='collections')return {id:value('id'),type:value('type'),status:value('status'),title:value('title'),theme:value('theme'),coverUrl:value('coverUrl'),editorNote:value('editorNote'),year:value('year'),volume:value('volume'),issueNumber:value('issueNumber'),publishedAt:value('publishedAt'),articleIds:[...document.querySelectorAll('[data-sortable] [data-id]')].map(x=>x.dataset.id),version:state.current.version};
+  if(state.resource==='projects')return {id:value('id'),slug:value('slug'),type:value('type'),status:value('status'),title:value('title'),summary:value('summary'),bodyMarkdown:value('bodyMarkdown'),startDate:value('startDate'),endDate:value('endDate'),location:value('location'),participants:value('participants'),editor:value('editor'),coverUrl:value('coverUrl'),relations:JSON.parse(value('relations')||'[]'),version:state.current.version};
+  return {title:value('title'),slug:value('slug'),status:value('status'),bodyMarkdown:value('bodyMarkdown'),seoTitle:value('seoTitle'),seoDescription:value('seoDescription'),version:state.current.version};
+};
+const saveCurrent = async (automatic) => {
+  if(state.saving||!state.dirty)return; state.saving=true; notify(automatic?'自動儲存中…':'儲存中…');
+  try{const body=payload(),exists=Boolean(state.current.id),path=exists?`${state.resource}/${encodeURIComponent(state.current.id)}`:state.resource;const data=await api(path,{method:exists?'PUT':'POST',headers:exists?{'If-Match':String(state.current.version)}:{},body:JSON.stringify(body)});state.current=data.item;state.dirty=false;notify(automatic?'已自動儲存':'已儲存');if(!automatic)renderEditor();}
+  catch(error){notify(error.message,true);}finally{state.saving=false;}
+};
+const scheduleAutosave = () => {clearTimeout(state.autosave);state.autosave=setTimeout(()=>{if(state.current?.id)saveCurrent(true);},1800);};
+const restoreRevision = async (revisionId) => {if(!confirm('恢復這個版本？目前內容會先保存在修訂記錄。'))return;try{state.current=(await api(`articles/${state.current.id}/restore`,{method:'POST',body:JSON.stringify({revisionId})})).item;renderEditor();notify('已恢復版本');}catch(error){notify(error.message,true);}};
 
-  const findEditorTextarea = () => {
-    if (lastSelection.textarea && document.contains(lastSelection.textarea)) {
-      return lastSelection.textarea;
-    }
-    const candidates = Array.from(document.querySelectorAll('textarea')).filter((el) => el.offsetParent !== null);
-    return candidates[0] || null;
-  };
+const renderMedia = (surface) => {surface.innerHTML=`<div class="media-layout"><form class="upload" data-upload><h2>上傳到 R2</h2><input type="file" name="file" required /><input name="title" placeholder="標題" /><input name="altText" placeholder="替代文字" /><button class="primary">上傳</button></form><div class="media-grid">${state.items.map(x=>`<article><div class="media-thumb">${String(x.mimeType).startsWith('image/')?`<img src="${escapeHtml(x.publicUrl)}" alt="${escapeHtml(x.altText||'')}"/>`:'<span>檔案</span>'}</div><strong>${escapeHtml(x.title||x.filename)}</strong><small>${escapeHtml(x.mimeType)} · ${Math.round((x.sizeBytes||0)/1024)} KB</small><button data-copy="${escapeHtml(x.publicUrl)}">複製網址</button></article>`).join('')}</div></div>`;surface.querySelector('[data-upload]').addEventListener('submit',async e=>{e.preventDefault();notify('上傳中…');try{await api('media',{method:'POST',body:new FormData(e.target)});await openResource('media');}catch(error){notify(error.message,true);}});surface.querySelectorAll('[data-copy]').forEach(b=>b.addEventListener('click',()=>navigator.clipboard.writeText(b.dataset.copy)));};
+const renderGuestbookEditor = () => {const x=state.current;document.querySelector('[data-surface]').innerHTML=`<form class="form single" data-guestbook><h2>${escapeHtml(x.authorName)}</h2><p class="message">${escapeHtml(x.body)}</p>${label('狀態','status',select('status',x.status,[['pending','待審核'],['approved','通過'],['hidden','隱藏'],['spam','垃圾']]))}${label('管理員回覆','adminReply',textarea('adminReply',x.adminReply,5))}<button class="primary">儲存</button></form>`;document.querySelector('[data-guestbook]').addEventListener('submit',async e=>{e.preventDefault();await api(`guestbook/${x.id}`,{method:'PATCH',body:JSON.stringify({status:value('status'),adminReply:value('adminReply')})});await openResource('guestbook');});};
+const renderSettings = (settings) => {const get=k=>settings[k]?.value??'';document.querySelector('[data-surface]').innerHTML=`<form class="form single" data-settings>${label('站名','siteName',input('siteName',get('siteName')))}${label('網站描述','siteDescription',textarea('siteDescription',get('siteDescription'),4))}${label('頁尾','footerText',input('footerText',get('footerText')))}${label('搜尋提示','searchPlaceholder',input('searchPlaceholder',get('searchPlaceholder')))}${label('導航 JSON','navigation',textarea('navigation',JSON.stringify(get('navigation')||[],null,2),9))}<button class="primary">儲存設定</button></form>`;document.querySelector('[data-settings]').addEventListener('submit',async e=>{e.preventDefault();await api('settings',{method:'PUT',body:JSON.stringify({settings:{siteName:{value:value('siteName')},siteDescription:{value:value('siteDescription')},footerText:{value:value('footerText')},searchPlaceholder:{value:value('searchPlaceholder')},navigation:{value:JSON.parse(value('navigation')||'[]')}}})});notify('設定已儲存');});notify('已載入設定');};
 
-  const insertAtCursor = (markdown) => {
-    const el = findEditorTextarea();
-    if (!el) throw new Error('找不到文章編輯區（textarea）');
-    const value = el.value || '';
-    const start = Number.isFinite(lastSelection.start) ? lastSelection.start : value.length;
-    const end = Number.isFinite(lastSelection.end) ? lastSelection.end : start;
-    const prefix = value.slice(0, start);
-    const suffix = value.slice(end);
-    const leading = prefix && !prefix.endsWith('\n') ? '\n' : '';
-    const trailing = suffix && !suffix.startsWith('\n') ? '\n' : '';
-    const block = leading + markdown + trailing;
-    const next = prefix + block + suffix;
-    el.value = next;
-    const caret = prefix.length + block.length;
-    el.selectionStart = caret;
-    el.selectionEnd = caret;
-    el.dispatchEvent(new Event('input', { bubbles: true }));
-    el.dispatchEvent(new Event('change', { bubbles: true }));
-    el.focus();
-    rememberSelection(el);
-  };
-
-  const wrapSelection = (before, after = before, fallback = '文字') => {
-    const el = findEditorTextarea();
-    if (!el) throw new Error('找不到文章編輯區（textarea）');
-    const value = el.value || '';
-    const start = Number.isFinite(lastSelection.start) ? lastSelection.start : el.selectionStart || value.length;
-    const end = Number.isFinite(lastSelection.end) ? lastSelection.end : el.selectionEnd || start;
-    const selected = value.slice(start, end) || fallback;
-    const nextBlock = before + selected + after;
-    el.value = value.slice(0, start) + nextBlock + value.slice(end);
-    el.selectionStart = start + before.length;
-    el.selectionEnd = start + before.length + selected.length;
-    el.dispatchEvent(new Event('input', { bubbles: true }));
-    el.dispatchEvent(new Event('change', { bubbles: true }));
-    el.focus();
-    rememberSelection(el);
-  };
-
-  const prefixLine = (prefix, fallback = '文字') => {
-    const el = findEditorTextarea();
-    if (!el) throw new Error('找不到文章編輯區（textarea）');
-    const value = el.value || '';
-    const start = Number.isFinite(lastSelection.start) ? lastSelection.start : el.selectionStart || value.length;
-    const end = Number.isFinite(lastSelection.end) ? lastSelection.end : el.selectionEnd || start;
-    const selected = value.slice(start, end) || fallback;
-    const block = selected
-      .split('\n')
-      .map((line) => prefix + line)
-      .join('\n');
-    el.value = value.slice(0, start) + block + value.slice(end);
-    el.selectionStart = start + prefix.length;
-    el.selectionEnd = start + block.length;
-    el.dispatchEvent(new Event('input', { bubbles: true }));
-    el.dispatchEvent(new Event('change', { bubbles: true }));
-    el.focus();
-    rememberSelection(el);
-  };
-
-  const escapeMd = (input) =>
-    String(input == null ? '' : input).replaceAll('\n', ' ').replaceAll('\r', ' ').replaceAll('*', '\\*');
-
-  const fileTitle = (name) => String(name || '未命名音訊').replace(/\.[^.]+$/, '');
-  const ALLOWED_UPLOAD_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif']);
-
-  const getCmsToken = () => {
-    try {
-      const raw =
-        window.localStorage.getItem('decap-cms-user') || window.localStorage.getItem('netlify-cms-user');
-      if (!raw) return '';
-      const parsed = JSON.parse(raw);
-      if (!parsed || typeof parsed !== 'object') return '';
-      if (parsed.token) return parsed.token;
-      if (parsed.access_token) return parsed.access_token;
-      if (parsed.auth && parsed.auth.token) return parsed.auth.token;
-    } catch (err) {
-      console.warn('讀取 CMS token 失敗', err);
-    }
-    return '';
-  };
-
-  const commentsRequest = async (path, options = {}) => {
-    const token = getCmsToken();
-    if (!token) throw new Error('尚未登入 CMS');
-    const headers = Object.assign(
-      { Authorization: 'Bearer ' + token },
-      options.body ? { 'Content-Type': 'application/json' } : {},
-      options.headers || {}
-    );
-    const res = await fetch(path, Object.assign({}, options, { headers }));
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.error || '評論請求失敗');
-    return data;
-  };
-
-  const loadCommentTargets = async () => {
-    const res = await fetch('/posts/posts.json?v=' + Date.now(), { cache: 'no-store' });
-    if (!res.ok) throw new Error('文章列表載入失敗');
-    const data = await res.json();
-    const posts = (data.items || data || [])
-      .filter((item) => item && item.published !== false && item.slug)
-      .sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
-    return [{ slug: 'about', title: '關於' }].concat(
-      posts.map((item) => ({
-        slug: String(item.slug || ''),
-        title: String(item.title || item.slug || '未命名文章'),
-      }))
-    );
-  };
-
-  const openCommentsManager = () => {
-    let modal = document.querySelector('.comments-admin-modal');
-    if (modal) modal.remove();
-
-    modal = document.createElement('div');
-    modal.className = 'comments-admin-modal';
-    modal.innerHTML = `
-      <div class="comments-admin-backdrop" data-comments-close></div>
-      <section class="comments-admin-dialog" role="dialog" aria-modal="true" aria-labelledby="commentsAdminTitle">
-        <header class="comments-admin-header">
-          <div>
-            <h2 id="commentsAdminTitle">評論審核</h2>
-            <p>只顯示必要資料；電郵、IP 與瀏覽器資訊不在後台明文展示。</p>
-          </div>
-          <button type="button" class="comments-admin-close" data-comments-close aria-label="關閉">×</button>
-        </header>
-        <div class="comments-admin-toolbar">
-          <button type="button" data-comments-status="pending">待審核</button>
-          <button type="button" data-comments-status="approved">已通過</button>
-          <button type="button" data-comments-status="hidden">已隱藏</button>
-          <button type="button" data-comments-status="all">全部</button>
-        </div>
-        <form class="comments-admin-boost" data-comments-boost-form>
-          <div class="comments-admin-boost__head">
-            <strong>新增捧場</strong>
-            <span>直接通過，前台按普通評論顯示。</span>
-          </div>
-          <div class="comments-admin-boost__grid">
-            <label>
-              <span>位置</span>
-              <select name="slug" data-comments-boost-slug required>
-                <option value="">載入文章中…</option>
-              </select>
-            </label>
-            <label>
-              <span>名稱</span>
-              <input name="authorName" maxlength="32" required />
-            </label>
-          </div>
-          <label>
-            <span>內容</span>
-            <textarea name="body" rows="3" maxlength="1200" required></textarea>
-          </label>
-          <div class="comments-admin-boost__actions">
-            <button type="submit">新增</button>
-            <p data-comments-boost-status></p>
-          </div>
-        </form>
-        <div class="comments-admin-status" data-comments-admin-status>載入中…</div>
-        <div class="comments-admin-list" data-comments-admin-list></div>
-      </section>
-    `;
-    document.body.appendChild(modal);
-
-    const list = modal.querySelector('[data-comments-admin-list]');
-    const status = modal.querySelector('[data-comments-admin-status]');
-    const boostForm = modal.querySelector('[data-comments-boost-form]');
-    const boostSlug = modal.querySelector('[data-comments-boost-slug]');
-    const boostStatus = modal.querySelector('[data-comments-boost-status]');
-    let currentStatus = 'pending';
-
-    const setStatus = (message, isError) => {
-      status.textContent = message || '';
-      status.classList.toggle('is-error', Boolean(isError));
-    };
-
-    const setBoostStatus = (message, isError) => {
-      boostStatus.textContent = message || '';
-      boostStatus.classList.toggle('is-error', Boolean(isError));
-    };
-
-    const hydrateBoostTargets = async () => {
-      try {
-        const targets = await loadCommentTargets();
-        boostSlug.innerHTML = targets
-          .map((item) => `<option value="${escapeHtml(item.slug)}">${escapeHtml(item.title)}（${escapeHtml(item.slug)}）</option>`)
-          .join('');
-        setBoostStatus('', false);
-      } catch (err) {
-        boostSlug.innerHTML = '<option value="">文章列表載入失敗</option>';
-        setBoostStatus(err && err.message ? err.message : '文章列表載入失敗', true);
-      }
-    };
-
-    const render = (comments) => {
-      if (!comments.length) {
-        list.innerHTML = '<p class="comments-admin-empty">此分類暫無評論。</p>';
-        return;
-      }
-      list.innerHTML = comments
-        .map((item) => `
-          <article class="comments-admin-item" data-comment-id="${escapeHtml(item.id)}">
-            <div class="comments-admin-item__meta">
-              <strong>${escapeHtml(item.authorName || '讀者')}</strong>
-              <span>${escapeHtml(item.slug || '')}</span>
-              <span>${escapeHtml(item.status || '')}</span>
-              ${item.source === 'admin' ? '<span>捧場</span>' : ''}
-              <time>${escapeHtml(String(item.createdAt || '').slice(0, 10))}</time>
-            </div>
-            <p>${escapeHtml(item.body || '')}</p>
-            <div class="comments-admin-actions">
-              <button type="button" data-comment-action="approved">通過</button>
-              <button type="button" data-comment-action="hidden">隱藏</button>
-              <button type="button" data-comment-action="spam">垃圾</button>
-              <button type="button" data-comment-action="delete">刪除</button>
-            </div>
-          </article>
-        `)
-        .join('');
-    };
-
-    const load = async () => {
-      setStatus('載入中…', false);
-      list.innerHTML = '';
-      try {
-        const data = await commentsRequest('/api/comments/admin?status=' + encodeURIComponent(currentStatus));
-        render(Array.isArray(data.comments) ? data.comments : []);
-        setStatus('', false);
-      } catch (err) {
-        setStatus(err && err.message ? err.message : '載入評論失敗', true);
-      }
-    };
-
-    modal.addEventListener('click', async (event) => {
-      const target = event.target;
-      if (!(target instanceof HTMLElement)) return;
-      if (target.matches('[data-comments-close]')) {
-        modal.remove();
-        return;
-      }
-      const nextStatus = target.getAttribute('data-comments-status');
-      if (nextStatus) {
-        currentStatus = nextStatus;
-        await load();
-        return;
-      }
-      const action = target.getAttribute('data-comment-action');
-      if (!action) return;
-      const item = target.closest('[data-comment-id]');
-      const id = item && item.getAttribute('data-comment-id');
-      if (!id) return;
-      target.disabled = true;
-      try {
-        if (action === 'delete') {
-          await commentsRequest('/api/comments/' + encodeURIComponent(id), { method: 'DELETE' });
-        } else {
-          await commentsRequest('/api/comments/' + encodeURIComponent(id), {
-            method: 'PATCH',
-            body: JSON.stringify({ status: action })
-          });
-        }
-        await load();
-      } catch (err) {
-        setStatus(err && err.message ? err.message : '操作失敗', true);
-      } finally {
-        target.disabled = false;
-      }
-    });
-
-    boostForm.addEventListener('submit', async (event) => {
-      event.preventDefault();
-      const submit = boostForm.querySelector('button[type="submit"]');
-      const data = new FormData(boostForm);
-      const payload = {
-        slug: data.get('slug'),
-        authorName: data.get('authorName'),
-        body: data.get('body'),
-      };
-      submit.disabled = true;
-      setBoostStatus('正在新增…', false);
-      try {
-        await commentsRequest('/api/comments/admin', {
-          method: 'POST',
-          body: JSON.stringify(payload),
-        });
-        boostForm.reset();
-        currentStatus = 'approved';
-        await load();
-        setBoostStatus('已新增，前台已可顯示。', false);
-      } catch (err) {
-        setBoostStatus(err && err.message ? err.message : '新增失敗', true);
-      } finally {
-        submit.disabled = false;
-      }
-    });
-
-    hydrateBoostTargets();
-    load();
-  };
-
-  const uploadImageToCloudflare = async (file, onProgress) => {
-    const token = getCmsToken();
-    if (!token) throw new Error('尚未登入 CMS，請先登入後再上傳圖片');
-    if (!file || !ALLOWED_UPLOAD_IMAGE_TYPES.has(String(file.type || '').toLowerCase())) {
-      throw new Error('請選擇圖片檔案');
-    }
-
-    const form = new FormData();
-    form.append('file', file, file.name || 'image.png');
-    if (typeof onProgress === 'function') onProgress('正在上傳圖片…');
-
-    const res = await fetch('/api/r2-media-upload', {
-      method: 'POST',
-      headers: { Authorization: 'Bearer ' + token },
-      body: form
-    });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.error || '圖片上傳到 Cloudflare 失敗');
-    if (!data.publicUrl) throw new Error('圖片上傳成功但缺少公開網址');
-    return data.publicUrl;
-  };
-
-  const createR2ImageMediaLibrary = () => ({
-    name: 'crivu-r2-images',
-    init({ handleInsert }) {
-      let modal = null;
-      let activeControlId = '';
-
-      const removeModal = () => {
-        if (modal) modal.remove();
-        modal = null;
-        activeControlId = '';
-      };
-
-      const setStatus = (message, isError) => {
-        if (!modal) return;
-        const status = modal.querySelector('[data-r2-media-status]');
-        if (!status) return;
-        status.textContent = message || '';
-        status.classList.toggle('is-error', Boolean(isError));
-      };
-
-      const insertUrl = (url) => {
-        const cleanUrl = String(url || '').trim();
-        if (!cleanUrl) {
-          setStatus('請先上傳圖片或輸入圖片網址', true);
-          return;
-        }
-        handleInsert(cleanUrl);
-        removeModal();
-      };
-
-      const buildModal = (options = {}) => {
-        removeModal();
-        activeControlId = options.id || '';
-
-        modal = document.createElement('div');
-        modal.className = 'r2-media-modal';
-        modal.innerHTML = `
-          <div class="r2-media-backdrop" data-r2-media-close></div>
-          <section class="r2-media-dialog" role="dialog" aria-modal="true" aria-labelledby="r2MediaTitle">
-            <header class="r2-media-header">
-              <div>
-                <h2 id="r2MediaTitle">選擇圖片</h2>
-                <p>圖片會上傳到 Cloudflare R2，內容保存時只寫入圖片網址。</p>
-              </div>
-              <button type="button" class="r2-media-close" data-r2-media-close aria-label="關閉">×</button>
-            </header>
-            <div class="r2-media-body">
-              <label class="r2-media-drop">
-                <input type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" data-r2-media-file />
-                <span>點擊選擇圖片</span>
-                <small>支援 JPG、PNG、WebP、GIF、AVIF，單檔上限依部署環境設定。</small>
-              </label>
-              <div class="r2-media-url-row">
-                <input type="url" placeholder="或貼上現有圖片網址" value="${escapeHtml(options.value || '')}" data-r2-media-url />
-                <button type="button" data-r2-media-insert-url>使用網址</button>
-              </div>
-              <div class="r2-media-status" data-r2-media-status></div>
-            </div>
-          </section>
-        `;
-
-        modal.addEventListener('click', (event) => {
-          const target = event.target;
-          if (!(target instanceof HTMLElement)) return;
-          if (target.matches('[data-r2-media-close]')) removeModal();
-          if (target.matches('[data-r2-media-insert-url]')) {
-            insertUrl(modal.querySelector('[data-r2-media-url]')?.value || '');
-          }
-        });
-
-        modal.querySelector('[data-r2-media-file]')?.addEventListener('change', async (event) => {
-          const input = event.target;
-          const file = input && input.files && input.files[0];
-          if (!file) return;
-          const drop = modal.querySelector('.r2-media-drop');
-          if (drop) drop.classList.add('is-busy');
-          try {
-            const url = await uploadImageToCloudflare(file, (message) => setStatus(message, false));
-            setStatus('圖片已上傳，正在插入…', false);
-            insertUrl(url);
-          } catch (err) {
-            console.error(err);
-            setStatus(err && err.message ? err.message : '圖片上傳失敗', true);
-          } finally {
-            if (drop) drop.classList.remove('is-busy');
-            input.value = '';
-          }
-        });
-
-        document.body.appendChild(modal);
-        setTimeout(() => modal?.querySelector('[data-r2-media-file]')?.focus(), 0);
-      };
-
-      return {
-        show: buildModal,
-        hide: removeModal,
-        enableStandalone() {},
-        onClearControl({ id } = {}) {
-          if (!id || id === activeControlId) removeModal();
-        },
-        onRemoveControl({ id } = {}) {
-          if (!id || id === activeControlId) removeModal();
-        }
-      };
-    }
-  });
-
-  CMS.registerMediaLibrary(createR2ImageMediaLibrary());
-
-  const uploadAudioToCloudflare = async (file) => {
-    const token = getCmsToken();
-    if (!token) throw new Error('尚未登入 CMS，請先登入後再上傳音訊');
-
-    const signRes = await fetch('/api/r2-upload-sign', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
-      body: JSON.stringify({
-        filename: file.name,
-        contentType: file.type || 'application/octet-stream',
-        size: file.size
-      })
-    });
-    const signJson = await signRes.json().catch(() => ({}));
-    if (!signRes.ok) throw new Error(signJson.error || '取得 Cloudflare 上傳簽名失敗');
-
-    const putRes = await fetch(signJson.uploadUrl, {
-      method: signJson.method || 'PUT',
-      headers: signJson.headers || { 'Content-Type': file.type || 'application/octet-stream' },
-      body: file
-    });
-    if (!putRes.ok) throw new Error('上傳到 Cloudflare 失敗（' + putRes.status + '）');
-
-    return signJson.publicUrl;
-  };
-
-  /* ============================================================
-     3. 右下角浮動工具列
-     ============================================================ */
-  const mountFabCluster = () => {
-    if (document.querySelector('.cms-fab-cluster')) return;
-
-    const cluster = document.createElement('div');
-    cluster.className = 'cms-fab-cluster';
-
-    const mdTools = document.createElement('div');
-    mdTools.className = 'cms-md-tools';
-    mdTools.innerHTML = `
-      <div class="cms-md-tools__title">Markdown 快捷</div>
-      <button type="button" data-md-action="bold">**粗體**</button>
-      <button type="button" data-md-action="h2">## 標題</button>
-      <button type="button" data-md-action="quote">&gt; 引用</button>
-      <button type="button" data-md-action="list">- 列表</button>
-      <button type="button" data-md-action="link">[連結](url)</button>
-      <button type="button" data-md-action="code">\`代碼\`</button>
-      <button type="button" data-md-action="red">[紅字]{red}</button>
-      <button type="button" data-md-action="mark">==標記==</button>
-    `;
-    mdTools.addEventListener('click', (event) => {
-      const target = event.target;
-      if (!(target instanceof HTMLElement)) return;
-      const action = target.getAttribute('data-md-action');
-      if (!action) return;
-      try {
-        if (action === 'bold') wrapSelection('**', '**', '重點文字');
-        if (action === 'h2') prefixLine('## ', '小標題');
-        if (action === 'quote') prefixLine('> ', '引用文字');
-        if (action === 'list') prefixLine('- ', '列表項目');
-        if (action === 'link') wrapSelection('[', '](https://)', '連結文字');
-        if (action === 'code') wrapSelection('`', '`', '代碼');
-        if (action === 'red') wrapSelection('[', ']{red}', '紅色文字');
-        if (action === 'mark') wrapSelection('==', '==', '重點標記');
-      } catch (err) {
-        alert(err && err.message ? err.message : '插入 Markdown 失敗');
-      }
-    });
-
-    // 音訊上傳按鈕（原本就有，保留）
-    const audioBtn = document.createElement('button');
-    audioBtn.type = 'button';
-    audioBtn.id = 'cfAudioUploadButton';
-    audioBtn.className = 'fab-primary';
-    audioBtn.innerHTML = '🎵 上傳音訊';
-
-    audioBtn.addEventListener('click', () => {
-      const fileInput = document.createElement('input');
-      fileInput.type = 'file';
-      fileInput.accept = 'audio/*,.mp3,.m4a,.wav,.aac,.ogg,.flac';
-      fileInput.onchange = async () => {
-        const file = fileInput.files && fileInput.files[0];
-        if (!file) return;
-        const originalHtml = audioBtn.innerHTML;
-        audioBtn.disabled = true;
-        audioBtn.innerHTML = '上傳中…';
-        try {
-          const publicUrl = await uploadAudioToCloudflare(file);
-          const title = escapeMd(fileTitle(file.name));
-          const markdown = '[audio](' + publicUrl + ')\n<!-- title:' + title + ' -->';
-          insertAtCursor(markdown);
-          audioBtn.innerHTML = '✓ 已插入音訊';
-          setTimeout(() => {
-            audioBtn.innerHTML = originalHtml;
-            audioBtn.disabled = false;
-          }, 1400);
-        } catch (err) {
-          console.error(err);
-          alert(err && err.message ? err.message : '音訊上傳失敗');
-          audioBtn.innerHTML = originalHtml;
-          audioBtn.disabled = false;
-        }
-      };
-      fileInput.click();
-    });
-
-    // 在新分頁預覽正式站
-    const siteLink = document.createElement('a');
-    siteLink.target = '_blank';
-    siteLink.rel = 'noopener';
-    siteLink.href = 'https://cbc688.com/';
-    siteLink.innerHTML = '🌐 預覽網站';
-
-    cluster.appendChild(mdTools);
-    cluster.appendChild(audioBtn);
-
-    const commentsBtn = document.createElement('button');
-    commentsBtn.type = 'button';
-    commentsBtn.innerHTML = '💬 評論審核';
-    commentsBtn.addEventListener('click', openCommentsManager);
-    cluster.appendChild(commentsBtn);
-
-    cluster.appendChild(siteLink);
-    document.body.appendChild(cluster);
-  };
-
-  /* ============================================================
-     4. （已移除）站點設定頁的浮動說明卡
-     ============================================================ */
-
-  /* ============================================================
-     5. 顏色欄位即時色塊
-     ============================================================ */
-  const attachColorSwatches = () => {
-    document.querySelectorAll('input[type="text"]').forEach((input) => {
-      if (input.dataset.swatchAttached) return;
-      const labelText = input.closest('[class*="EditorControl"]')?.querySelector('[class*="ControlLabel"]')?.textContent || '';
-      if (!labelText.includes('強調色') && !labelText.includes('色碼')) return;
-
-      input.dataset.swatchAttached = '1';
-      const wrapper = input.parentElement;
-      if (!wrapper) return;
-      wrapper.classList.add('cms-color-field');
-      const swatch = document.createElement('span');
-      swatch.className = 'cms-color-swatch';
-      wrapper.appendChild(swatch);
-
-      const sync = () => {
-        const v = String(input.value || '').trim();
-        swatch.style.background = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(v) ? v : 'transparent';
-      };
-      sync();
-      input.addEventListener('input', sync);
-      input.addEventListener('change', sync);
-    });
-  };
-
-  /* ============================================================
-     6. 事件綁定
-     ============================================================ */
-  ['focusin', 'click', 'keyup', 'select'].forEach((evt) => {
-    document.addEventListener(evt, (e) => rememberSelection(e.target), true);
-  });
-
-  const onRouteChange = () => {
-    // 色塊會在 CMS 重新渲染輸入框後失效，重綁一次
-    attachColorSwatches();
-  };
-  window.addEventListener('hashchange', onRouteChange);
-
-  // DOM 變動時重跑一次小工具（CMS 會動態換頁）
-  let tick = 0;
-  const observer = new MutationObserver(() => {
-    cancelAnimationFrame(tick);
-    tick = requestAnimationFrame(() => {
-      attachColorSwatches();
-    });
-  });
-  observer.observe(document.body, { childList: true, subtree: true });
-
-  /* ============================================================
-     7. Boot
-     ============================================================ */
-  const boot = () => {
-    const config = window.DECAP_CMS_CONFIG || window.CMS_CONFIG;
-    if (config) {
-      if (window.CMS_CONFIG) {
-        try { delete window.CMS_CONFIG; } catch { window.CMS_CONFIG = undefined; }
-      }
-      CMS.init({ config });
-    }
-    mountFabCluster();
-    onRouteChange();
-  };
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', boot);
-  } else {
-    boot();
-  }
-})();
+try {const session=await api('session');shell(session.user);await openResource('articles');} catch {app.innerHTML=`<main class="login"><div><a class="brand" href="/articles">CRIVU</a><h1>內容管理</h1><p>使用獲准的 GitHub 帳號登入。GitHub 只用於確認身分，內容不再寫入 GitHub。</p><a class="login-button" href="/api/auth?provider=github&returnTo=/admin/">使用 GitHub 登入</a></div></main>`;}

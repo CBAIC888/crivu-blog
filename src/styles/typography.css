@@ -1,0 +1,26 @@
+:root {
+  --font-serif: "Iowan Old Style", "Songti TC", "Songti SC", "STSong", "Noto Serif CJK TC", "Noto Serif CJK SC", serif;
+  --font-sans: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "PingFang TC", "PingFang SC", sans-serif;
+  --type-body: 17px;
+  --type-body-reading: 18px;
+  --type-small: 13px;
+  --type-caption: 12px;
+  --type-list-title: 19px;
+  --type-section: 25px;
+  --type-page-title: clamp(31px, 4vw, 48px);
+  --type-article-title: 24px;
+  --leading-body: 1.78;
+  --leading-reading: 1.92;
+}
+
+@media (max-width: 720px) {
+  :root {
+    --type-body: 16px;
+    --type-body-reading: 17px;
+    --type-list-title: 18px;
+    --type-section: 22px;
+    --type-page-title: 34px;
+    --type-article-title: 24px;
+    --leading-reading: 1.88;
+  }
+}

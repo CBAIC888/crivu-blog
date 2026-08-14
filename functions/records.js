@@ -1,6 +1,3 @@
-import { loadSiteBundle, PAGE_HEADERS, renderRecordsPage } from '../shared/site-pages.js';
-
-export async function onRequest(context) {
-  const data = await loadSiteBundle(context);
-  return new Response(renderRecordsPage(data), { headers: PAGE_HEADERS });
-}
+import { bundle, projects } from './_content.js';
+import { htmlHeaders, renderProjects } from '../src/renderers/public-site.js';
+export async function onRequest({env,request}){const {db}=await bundle(env);return new Response(renderProjects({items:await projects(db),origin:new URL(request.url).origin}),{headers:htmlHeaders});}

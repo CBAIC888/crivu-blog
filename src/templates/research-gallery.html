@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="robots" content="noindex" />
+  <meta name="theme-color" content="#080808" />
+  <title>圖片展示 · 對『世界』的探索 · CRIVU</title>
+  <link rel="icon" href="/assets/img/favicon.png" type="image/png" />
+  <link rel="stylesheet" href="/preview/typography.css" />
+  <link rel="stylesheet" href="/preview/gallery.css" />
+</head>
+<body>
+  <header class="gallery-header">
+    <a class="gallery-back" href="/preview/research.html" data-gallery-back>← 返回文章</a>
+    <p><span data-gallery-label>圖片展示</span><small>17</small></p>
+  </header>
+  <main class="gallery-page">
+    <header class="gallery-intro">
+      <h1 data-gallery-title>對『世界』的探索</h1>
+      <p data-gallery-deck>文章中的圖像與文獻資料集中保存於此。點擊圖片可進入全屏查看。</p>
+    </header>
+    <div class="gallery-grid" data-gallery-grid></div>
+  </main>
+  <footer>© 2026 CRIVU</footer>
+  <dialog class="gallery-lightbox" data-gallery-lightbox aria-label="圖片預覽">
+    <button class="gallery-close" type="button" data-gallery-close aria-label="關閉">×</button>
+    <button class="gallery-turn gallery-turn--prev" type="button" data-gallery-prev aria-label="上一張">←</button>
+    <figure>
+      <img data-gallery-lightbox-image alt="" />
+      <figcaption data-gallery-lightbox-caption></figcaption>
+    </figure>
+    <button class="gallery-turn gallery-turn--next" type="button" data-gallery-next aria-label="下一張">→</button>
+  </dialog>
+  <script type="module" src="/preview/gallery.js"></script>
+</body>
+</html>

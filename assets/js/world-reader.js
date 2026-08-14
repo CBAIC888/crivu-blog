@@ -28,9 +28,9 @@
         <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m4.5 6.25 3.5 3.5 3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>
       <div class="hero-more__menu" id="recordMoreMenu" role="menu" hidden>
-        <a href="/records.html" role="menuitem"><span>其他紀錄</span><small>Records</small></a>
-        <a href="/issues.html" role="menuitem"><span>期刊</span><small>Issues</small></a>
-        <a href="/articles.html" role="menuitem"><span>文章</span><small>Articles</small></a>
+        <a href="/records" role="menuitem"><span>其他紀錄</span><small>Records</small></a>
+        <a href="/issues" role="menuitem"><span>期刊</span><small>Issues</small></a>
+        <a href="/articles" role="menuitem"><span>文章</span><small>Articles</small></a>
       </div>
     `;
     shareAction.insertAdjacentElement('afterend', more);
