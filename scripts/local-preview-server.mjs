@@ -38,6 +38,20 @@ const D1 = {
   prepare: (sql) => new Statement(sql),
   batch: async (statements) => Promise.all(statements.map((statement) => statement.run())),
 };
+const mediaObjects = new Map();
+const MEDIA_BUCKET = {
+  put: async (key, body, options={}) => {
+    const bytes=Buffer.from(await body.arrayBuffer());
+    const httpEtag=`"local-${bytes.length}-${Date.now()}"`;
+    mediaObjects.set(key,{bytes,httpEtag,contentType:options.httpMetadata?.contentType||'application/octet-stream'});
+    return {httpEtag};
+  },
+  get: async (key) => {
+    const object=mediaObjects.get(key);if(!object)return null;
+    return {body:object.bytes,httpEtag:object.httpEtag,writeHttpMetadata:(headers)=>headers.set('content-type',object.contentType)};
+  },
+  delete: async (key) => mediaObjects.delete(key),
+};
 
 const modules = {
   '/articles': await import('../functions/articles.js'),
@@ -59,6 +73,7 @@ const modules = {
   issue: await import('../functions/issues/[id].js'),
   project: await import('../functions/records/[id].js'),
   admin: await import('../functions/api/v1/admin/[[path]].js'),
+  media: await import('../functions/media/[[key]].js'),
 };
 
 const mime = {
@@ -136,9 +151,11 @@ const server = http.createServer(async (req, res) => {
 
     const env = {
       CRIVU_DB: D1,
+      MEDIA_BUCKET,
       SESSION_SECRET: 'local-preview-only',
       GUESTBOOK_HASH_SALT: 'local-preview-only',
       GUESTBOOK_ALLOW_UNVERIFIED: 'true',
+      BUILD_VERSION: 'local-preview',
     };
     let mod;
     const params = {};
@@ -161,6 +178,7 @@ const server = http.createServer(async (req, res) => {
     else if (pathname === '/api/v1/settings/public') mod = modules.apiSettings;
     else if (pathname === '/api/v1/guestbook') mod = modules.guestbook;
     else if (pathname.startsWith('/api/v1/admin/')) { mod = modules.admin; params.path = pathname.slice(14).split('/').filter(Boolean); }
+    else if (pathname.startsWith('/media/')) { mod = modules.media; params.key = pathname.slice('/media/'.length).split('/'); }
     else if (pathname.startsWith('/articles/')) { mod = modules.article; params.slug = pathname.slice(10); }
     else if (pathname.startsWith('/issues/')) { mod = modules.issue; params.id = pathname.slice(8); }
     else if (pathname.startsWith('/records/') && !pathname.includes('/world-word-history/gallery') && !pathname.includes('/world-word-history/museum')) { mod = modules.project; params.id = pathname.slice(9); }

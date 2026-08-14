@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..'),dist=path.join(root,'dist');
@@ -7,6 +8,8 @@ fs.rmSync(dist,{recursive:true,force:true});
 fs.mkdirSync(dist,{recursive:true});
 const copy=(from,to=from)=>{const source=path.join(root,from),target=path.join(dist,to);fs.mkdirSync(path.dirname(target),{recursive:true});fs.cpSync(source,target,{recursive:true});};
 const write=(file,content)=>{const target=path.join(dist,file);fs.mkdirSync(path.dirname(target),{recursive:true});fs.writeFileSync(target,`${content.trim()}\n`);};
+const buildVersion=String(process.env.CF_PAGES_COMMIT_SHA||crypto.createHash('sha256').update(['src/styles/style.css','src/styles/typography.css','src/styles/gallery.css','src/scripts/public-site.js','src/scripts/guestbook.js','src/scripts/gallery.js'].map(file=>fs.readFileSync(path.join(root,file))).join('\n')).digest('hex')).slice(0,12);
+const versionAssets=(html)=>html.replace(/((?:href|src)="\/assets\/(?:academic|css|js)\/[^"?]+)(")/g,`$1?v=${buildVersion}$2`);
 
 copy('assets/img');
 copy('assets/css/world-reader.css');
@@ -36,7 +39,7 @@ let gallery=fs.readFileSync(path.join(root,'src/templates/research-gallery.html'
   .replaceAll('/preview/gallery.css','/assets/academic/gallery.css')
   .replaceAll('/preview/gallery.js','/assets/academic/gallery.js')
   .replaceAll('/preview/research.html','/articles/world-word-exploration');
-write('records/world-word-history/gallery/index.html',gallery);
+write('records/world-word-history/gallery/index.html',versionAssets(gallery));
 
 write('robots.txt',`User-agent: *\nAllow: /\nDisallow: /admin/\nDisallow: /api/v1/admin/\nSitemap: https://cbc688.com/sitemap.xml`);
 write('_redirects',`/index.html /articles 308

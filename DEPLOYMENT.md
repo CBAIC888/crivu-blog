@@ -1,20 +1,16 @@
 # CRIVU 學術版運行手冊
 
-目前只保留 Cloudflare Pages。EdgeOne、FSNotes、Decap CMS 與 GitHub Content API 已移除；GitHub 僅用於第一階段管理員登入。
+目前只保留 Cloudflare Pages。EdgeOne、FSNotes、Decap CMS 與 GitHub Content API 已移除；GitHub 用於源碼、部署觸發與第一階段管理員登入，文章與媒體不再寫入 GitHub。
 
 ## 本機檢查
 
 ```sh
 npm run build
 node scripts/build-content-seed.mjs --output /tmp/crivu-content-seed.sql
-sqlite3 /tmp/crivu.db <<'SQL'
-PRAGMA foreign_keys = ON;
-.read migrations/0001_comments.sql
-.read migrations/0002_comments_source.sql
-.read migrations/0003_content_platform.sql
-.read /tmp/crivu-content-seed.sql
-PRAGMA foreign_key_check;
-SQL
+sqlite3 /tmp/crivu.db < migrations/0001_comments.sql
+sqlite3 /tmp/crivu.db < migrations/0002_comments_source.sql
+sqlite3 /tmp/crivu.db < migrations/0003_content_platform.sql
+sqlite3 /tmp/crivu.db < /tmp/crivu-content-seed.sql
 ```
 
 正式部署前，將 `wrangler.jsonc.example` 複製為 `wrangler.jsonc`，只替換真實 D1 database ID。不要提交密鑰。
@@ -22,10 +18,7 @@ SQL
 ## Cloudflare 綁定
 
 - D1 binding：`CRIVU_DB`
-- D1 database：`crivu-content`
 - R2 binding：`MEDIA_BUCKET`
-- R2 bucket：`crivu-media`
-- Pages project：`crivu-blog`
 - Pages build command：`npm run build`
 - Pages output directory：`dist`
 
@@ -38,8 +31,6 @@ SQL
 - `GUESTBOOK_HASH_SALT`：留言私隱雜湊鹽值。
 - `TELEGRAM_BOT_TOKEN`、`TELEGRAM_CHAT_ID`：可選，待審核通知。
 
-GitHub OAuth callback 必須保持為 `https://cbc688.com/api/callback`。
-
 本機可用 `GUESTBOOK_ALLOW_UNVERIFIED=true` 跳過 Turnstile；正式環境不可啟用。
 
 ## 資料遷移
@@ -51,16 +42,6 @@ GitHub OAuth callback 必須保持為 `https://cbc688.com/api/callback`。
 5. `node scripts/migrate-media-to-r2.mjs` 只列出媒體；人工核對 bucket 後才可加 `--execute --bucket <name>`。
 6. 確認 R2 文件與 D1 媒體資料完整後，才可另行刪除舊 Git 媒體或舊評論。這些刪除不得與首次遷移同批執行。
 
-## 正式發布
-
-1. 先以 `npx wrangler whoami` 確認 Cloudflare 帳號。
-2. 核對 `crivu-content` 與 `crivu-media`，匯出舊 D1；舊 D1、舊評論、舊 preview 與舊媒體在首次發布不刪除。
-3. 在空資料庫依序執行 `0001`、`0002`，匯入舊 comments 後再執行 `0003`與 seed。
-4. 以 `PRAGMA foreign_key_check`、資料數量與 `node scripts/audit-content-migration.mjs <origin>` 核對遷移。
-5. 檢查 production 環境的 `CRIVU_DB`、`MEDIA_BUCKET`、Secrets／Variables 與 output directory 皆正確。
-6. 建置後執行 `npx wrangler pages deploy dist --project-name=crivu-blog --branch=main`。Git 整合的 production branch 仍為 `main`。
-7. 驗收 `https://cbc688.com`、`https://cbc688.com/rss.xml`、公開 API、舊網址重定向與後台登入入口。
-
 ## 發布前驗收
 
 - `/` 以 308 導向 `/articles`。
@@ -70,4 +51,30 @@ GitHub OAuth callback 必須保持為 `https://cbc688.com/api/callback`。
 - 後台可建立、預覽、自動保存、發布、封存與恢復文章修訂。
 - R2 上傳與媒體庫正常，且後台不向 GitHub 寫內容。
 
-部署後先保留舊 `COMMENTS_DB`、FSNotes Secrets 與舊資料作為回滾保護；穩定運行後再另行審議退役，不與首次遷移同批刪除。
+## 標準推送與部署規則
+
+每批改動只建立一個提交、只推送一次，避免用重複推送試探部署狀態。
+
+1. 僅檢查一次 `git status -sb`，確認本批改動範圍；有無關修改時先分離。
+2. 需要本機驗收時只執行一次 `npm run build`。Cloudflare Pages 的正式構建命令同樣是 `npm run build`，輸出目錄為 `dist`。
+3. 將本批檔案建立一個語義清楚的提交。
+4. 推送前執行一次 `git fetch origin main`；若本機落後，僅 rebase 一次並處理衝突。
+5. 直接推送生產分支：`git push origin main`。
+6. GitHub 接受推送後立即停止並回報提交 SHA。除非站主明確要求診斷，不等待、不輪詢 Cloudflare 構建或正式網站。
+
+如果一次成功推送後網站仍是舊版本，不要再次推送。依序核對 Cloudflare Pages 的生產分支是否為 `main`、部署提交 SHA、專案根目錄、構建輸出 `dist`、Pages Functions、`cbc688.com` 綁定；確認部署正確後才按需清除快取。
+
+## 快取與版本規則
+
+- Functions 生成的 HTML 使用 Cloudflare `CF_PAGES_COMMIT_SHA` 前 12 位作為 `?v=` 資源版本；每次部署自動產生新 CSS／JS URL，無需人工修改版本號。
+- 靜態研究圖庫在構建時使用同一部署 SHA；本機構建則使用相關 CSS／JS 內容雜湊。
+- `/assets/*` 可保持 `public, max-age=31536000, immutable`，但 Cloudflare Cache Rules 必須尊重查詢字串，不得啟用忽略 query string。
+- R2 媒體使用帶 UUID 的唯一地址，可保持一年 immutable；替換圖片必須產生新地址，不覆蓋舊 key。
+- HTML、`/api/*` 與 `/admin/*` 保持 `no-store`；RSS 與 Sitemap 最多快取一小時。
+- `dist/`、`.wrangler/` 與 `node_modules/` 都是本機生成物或依賴，不得提交。
+
+## 發布邊界
+
+- 正常發布只推送 GitHub `main`，由 Cloudflare Pages 自動構建；不再發布 EdgeOne。
+- 不提交 `.env`、Cloudflare 密鑰、OAuth Secret、Session Secret 或真實 Wrangler 私密配置。
+- GitHub 只保存程式、遷移與部署配置；後台文章存入 D1，圖片與附件存入 R2。

@@ -132,7 +132,7 @@ export const publicArticle = (row) => ({
   bodyMarkdown: row.body_markdown || '',
   language: row.language || 'zh-Hant',
   coverUrl: row.cover_public_url || row.cover_url || '',
-  publishedAt: row.published_at || '',
+  publishedAt: row.published_at || row.scheduled_at || '',
   updatedAt: row.updated_at || '',
   seoTitle: row.seo_title || '',
   seoDescription: row.seo_description || '',

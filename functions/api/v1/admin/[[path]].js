@@ -10,6 +10,18 @@ const allowed = (value, values, fallback) => values.includes(value) ? value : fa
 const etag = (version) => ({ ETag: `"${version}"` });
 const expectedVersion = (request, fallback) => Number(String(request.headers.get('if-match') || fallback || '').replaceAll('"', ''));
 const conflict = () => failure(409, 'version_conflict', 'This item changed after you opened it. Reload before saving.');
+const timestamp = (value) => {
+  const raw = cleanText(value, 40);
+  if (!raw) return null;
+  const source = /^\d{4}-\d{2}-\d{2}$/.test(raw)
+    ? `${raw}T00:00:00+08:00`
+    : /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?$/.test(raw)
+      ? `${raw}+08:00`
+      : raw;
+  const parsed = new Date(source);
+  if (Number.isNaN(parsed.getTime())) throw Object.assign(new Error('Invalid date or time'), { status: 400, code: 'validation_error' });
+  return parsed.toISOString();
+};
 
 const articleFields = (payload) => ({
   type: allowed(payload.type, ['general', 'research', 'script'], 'general'),
@@ -17,8 +29,8 @@ const articleFields = (payload) => ({
   slug: cleanSlug(payload.slug), title: cleanText(payload.title, 300), subtitle: cleanText(payload.subtitle, 500),
   summary: cleanText(payload.summary, 3000), body: String(payload.bodyMarkdown ?? payload.body ?? '').replace(/\r\n/g, '\n').slice(0, 2_000_000),
   language: cleanText(payload.language || 'zh-Hant', 20), coverMediaId: cleanText(payload.coverMediaId, 120) || null,
-  coverUrl: cleanText(payload.coverUrl, 1000) || null, publishedAt: cleanText(payload.publishedAt, 40) || null,
-  scheduledAt: cleanText(payload.scheduledAt, 40) || null, seoTitle: cleanText(payload.seoTitle, 300),
+  coverUrl: cleanText(payload.coverUrl, 1000) || null, publishedAt: timestamp(payload.publishedAt),
+  scheduledAt: timestamp(payload.scheduledAt), seoTitle: cleanText(payload.seoTitle, 300),
   seoDescription: cleanText(payload.seoDescription, 1000), canonicalUrl: cleanText(payload.canonicalUrl, 1000),
   license: cleanText(payload.license, 300), metadata: JSON.stringify(payload.metadata && typeof payload.metadata === 'object' ? payload.metadata : {}),
 });
@@ -71,6 +83,7 @@ const listArticles = async (db, url) => {
 const createArticle = async (db, payload, session) => {
   const item = articleFields(payload);
   if (!validSlug(item.slug) || !item.title) throw Object.assign(new Error('Title and a valid slug are required'), { status: 400, code: 'validation_error' });
+  if (item.status === 'scheduled' && !item.scheduledAt) throw Object.assign(new Error('Scheduled articles require a scheduled time'), { status: 400, code: 'validation_error' });
   const id = validId(payload.id) ? payload.id : makeId('article');
   await db.prepare(`INSERT INTO articles (id,type,status,slug,title,subtitle,summary,body_markdown,language,cover_media_id,cover_url,published_at,scheduled_at,seo_title,seo_description,canonical_url,license,metadata_json) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`).bind(
     id, item.type, item.status, item.slug, item.title, item.subtitle, item.summary, item.body, item.language, item.coverMediaId, item.coverUrl, item.publishedAt, item.scheduledAt, item.seoTitle, item.seoDescription, item.canonicalUrl, item.license, item.metadata
@@ -87,6 +100,7 @@ const updateArticle = async (db, id, payload, request, session) => {
   if (expectedVersion(request, payload.version) !== Number(existing.version)) return conflict();
   const item = articleFields({ ...serializeArticle(existing), ...payload });
   if (!validSlug(item.slug) || !item.title) throw Object.assign(new Error('Title and a valid slug are required'), { status: 400, code: 'validation_error' });
+  if (item.status === 'scheduled' && !item.scheduledAt) throw Object.assign(new Error('Scheduled articles require a scheduled time'), { status: 400, code: 'validation_error' });
   const nextVersion = Number(existing.version) + 1;
   await db.batch([
     db.prepare(`INSERT OR IGNORE INTO article_revisions (id, article_id, version, snapshot_json, changed_by) VALUES (?, ?, ?, ?, ?)`).bind(makeId('rev'), id, existing.version, JSON.stringify(serializeArticle(existing)), session.login),
@@ -108,7 +122,7 @@ const restoreArticle = async (db, articleId, revisionId, session) => {
 };
 
 const serializeCollection = (row) => ({ id: row.id, type: row.type, status: row.status, title: row.title, theme: row.theme || '', coverMediaId: row.cover_media_id || '', coverUrl: row.cover_url || '', editorNote: row.editor_note || '', year: row.year || '', volume: row.volume || '', issueNumber: row.issue_number || '', publishedAt: row.published_at || '', pdfMediaId: row.pdf_media_id || '', metadata: safeJson(row.metadata_json), version: row.version, updatedAt: row.updated_at });
-const collectionFields = (payload) => ({ id: cleanText(payload.id,120), type: allowed(payload.type,['collection','journal_issue'],'collection'), status: allowed(payload.status,['draft','published','archived'],'draft'), title: cleanText(payload.title,300), theme: cleanText(payload.theme,500), coverMediaId: cleanText(payload.coverMediaId,120)||null, coverUrl: cleanText(payload.coverUrl,1000)||null, editorNote: cleanText(payload.editorNote,20_000), year: Number(payload.year)||null, volume: cleanText(payload.volume,50), issueNumber: cleanText(payload.issueNumber,50), publishedAt: cleanText(payload.publishedAt,40)||null, pdfMediaId: cleanText(payload.pdfMediaId,120)||null, metadata: JSON.stringify(payload.metadata && typeof payload.metadata === 'object' ? payload.metadata : {}) });
+const collectionFields = (payload) => ({ id: cleanText(payload.id,120), type: allowed(payload.type,['collection','journal_issue'],'collection'), status: allowed(payload.status,['draft','published','archived'],'draft'), title: cleanText(payload.title,300), theme: cleanText(payload.theme,500), coverMediaId: cleanText(payload.coverMediaId,120)||null, coverUrl: cleanText(payload.coverUrl,1000)||null, editorNote: cleanText(payload.editorNote,20_000), year: Number(payload.year)||null, volume: cleanText(payload.volume,50), issueNumber: cleanText(payload.issueNumber,50), publishedAt: timestamp(payload.publishedAt), pdfMediaId: cleanText(payload.pdfMediaId,120)||null, metadata: JSON.stringify(payload.metadata && typeof payload.metadata === 'object' ? payload.metadata : {}) });
 const replaceCollectionArticles = async (db, id, ids) => db.batch([db.prepare(`DELETE FROM collection_articles WHERE collection_id=?`).bind(id), ...(Array.isArray(ids)?ids:[]).filter(validId).map((articleId,index)=>db.prepare(`INSERT INTO collection_articles (collection_id,article_id,sort_order) VALUES (?,?,?)`).bind(id,articleId,index))]);
 const hydrateCollection = async (db,row) => ({ ...serializeCollection(row), articleIds: rows(await db.prepare(`SELECT article_id AS articleId FROM collection_articles WHERE collection_id=? ORDER BY sort_order`).bind(row.id).all()).map(x=>x.articleId) });
 
@@ -153,6 +167,40 @@ const mediaUpload = async (context, db, session) => {
   return json({item:{id,filename:file.name,mimeType:file.type,sizeBytes:file.size,r2Key:key,publicUrl,etag:object?.httpEtag||''}},201);
 };
 
+const archiveResource = async (db, table, id) => {
+  const result = await db.prepare(`UPDATE ${table} SET status='archived',version=version+1,updated_at=? WHERE id=?`).bind(now(),id).run();
+  return Number(result.meta?.changes || 0) ? json({archived:true}) : failure(404,'not_found','Item not found');
+};
+
+const purgeResource = async (db, resource, id) => {
+  const table = resource;
+  const item = await db.prepare(`SELECT id,status FROM ${table} WHERE id=?`).bind(id).first();
+  if (!item) return failure(404,'not_found','Item not found');
+  if (item.status !== 'archived') return failure(409,'archive_required','Archive the item before permanently deleting it');
+  const statements = [];
+  if (resource === 'articles') statements.push(
+    db.prepare(`DELETE FROM article_translations WHERE article_id=? OR translation_article_id=?`).bind(id,id),
+    db.prepare(`DELETE FROM research_sections WHERE article_id=?`).bind(id),
+    db.prepare(`DELETE FROM research_notes WHERE article_id=?`).bind(id),
+    db.prepare(`DELETE FROM article_authors WHERE article_id=?`).bind(id),
+    db.prepare(`DELETE FROM article_tags WHERE article_id=?`).bind(id),
+    db.prepare(`DELETE FROM collection_articles WHERE article_id=?`).bind(id),
+    db.prepare(`DELETE FROM article_revisions WHERE article_id=?`).bind(id),
+    db.prepare(`DELETE FROM project_relations WHERE relation_type IN ('article','translation') AND target_id=?`).bind(id),
+  );
+  if (resource === 'collections') statements.push(
+    db.prepare(`DELETE FROM collection_articles WHERE collection_id=?`).bind(id),
+    db.prepare(`DELETE FROM project_relations WHERE relation_type='collection' AND target_id=?`).bind(id),
+  );
+  if (resource === 'projects') statements.push(db.prepare(`DELETE FROM project_relations WHERE project_id=?`).bind(id));
+  statements.push(
+    db.prepare(`DELETE FROM media_relations WHERE owner_type=? AND owner_id=?`).bind(resource === 'collections' ? 'collection' : resource.slice(0,-1), id),
+    db.prepare(`DELETE FROM ${table} WHERE id=?`).bind(id),
+  );
+  await db.batch(statements);
+  return json({deleted:true});
+};
+
 export const onRequest = handle(async (context) => {
   const parts=pathParts(context.params), resource=parts[0]||'session', id=parts[1], action=parts[2];
   if(resource==='session'&&context.request.method==='GET'){const session=await readSession(context.request,context.env);return session?json({authenticated:true,user:session}):json({authenticated:false},401);}
@@ -165,7 +213,8 @@ export const onRequest = handle(async (context) => {
     if(method==='GET'&&id){const row=await db.prepare(`SELECT * FROM articles WHERE id=?`).bind(id).first();return row?json({item:await hydrateArticle(db,row)},200,etag(row.version)):failure(404,'not_found','Article not found');}
     if(method==='PUT'&&id){const result=await updateArticle(db,id,await parseJson(context.request),context.request,session);if(result instanceof Response)return result;return result?json({item:result},200,etag(result.version)):failure(404,'not_found','Article not found');}
     if(method==='POST'&&id&&action==='restore'){const payload=await parseJson(context.request),item=await restoreArticle(db,id,payload.revisionId,session);return item?json({item},200,etag(item.version)):failure(404,'not_found','Revision not found');}
-    if(method==='DELETE'&&id){await db.prepare(`UPDATE articles SET status='archived',version=version+1,updated_at=? WHERE id=?`).bind(now(),id).run();return json({archived:true});}
+    if(method==='DELETE'&&id&&action==='purge')return purgeResource(db,'articles',id);
+    if(method==='DELETE'&&id)return archiveResource(db,'articles',id);
   }
 
   if(['collections','projects','pages'].includes(resource)){
@@ -173,7 +222,8 @@ export const onRequest = handle(async (context) => {
     if(method==='GET'&&!id){const result=await db.prepare(`SELECT * FROM ${table} ORDER BY updated_at DESC LIMIT 300`).all();const items=resource==='collections'?await Promise.all(rows(result).map(row=>hydrateCollection(db,row))):resource==='projects'?await Promise.all(rows(result).map(row=>hydrateProject(db,row))):rows(result).map(row=>({id:row.id,slug:row.slug,title:row.title,bodyMarkdown:row.body_markdown,status:row.status,seoTitle:row.seo_title||'',seoDescription:row.seo_description||'',version:row.version,updatedAt:row.updated_at}));return json({items});}
     if(method==='GET'&&id){const row=await db.prepare(`SELECT * FROM ${table} WHERE id=?`).bind(id).first();if(!row)return failure(404,'not_found','Item not found');return json({item:resource==='collections'?await hydrateCollection(db,row):resource==='projects'?await hydrateProject(db,row):{id:row.id,slug:row.slug,title:row.title,bodyMarkdown:row.body_markdown,status:row.status,seoTitle:row.seo_title||'',seoDescription:row.seo_description||'',version:row.version,updatedAt:row.updated_at}},200,etag(row.version));}
     if((method==='POST'&&!id)||(method==='PUT'&&id)){const item=await upsertSimpleResource(db,resource,id,await parseJson(context.request),context.request);if(item instanceof Response)return item;return json({item},method==='POST'?201:200,etag(item.version));}
-    if(method==='DELETE'&&id){await db.prepare(`UPDATE ${table} SET status='archived',version=version+1,updated_at=? WHERE id=?`).bind(now(),id).run();return json({archived:true});}
+    if(method==='DELETE'&&id&&action==='purge')return purgeResource(db,resource,id);
+    if(method==='DELETE'&&id)return archiveResource(db,table,id);
   }
 
   if(resource==='settings'){

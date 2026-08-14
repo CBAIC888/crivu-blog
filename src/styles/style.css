@@ -207,6 +207,11 @@ button { cursor: pointer; }
 .research-body .article-section blockquote p { margin: 0; font-size: var(--type-body-reading); line-height: var(--leading-reading); }
 .research-body .article-section i { font-style: italic; }
 .research-body .article-section > h2 + p { text-indent: 2em; }
+.research-body .post-image { margin: 2.4em 0; }
+.research-body .post-image img,
+.script-body .post-image img { display: block; width: 100%; height: auto; }
+.research-body .post-image figcaption,
+.script-body .post-image figcaption { margin-top: 10px; color: var(--muted); font: 12px/1.6 var(--sans); }
 .research-body .article-conclusion { margin: 70px 0; color: var(--ink); font-size: 22px; line-height: 1.9; }
 .research-body .article-notes { display: none; }
 .research-body .article-notes .note { position: relative; margin: 0 0 1em; padding-left: 38px; color: var(--muted); font: 13px/1.8 var(--sans); }
@@ -384,6 +389,7 @@ button { cursor: pointer; }
 .script-speech--song .script-speech__content p + p { margin-top: .14em; }
 .script-direction { max-width: none; margin: 0 0 26px calc(var(--script-label-width) + var(--script-column-gap)); padding-left: 14px; border-left: 1px solid var(--line-strong); color: var(--muted); font: 14px/1.8 var(--sans); }
 .script-cue { margin: 0 0 22px calc(var(--script-label-width) + var(--script-column-gap)); color: var(--text); font-size: var(--type-body-reading); line-height: 1.92; }
+.script-body .post-image { margin: 2.4em 0 2.4em calc(var(--script-label-width) + var(--script-column-gap)); }
 .script-inline-heading { margin: 30px 0 18px; color: var(--ink); font: 600 16px/1.5 var(--sans); }
 .script-comments { width: 70%; }
 
