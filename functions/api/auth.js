@@ -12,11 +12,13 @@ export async function onRequestGet({ request, env }) {
     scope: 'read:user user:email',
     state,
   });
-  const response = Response.redirect(`https://github.com/login/oauth/authorize?${params}`, 302);
-  response.headers.append('Set-Cookie', `oauth_state=${state}; HttpOnly; Path=/api/callback; SameSite=Lax; Max-Age=600${secure}`);
-  response.headers.append('Set-Cookie', `oauth_return=${cookieValue(returnTo)}; HttpOnly; Path=/api/callback; SameSite=Lax; Max-Age=600${secure}`);
-  response.headers.set('Cache-Control', 'no-store');
-  return response;
+  const headers = new Headers({
+    Location: `https://github.com/login/oauth/authorize?${params}`,
+    'Cache-Control': 'no-store',
+  });
+  headers.append('Set-Cookie', `oauth_state=${state}; HttpOnly; Path=/api/callback; SameSite=Lax; Max-Age=600${secure}`);
+  headers.append('Set-Cookie', `oauth_return=${cookieValue(returnTo)}; HttpOnly; Path=/api/callback; SameSite=Lax; Max-Age=600${secure}`);
+  return new Response(null, { status: 302, headers });
 }
 
 export function onRequest() {
