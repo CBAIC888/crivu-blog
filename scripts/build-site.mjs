@@ -8,7 +8,9 @@ fs.rmSync(dist,{recursive:true,force:true});
 fs.mkdirSync(dist,{recursive:true});
 const copy=(from,to=from)=>{const source=path.join(root,from),target=path.join(dist,to);fs.mkdirSync(path.dirname(target),{recursive:true});fs.cpSync(source,target,{recursive:true});};
 const write=(file,content)=>{const target=path.join(dist,file);fs.mkdirSync(path.dirname(target),{recursive:true});fs.writeFileSync(target,`${content.trim()}\n`);};
-const buildVersion=String(process.env.CF_PAGES_COMMIT_SHA||crypto.createHash('sha256').update(['src/styles/style.css','src/styles/typography.css','src/styles/gallery.css','src/scripts/public-site.js','src/scripts/guestbook.js','src/scripts/gallery.js'].map(file=>fs.readFileSync(path.join(root,file))).join('\n')).digest('hex')).slice(0,12);
+const analyticsTag=(buildVersion)=>`<script defer src="/assets/academic/analytics.js?v=${buildVersion}"></script>`;
+const withAnalytics=(html,buildVersion)=>String(html).replace(/<\/body>\s*<\/html>\s*$/i,`${analyticsTag(buildVersion)}</body></html>`);
+const buildVersion=String(process.env.CF_PAGES_COMMIT_SHA||crypto.createHash('sha256').update(['src/styles/style.css','src/styles/typography.css','src/styles/gallery.css','src/scripts/public-site.js','src/scripts/guestbook.js','src/scripts/gallery.js','src/scripts/analytics.js'].map(file=>fs.readFileSync(path.join(root,file))).join('\n')).digest('hex')).slice(0,12);
 const versionAssets=(html)=>html.replace(/((?:href|src)="\/assets\/(?:academic|css|js)\/[^"?]+)(")/g,`$1?v=${buildVersion}$2`);
 
 copy('assets/img');
@@ -28,10 +30,10 @@ const academicStyle=fs.readFileSync(path.join(root,'src/styles/style.css'),'utf8
   .replace(/^[ \t]*\.research-comments,\n/gm,'')
   .replace(/,\n\s*\.script-comments(?=\s*\{)/g,'');
 write('assets/academic/style.css',academicStyle);copy('src/styles/typography.css','assets/academic/typography.css');copy('src/styles/gallery.css','assets/academic/gallery.css');
-copy('src/scripts/public-site.js','assets/academic/public-site.js');copy('src/scripts/guestbook.js','assets/academic/guestbook.js');
+copy('src/scripts/public-site.js','assets/academic/public-site.js');copy('src/scripts/guestbook.js','assets/academic/guestbook.js');copy('src/scripts/analytics.js','assets/academic/analytics.js');
 write('assets/academic/gallery.js',fs.readFileSync(path.join(root,'src/scripts/gallery.js'),'utf8').replaceAll('/preview/assets/world-gallery/','/assets/world-gallery/').replaceAll('/preview/research-en.html','/articles/world-word-exploration-en'));
 copy('src/assets/world-gallery','assets/world-gallery');
-write('records/world-word-history/museum/index.html',fs.readFileSync(path.join(root,'records/world-word-history/museum.html'),'utf8').replace(/^\s*<meta name="robots"[^>]*>\s*$/m,''));
+write('records/world-word-history/museum/index.html',withAnalytics(fs.readFileSync(path.join(root,'records/world-word-history/museum.html'),'utf8').replace(/^\s*<meta name="robots"[^>]*>\s*$/m,''),buildVersion));
 
 let gallery=fs.readFileSync(path.join(root,'src/templates/research-gallery.html'),'utf8')
   .replace('<meta name="robots" content="noindex" />\n  ','')
@@ -39,7 +41,7 @@ let gallery=fs.readFileSync(path.join(root,'src/templates/research-gallery.html'
   .replaceAll('/preview/gallery.css','/assets/academic/gallery.css')
   .replaceAll('/preview/gallery.js','/assets/academic/gallery.js')
   .replaceAll('/preview/research.html','/articles/world-word-exploration');
-write('records/world-word-history/gallery/index.html',versionAssets(gallery));
+write('records/world-word-history/gallery/index.html',withAnalytics(versionAssets(gallery),buildVersion));
 
 write('robots.txt',`User-agent: *\nAllow: /\nDisallow: /admin/\nDisallow: /api/v1/admin/\nSitemap: https://cbc688.com/sitemap.xml`);
 write('_redirects',`/index.html /articles 308
