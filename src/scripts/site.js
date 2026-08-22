@@ -7,7 +7,7 @@ fetch('/preview/search-index.json')
 const current = document.body.dataset.current || '';
 const pageLanguage = document.body.dataset.language || 'zh';
 const nav = [
-  ['articles', pageLanguage === 'en' ? 'Articles' : '文章', '/preview/articles.html'],
+  ['articles', pageLanguage === 'en' ? 'Articles' : '全部', '/preview/articles.html'],
   ['issues', pageLanguage === 'en' ? 'Journals' : '期刊', '/preview/issues.html'],
   ['records', pageLanguage === 'en' ? 'Records' : '紀錄', '/preview/records.html'],
   ['about', pageLanguage === 'en' ? 'About' : '關於', '/preview/about.html'],
@@ -262,7 +262,7 @@ document.querySelector('[data-research-share]')?.addEventListener('click', async
     text: pageLanguage === 'en'
       ? 'Tracing the formation and transformation of the Chinese word shijie through early texts and Buddhist translation.'
       : '從先秦兩漢的舊字與東漢譯經出發，追索「世界」一詞的形成與變化。',
-    url: 'https://cbc688.com/records/world-word-history/',
+    url: 'https://cbc688.com/articles/world-word-exploration',
   };
   try {
     if (navigator.share) await navigator.share(shareData);

@@ -8,7 +8,7 @@ const current = document.body.dataset.current || '';
 const pageLanguage = document.body.dataset.language || 'zh';
 const escapeHtml = (value = '') => String(value).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#39;');
 const nav = [
-  ['articles', pageLanguage === 'en' ? 'Articles' : '文章', '/articles'],
+  ['articles', pageLanguage === 'en' ? 'Articles' : '全部', '/articles'],
   ['issues', pageLanguage === 'en' ? 'Journals' : '期刊', '/issues'],
   ['records', pageLanguage === 'en' ? 'Records' : '紀錄', '/records'],
   ['about', pageLanguage === 'en' ? 'About' : '關於', '/about'],

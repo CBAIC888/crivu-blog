@@ -637,7 +637,7 @@ const recordCards = records
   .map((record) => {
     const href =
       record.id === "world-word-history"
-        ? "/preview/research.html"
+        ? "/articles/world-word-exploration"
         : `/preview/records/${encodeURIComponent(record.id)}.html`;
     const year = isoDate(record.date).slice(0, 4) || "未標日期";
     return renderCollectionCard({

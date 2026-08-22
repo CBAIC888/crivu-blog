@@ -30,7 +30,7 @@
       <div class="hero-more__menu" id="recordMoreMenu" role="menu" hidden>
         <a href="/records" role="menuitem"><span>其他紀錄</span><small>Records</small></a>
         <a href="/issues" role="menuitem"><span>期刊</span><small>Issues</small></a>
-        <a href="/articles" role="menuitem"><span>文章</span><small>Articles</small></a>
+        <a href="/articles" role="menuitem"><span>全部</span><small>Articles</small></a>
       </div>
     `;
     shareAction.insertAdjacentElement('afterend', more);

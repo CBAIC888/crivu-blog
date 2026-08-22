@@ -62,7 +62,9 @@ write('_redirects',`/index.html /articles 308
 /preview/articles/:slug.html /articles/:slug 301
 /preview/issues/:id.html /issues/:id 301
 /preview/records/:slug.html /records/:slug 301
-/records/world-word-exploration /records/world-word-history 301`);
+/records/world-word-exploration /articles/world-word-exploration 308
+/records/world-word-history /articles/world-word-exploration 308
+/records/world-word-history/ /articles/world-word-exploration 308`);
 write('_headers',`/*
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin

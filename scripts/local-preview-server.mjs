@@ -106,7 +106,9 @@ const redirects = new Map([
   ['/preview/research.html', '/articles/world-word-exploration'],
   ['/preview/research-en.html', '/articles/world-word-exploration-en'],
   ['/preview/research-gallery.html', '/records/world-word-history/gallery'],
-  ['/records/world-word-exploration', '/records/world-word-history'],
+  ['/records/world-word-exploration', '/articles/world-word-exploration'],
+  ['/records/world-word-history', '/articles/world-word-exploration'],
+  ['/records/world-word-history/', '/articles/world-word-exploration'],
 ]);
 
 const bodyFor = (request) => new Promise((resolve, reject) => {

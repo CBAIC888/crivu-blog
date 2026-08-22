@@ -105,7 +105,7 @@ const publicSettings = {
   siteName: site.siteName || 'CRIVU', siteDescription: site.siteDescription || '', footerText: site.footerText || '© 2026 CRIVU',
   searchPlaceholder: site.searchPlaceholder || '搜尋', themeToggleEnabled: site.themeToggleEnabled !== false,
   navigation: [
-    { label: '文章', href: '/articles' }, { label: '期刊', href: '/issues' }, { label: '紀錄', href: '/records' },
+    { label: '全部', href: '/articles' }, { label: '期刊', href: '/issues' }, { label: '紀錄', href: '/records' },
     { label: '關於', href: '/about' }, { label: 'RSS', href: '/rss.xml' },
   ],
 };

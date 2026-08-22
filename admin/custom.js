@@ -140,7 +140,7 @@ const openResource = async (resource) => {
   state.resource=resource;state.current=null;state.dirty=false;resetTopActions();
   document.querySelectorAll('[data-nav]').forEach((item)=>item.classList.toggle('active',item.dataset.nav===resource));
   document.querySelector('[data-heading]').textContent=resources.find(([id])=>id===resource)?.[1]||resource;
-  document.querySelector('[data-new]').hidden=['settings','guestbook'].includes(resource);
+  const newButton=document.querySelector('[data-new]');newButton.hidden=resource==='settings';newButton.textContent=resource==='guestbook'?'新增捧場':'新增';
   notify('載入中…');
   try{
     const data=await api(resource);
@@ -152,6 +152,7 @@ const openResource = async (resource) => {
 
 const newItem = () => {
   if(!discardChanges())return;
+  if(state.resource==='guestbook'){state.current={authorName:'',body:'',status:'approved',adminReply:'',createdAt:toDateTimeLocal(new Date().toISOString())};renderGuestbookEditor();return;}
   const defaults={articles:{type:'general',status:'draft',language:'zh-Hant',tags:[],metadata:{}},collections:{type:'collection',status:'draft',articleIds:[]},projects:{type:'project',status:'draft',relations:[]},pages:{status:'draft'}};
   state.current=defaults[state.resource]||{};renderEditor();
 };
@@ -242,7 +243,20 @@ const restoreRevision = async (revisionId) => {if(!confirm('恢復這個版本�
 
 const quickUpdateComment = async (index,status) => {const item=state.items[index];try{await api(`guestbook/${item.id}`,{method:'PATCH',body:JSON.stringify({status,adminReply:item.adminReply||''})});item.status=status;renderList();notify(`留言已設為${statusName(status)}`);}catch(error){notify(error.message,true);}};
 const deleteComment = async (index) => {const item=state.items[index];if(!confirm(`永久刪除 ${item.authorName||'讀者'} 的這則留言？`))return;try{await api(`guestbook/${item.id}`,{method:'DELETE'});state.items.splice(index,1);renderList();notify('留言已刪除');}catch(error){notify(error.message,true);}};
-const renderGuestbookEditor = () => {const item=state.current;resetTopActions();document.querySelector('[data-surface]').innerHTML=`<form class="form single" data-guestbook><h2>${escapeHtml(item.authorName)}</h2><p class="message">${escapeHtml(item.body)}</p>${label('狀態','status',select('status',item.status,[['pending','待審核'],['approved','通過'],['hidden','隱藏'],['spam','垃圾']]))}${label('管理員回覆','adminReply',textarea('adminReply',item.adminReply,5))}<div class="inline-actions"><button type="button" data-back>返回列表</button><button class="primary">儲存</button></div></form>`;document.querySelector('[data-back]').addEventListener('click',()=>openResource('guestbook'));document.querySelector('[data-guestbook]').addEventListener('submit',async(event)=>{event.preventDefault();await api(`guestbook/${item.id}`,{method:'PATCH',body:JSON.stringify({status:value('status'),adminReply:value('adminReply')})});await openResource('guestbook');});};
+const renderGuestbookEditor = () => {
+  const item=state.current||{},isNew=!item.id,surface=document.querySelector('[data-surface]');
+  resetTopActions();
+  surface.innerHTML=`<form class="form single" data-guestbook><h2>${isNew?'新增捧場':`編輯留言 · ${escapeHtml(item.authorName||'讀者')}`}</h2><div class="form-row">${label('稱呼','authorName',input('authorName',item.authorName||'','text','maxlength="32" required'))}${label('自定義時間','createdAt',input('createdAt',toDateTimeLocal(item.createdAt),'datetime-local'),'按北京時間保存；留空則使用現在時間。')}</div>${label('評論','body',textarea('body',item.body||'',7,'maxlength="1200" required'))}${label('狀態','status',select('status',item.status||'approved',[['pending','待審核'],['approved','通過'],['hidden','隱藏'],['spam','垃圾']]))}${label('管理員回覆','adminReply',textarea('adminReply',item.adminReply||'',5))}<div class="inline-actions"><button type="button" data-back>返回列表</button><button class="primary">儲存</button></div></form>`;
+  const form=surface.querySelector('[data-guestbook]');
+  form.addEventListener('input',()=>{state.dirty=true;});
+  surface.querySelector('[data-back]').addEventListener('click',()=>openResource('guestbook'));
+  form.addEventListener('submit',async(event)=>{
+    event.preventDefault();
+    if(!form.checkValidity()){form.reportValidity();return;}
+    const payload={authorName:value('authorName'),body:value('body'),status:value('status'),adminReply:value('adminReply'),createdAt:value('createdAt')?toIso(value('createdAt')):''};
+    try{const data=await api(isNew?'guestbook':`guestbook/${item.id}`,{method:isNew?'POST':'PATCH',body:JSON.stringify(payload)});state.current=data.item||{...item,...payload};state.dirty=false;await openResource('guestbook');notify(isNew?'捧場已發布':'留言已儲存');}catch(error){notify(error.message,true);}
+  });
+};
 
 const renderMedia = (surface) => {surface.innerHTML=`<div class="media-layout"><form class="upload" data-upload><h2>上傳到 R2</h2><input type="file" name="file" required/><input name="title" placeholder="標題"/><input name="altText" placeholder="替代文字"/><button class="primary">上傳</button></form><div class="media-grid">${state.items.map((item)=>`<article><div class="media-thumb">${String(item.mimeType).startsWith('image/')?`<img src="${escapeHtml(item.publicUrl)}" alt="${escapeHtml(item.altText||'')}"/>`:'<span>檔案</span>'}</div><strong>${escapeHtml(item.title||item.filename)}</strong><small>${escapeHtml(item.mimeType)} · ${Math.round((item.sizeBytes||0)/1024)} KB</small><button data-copy="${escapeHtml(item.publicUrl)}">複製網址</button></article>`).join('')}</div></div>`;surface.querySelector('[data-upload]').addEventListener('submit',async(event)=>{event.preventDefault();notify('上傳中…');try{await api('media',{method:'POST',body:new FormData(event.target)});await openResource('media');}catch(error){notify(error.message,true);}});surface.querySelectorAll('[data-copy]').forEach((button)=>button.addEventListener('click',()=>navigator.clipboard.writeText(button.dataset.copy)));};
 const renderSettings = (settings) => {const get=(key)=>settings[key]?.value??'';document.querySelector('[data-surface]').innerHTML=`<form class="form single" data-settings>${label('站名','siteName',input('siteName',get('siteName')))}${label('網站描述','siteDescription',textarea('siteDescription',get('siteDescription'),4))}${label('頁尾','footerText',input('footerText',get('footerText')))}${label('搜尋提示','searchPlaceholder',input('searchPlaceholder',get('searchPlaceholder')))}${label('導航 JSON','navigation',textarea('navigation',JSON.stringify(get('navigation')||[],null,2),9))}<button class="primary">儲存設定</button></form>`;document.querySelector('[data-settings]').addEventListener('submit',async(event)=>{event.preventDefault();await api('settings',{method:'PUT',body:JSON.stringify({settings:{siteName:{value:value('siteName')},siteDescription:{value:value('siteDescription')},footerText:{value:value('footerText')},searchPlaceholder:{value:value('searchPlaceholder')},navigation:{value:JSON.parse(value('navigation')||'[]')}}})});notify('設定已儲存');});notify('已載入設定');};
