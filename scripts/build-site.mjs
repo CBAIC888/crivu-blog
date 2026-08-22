@@ -64,7 +64,8 @@ write('_redirects',`/index.html /articles 308
 /preview/records/:slug.html /records/:slug 301
 /records/world-word-exploration /articles/world-word-exploration 308
 /records/world-word-history /articles/world-word-exploration 308
-/records/world-word-history/ /articles/world-word-exploration 308`);
+/records/world-word-history/ /articles/world-word-exploration 308
+/records/world-word-history/museum.html /records/world-word-history/museum/ 308`);
 write('_headers',`/*
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
@@ -82,6 +83,7 @@ write('_headers',`/*
 
 /records/world-word-history/museum/*
   ! X-Frame-Options
+  ! Content-Security-Policy
   Content-Security-Policy: default-src 'self' data: blob:; frame-ancestors 'self'; img-src 'self' data: blob:; media-src 'self' blob:; script-src 'self' 'unsafe-inline' blob:; style-src 'self' 'unsafe-inline'
 
 /.well-known/security.txt
