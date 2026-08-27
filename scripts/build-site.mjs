@@ -47,14 +47,14 @@ write('robots.txt',`User-agent: *\nAllow: /\nDisallow: /admin/\nDisallow: /api/v
 write('_redirects',`/index.html /articles 308
 /articles.html /articles 301
 /issues.html /issues 301
-/records.html /records 301
+/records.html /issues 301
 /about.html /about 301
 /post.html /articles 301
 /preview /articles 301
 /preview/index.html /articles 301
 /preview/articles.html /articles 301
 /preview/issues.html /issues 301
-/preview/records.html /records 301
+/preview/records.html /issues 301
 /preview/about.html /about 301
 /preview/research.html /articles/world-word-exploration 301
 /preview/research-en.html /articles/world-word-exploration-en 301

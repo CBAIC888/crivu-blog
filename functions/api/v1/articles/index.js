@@ -1,4 +1,5 @@
 import { handle, json, loadArticleRelations, parseLimit, publicArticle, requireDb } from '../_shared.js';
+import { stripMarkdown } from '../../../../shared/content.js';
 
 export const onRequestGet = handle(async ({ env, request }) => {
   const db = requireDb(env);
@@ -15,6 +16,9 @@ export const onRequestGet = handle(async ({ env, request }) => {
   const result = await db.prepare(
     `SELECT a.*, m.public_url AS cover_public_url FROM articles a LEFT JOIN media m ON m.id = a.cover_media_id WHERE ${filter} ORDER BY COALESCE(a.published_at, a.scheduled_at, a.created_at) DESC LIMIT ?`
   ).bind(...values).all();
-  const items = (result.results || []).map(publicArticle).map(({ bodyMarkdown, ...item }) => item);
+  const items = (result.results || []).map(publicArticle).map(({ bodyMarkdown, ...item }) => ({
+    ...item,
+    searchText: stripMarkdown(bodyMarkdown).replace(/\s+/g, ' ').trim(),
+  }));
   return json({ items, count: items.length });
 });
