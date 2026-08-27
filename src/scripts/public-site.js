@@ -6,15 +6,24 @@ fetch('/api/v1/articles?limit=200')
 
 const current = document.body.dataset.current || '';
 const pageLanguage = document.body.dataset.language || 'zh';
-const nav = [
+const defaultNav = [
   ['articles', pageLanguage === 'en' ? 'Articles' : '全部', '/articles'],
   ['issues', pageLanguage === 'en' ? 'Journals' : '期刊', '/issues'],
   ['about', pageLanguage === 'en' ? 'About' : '關於', '/about'],
   ['rss', 'RSS', '/rss.xml'],
 ];
 const meta = (name) => document.querySelector(`meta[name="${name}"]`)?.content || '';
+const navId = (href) => href.startsWith('/articles') ? 'articles' : href.startsWith('/issues') ? 'issues' : href.startsWith('/records') ? 'records' : href.startsWith('/about') ? 'about' : href.includes('rss') ? 'rss' : '';
+const configuredNavigation = (() => {
+  if (pageLanguage === 'en' || !meta('crivu-navigation')) return [];
+  try {
+    return JSON.parse(meta('crivu-navigation')).map((item) => [navId(String(item.href || '')), String(item.label || ''), String(item.href || '')]).filter((item) => item[1] && item[2]);
+  } catch { return []; }
+})();
+const nav = configuredNavigation.length ? configuredNavigation : defaultNav;
 const footerText = meta('crivu-footer-text') || '© 2026 CRIVU';
 const searchPlaceholder = meta('crivu-search-placeholder') || (pageLanguage === 'en' ? 'Search' : '搜尋');
+const themeToggleEnabled = meta('crivu-theme-toggle-enabled') !== 'false';
 
 const icon = (name) => name === 'search'
   ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg>'
@@ -28,7 +37,7 @@ document.body.insertAdjacentHTML('afterbegin', `
       <nav class="site-nav" id="siteNav">${nav.map(([id, label, href]) => `<a class="${current === id ? 'active' : ''} ${id === 'rss' ? 'nav-rss' : ''}" href="${href}">${label}</a>`).join('')}</nav>
       <div class="header-tools">
         <button class="icon-button" data-search-open aria-label="${pageLanguage === 'en' ? 'Search' : '搜尋'}">${icon('search')}</button>
-        <button class="icon-button" data-theme-toggle aria-label="${pageLanguage === 'en' ? 'Change background' : '切換背景'}">${icon('theme')}</button>
+        <button class="icon-button" data-theme-toggle aria-label="${pageLanguage === 'en' ? 'Change background' : '切換背景'}"${themeToggleEnabled?'':' hidden'}>${icon('theme')}</button>
       </div>
     </div>
   </header>`);
@@ -99,23 +108,6 @@ searchInput.addEventListener('input', () => {
   const matches = query ? pages.filter((page) => normalize(`${page.kind} ${page.title} ${page.excerpt} ${page.searchText || ''}`).includes(normalize(query))).slice(0, 12) : [];
   results.innerHTML = matches.map((page) => `<a class="search-result" href="${escapeHtml(page.href)}"><small>${escapeHtml(page.kind)} · ${escapeHtml(page.date)}</small><strong>${highlight(page.title,query)}</strong><span>${highlight(excerptFor(page,query),query)}</span></a>`).join('') || (query ? `<p class="muted">${pageLanguage === 'en' ? 'No exact keyword matches.' : '沒有找到包含此關鍵字的內容。'}</p>` : '');
 });
-
-fetch('/api/v1/settings/public')
-  .then((response) => response.ok ? response.json() : null)
-  .then((data) => {
-    const settings=data?.settings||{};
-    const footer=document.querySelector('.site-footer');
-    if(settings.footerText)footer.textContent=settings.footerText;
-    if(settings.searchPlaceholder)searchInput.placeholder=settings.searchPlaceholder;
-    if(settings.themeToggleEnabled===false)themeButton.hidden=true;
-    if(settings.siteName && !document.title.includes(settings.siteName))document.title=document.title.replace(/ · [^·]+$/,` · ${settings.siteName}`);
-    const configured=Array.isArray(settings.navigation)?settings.navigation:[];
-    if(configured.length && pageLanguage!=='en'){
-      const normalized=configured.map((item)=>({label:String(item.label||''),href:String(item.href||'')})).filter((item)=>item.label&&item.href&&!/^\/records\/?$/.test(item.href));
-      if(normalized.length)document.getElementById('siteNav').innerHTML=normalized.map((item)=>{const id=item.href.startsWith('/articles')?'articles':item.href.startsWith('/issues')?'issues':item.href.startsWith('/about')?'about':item.href.includes('rss')?'rss':'';return `<a class="${current===id?'active':''} ${id==='rss'?'nav-rss':''}" href="${escapeHtml(item.href)}">${escapeHtml(item.label)}</a>`;}).join('');
-    }
-  })
-  .catch(() => {});
 
 document.querySelectorAll('[data-filter]').forEach((button) => {
   button.addEventListener('click', () => {

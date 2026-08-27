@@ -17,6 +17,19 @@ export const htmlHeaders = {
   'Referrer-Policy':'strict-origin-when-cross-origin','X-Frame-Options':'DENY',
 };
 
+export const applyPublicSettings = (html, settings={}) => {
+  const siteName=clean(settings.siteName)||'CRIVU';
+  const footerText=clean(settings.footerText)||`© 2026 ${siteName}`;
+  const searchPlaceholder=clean(settings.searchPlaceholder)||'搜尋';
+  const navigation=Array.isArray(settings.navigation)?settings.navigation:[];
+  const settingMetas=`<meta name="crivu-site-name" content="${escapeHtml(siteName)}"/><meta name="crivu-footer-text" content="${escapeHtml(footerText)}"/><meta name="crivu-search-placeholder" content="${escapeHtml(searchPlaceholder)}"/><meta name="crivu-theme-toggle-enabled" content="${settings.themeToggleEnabled===false?'false':'true'}"/>${navigation.length?`<meta name="crivu-navigation" content="${escapeHtml(JSON.stringify(navigation))}"/>`:''}`;
+  return String(html)
+    .replace(/<meta name="crivu-(?:site-name|footer-text|search-placeholder|theme-toggle-enabled|navigation)"[^>]*\/>/g,'')
+    .replace('<title>',`${settingMetas}<title>`)
+    .replace(/(<title>[^<]*?) · CRIVU(<\/title>)/,(_match,start,end)=>`${start} · ${escapeHtml(siteName)}${end}`)
+    .replace(/(<meta property="og:title" content="[^"]*?) · CRIVU("\/>)/,(_match,start,end)=>`${start} · ${escapeHtml(siteName)}${end}`);
+};
+
 const head = ({ title, description='', canonicalPath, origin, image='', language='zh-Hant', assetVersion='', settings={} }) => {
   const canonical=absolute(canonicalPath,origin),siteName=clean(settings.siteName)||'CRIVU',siteDescription=clean(settings.siteDescription),fullTitle=title.includes(siteName)?title:`${title} · ${siteName}`;
   const navigation=Array.isArray(settings.navigation)?settings.navigation:[];
