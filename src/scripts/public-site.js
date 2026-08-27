@@ -7,8 +7,8 @@ fetch('/api/v1/articles?limit=200')
 const current = document.body.dataset.current || '';
 const pageLanguage = document.body.dataset.language || 'zh';
 const defaultNav = [
-  ['articles', pageLanguage === 'en' ? 'Articles' : '全部', '/articles'],
-  ['issues', pageLanguage === 'en' ? 'Journals' : '期刊', '/issues'],
+  ['articles', pageLanguage === 'en' ? 'Archive' : '收錄', '/articles'],
+  ['issues', pageLanguage === 'en' ? 'Projects' : '專項', '/issues'],
   ['about', pageLanguage === 'en' ? 'About' : '關於', '/about'],
   ['rss', 'RSS', '/rss.xml'],
 ];

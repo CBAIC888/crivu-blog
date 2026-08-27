@@ -6,7 +6,7 @@ const state = {
 };
 
 const resources = [
-  ['articles','文章'],['collections','期刊／合集'],['projects','專題紀錄'],['pages','頁面'],
+  ['articles','收錄'],['collections','專項'],['projects','專項資料'],['pages','頁面'],
   ['media','媒體庫'],['guestbook','留言板'],['settings','設定'],
 ];
 const statusNames = {
@@ -89,7 +89,7 @@ const coverUploadField = (item) => {
 };
 
 const shell = (user) => {
-  app.innerHTML=`<div class="admin-shell"><aside class="sidebar"><a class="brand" href="/articles" target="_blank">CRIVU</a><nav>${resources.map(([id,name])=>`<button data-nav="${id}">${name}</button>`).join('')}</nav><div class="user"><span>${escapeHtml(user.name||user.login)}</span><button data-logout>登出</button></div></aside><main class="workspace"><header class="topbar"><div><h1 data-heading>文章</h1><p data-status>已連線</p></div><div class="top-actions"><button class="danger" data-purge hidden>永久刪除</button><button data-archive hidden>移到封存</button><button data-new>新增</button><button class="primary" data-save hidden>儲存</button></div></header><div class="surface" data-surface></div></main></div>`;
+  app.innerHTML=`<div class="admin-shell"><aside class="sidebar"><a class="brand" href="/articles" target="_blank">CRIVU</a><nav>${resources.map(([id,name])=>`<button data-nav="${id}">${name}</button>`).join('')}</nav><div class="user"><span>${escapeHtml(user.name||user.login)}</span><button data-logout>登出</button></div></aside><main class="workspace"><header class="topbar"><div><h1 data-heading>收錄</h1><p data-status>已連線</p></div><div class="top-actions"><button class="danger" data-purge hidden>永久刪除</button><button data-archive hidden>移到封存</button><button data-new>新增</button><button class="primary" data-save hidden>儲存</button></div></header><div class="surface" data-surface></div></main></div>`;
   document.querySelectorAll('[data-nav]').forEach((button)=>button.addEventListener('click',()=>openResource(button.dataset.nav)));
   document.querySelector('[data-new]').addEventListener('click',newItem);
   document.querySelector('[data-save]').addEventListener('click',()=>saveCurrent(false));
@@ -114,7 +114,7 @@ const listTitle = (item) => item.title || item.filename || item.authorName || it
 const listExcerpt = (item) => item.body || item.summary || item.theme || item.editorNote || item.seoDescription || item.filename || '';
 const listMeta = (item) => {
   if(state.resource==='articles')return `${statusName(item.status)} · ${item.type==='research'?'研究':item.type==='script'?'劇本':'一般'} · 發布 ${displayDate(item.publishedAt)}`;
-  if(state.resource==='collections')return `${statusName(item.status)} · ${item.type==='journal_issue'?'期刊':'合集'} · 發布 ${displayDate(item.publishedAt)}`;
+  if(state.resource==='collections')return `${statusName(item.status)} · 專項 · 發布 ${displayDate(item.publishedAt)}`;
   if(state.resource==='projects')return `${statusName(item.status)} · ${item.startDate||'未設定日期'}`;
   if(state.resource==='pages')return `${statusName(item.status)} · /${item.slug||''}`;
   return statusName(item.status||item.type||item.createdAt);

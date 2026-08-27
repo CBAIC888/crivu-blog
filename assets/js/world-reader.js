@@ -72,7 +72,7 @@
         <div class="book-reader__leaf" aria-hidden="true"></div>
         <button class="book-reader__cover" type="button" aria-label="翻开《世界》专题，进入正文">
           <span class="book-reader__cover-sheet">
-            <img src="${heroCoverImage?.currentSrc || heroCoverImage?.src || '/assets/img/uploads/20260723/world-word-exploration-cover.png'}" alt="《世界》语言史专题封面">
+            <img src="${heroCoverImage?.currentSrc || heroCoverImage?.src || '/assets/img/uploads/20260723/world-word-exploration-cover.webp'}" alt="《世界》语言史专题封面">
           </span>
           <span class="book-reader__cover-hint">點擊封面翻開</span>
         </button>

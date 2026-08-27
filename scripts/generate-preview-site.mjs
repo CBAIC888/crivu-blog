@@ -470,7 +470,7 @@ const renderScriptPost = (
       <dl class="script-facts">
         <div><dt>劇種</dt><dd>${escapeHtml(post.category || "京劇")}</dd></div>
         <div><dt>載體</dt><dd>全本劇本</dd></div>
-        <div><dt>期刊</dt><dd>京劇</dd></div>
+        <div><dt>專項</dt><dd>京劇</dd></div>
         <div><dt>整理</dt><dd>CRIVU</dd></div>
       </dl>
       ${renderCover(post, "script-cover")}
@@ -556,10 +556,10 @@ const indexGroups = [...new Set(indexItems.map((item) => yearOf(item.date)))]
 
 write(
   "articles.html",
-  `${head({ title: "文章", description: "CRIVU 全部文章、研究與劇本。" })}
+  `${head({ title: "收錄", description: "CRIVU 收錄的文章、研究與劇本。" })}
 <body data-current="articles">
   <main class="page-main articles-main">
-    <nav class="category-nav" aria-label="文章分類">
+    <nav class="category-nav" aria-label="收錄分類">
       <button class="is-active" data-filter="全部">全部</button><button data-filter="一般">一般</button><button data-filter="研究">研究</button><button data-filter="劇本">劇本</button>
     </nav>
     ${indexGroups}
@@ -579,7 +579,7 @@ const issueCards = issues
       href: `/preview/issues/${encodeURIComponent(issue.id)}.html`,
       cover: issue.cover,
       alt: `${issue.title || ""}封面`,
-      label: `期刊 · ${year}`,
+      label: `專項 · ${year}`,
       title: issue.title,
       meta: `${linked.length} 篇`,
       className: "collection-item--issue",
@@ -589,7 +589,7 @@ const issueCards = issues
 
 write(
   "issues.html",
-  `${head({ title: "期刊", description: "CRIVU 期刊與專題合集。", styleVersion: "collections-mobile-left-20260814" })}
+  `${head({ title: "專項", description: "CRIVU 專項合集。", styleVersion: "collections-mobile-left-20260814" })}
 <body data-current="issues">
   <main class="page-main collection-page collection-page--issues"><div class="records-list">${issueCards}</div></main>
 ${scripts()}
@@ -644,7 +644,7 @@ const recordCards = records
       href,
       cover: record.cover,
       alt: `${record.title || ""}封面`,
-      label: `紀錄 · ${year}`,
+      label: `專項 · ${year}`,
       title: record.title,
       className: "collection-item--record",
     });
@@ -653,7 +653,7 @@ const recordCards = records
 
 write(
   "records.html",
-  `${head({ title: "紀錄", description: "CRIVU 專題紀錄。", styleVersion: "collections-mobile-left-20260814" })}
+  `${head({ title: "專項", description: "CRIVU 專項合集。", styleVersion: "collections-mobile-left-20260814" })}
 <body data-current="records">
   <main class="page-main collection-page collection-page--records"><div class="records-list">${recordCards}</div></main>
 ${scripts()}
@@ -675,7 +675,7 @@ if (videoRecord) {
     `${head({ title: videoRecord.title, description: videoRecord.summary })}
 <body data-current="records">
   <main class="page-main record-detail-preview">
-    <header class="record-detail-head"><img src="${escapeHtml(videoRecord.cover || "")}" alt="${escapeHtml(videoRecord.title || "")}封面" /><div><h1>${escapeHtml(videoRecord.title || "")}</h1><p class="article-meta">${escapeHtml(isoDate(videoRecord.date))} · 專題紀錄</p><p>${escapeHtml(videoRecord.summary || "")}</p></div></header>
+    <header class="record-detail-head"><img src="${escapeHtml(videoRecord.cover || "")}" alt="${escapeHtml(videoRecord.title || "")}封面" /><div><h1>${escapeHtml(videoRecord.title || "")}</h1><p class="article-meta">${escapeHtml(isoDate(videoRecord.date))} · 專項</p><p>${escapeHtml(videoRecord.summary || "")}</p></div></header>
     <section class="video-grid" aria-label="視頻">${videoCards}</section>
   </main>
 ${scripts()}
@@ -724,7 +724,7 @@ write(
   <meta http-equiv="refresh" content="0;url=/preview/articles.html" />
   <link rel="canonical" href="/preview/articles.html" />
 </head>
-<body><p><a href="/preview/articles.html">前往文章</a></p></body>
+<body><p><a href="/preview/articles.html">前往收錄</a></p></body>
 </html>`,
 );
 write("general.html", redirect("丙午立秋 · CRIVU", previewPostHref("bwlq")));

@@ -7,9 +7,8 @@ fetch('/preview/search-index.json')
 const current = document.body.dataset.current || '';
 const pageLanguage = document.body.dataset.language || 'zh';
 const nav = [
-  ['articles', pageLanguage === 'en' ? 'Articles' : '全部', '/preview/articles.html'],
-  ['issues', pageLanguage === 'en' ? 'Journals' : '期刊', '/preview/issues.html'],
-  ['records', pageLanguage === 'en' ? 'Records' : '紀錄', '/preview/records.html'],
+  ['articles', pageLanguage === 'en' ? 'Archive' : '收錄', '/preview/articles.html'],
+  ['issues', pageLanguage === 'en' ? 'Projects' : '專項', '/preview/issues.html'],
   ['about', pageLanguage === 'en' ? 'About' : '關於', '/preview/about.html'],
   ['rss', 'RSS', '/rss.xml'],
 ];
