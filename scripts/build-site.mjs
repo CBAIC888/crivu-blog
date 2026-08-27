@@ -49,7 +49,6 @@ write('_redirects',`/index.html /articles 308
 /issues.html /issues 301
 /records.html /issues 301
 /about.html /about 301
-/post.html /articles 301
 /preview /articles 301
 /preview/index.html /articles 301
 /preview/articles.html /articles 301
@@ -89,5 +88,5 @@ write('_headers',`/*
 /.well-known/security.txt
   Cache-Control: public, max-age=86400
   Content-Type: text/plain; charset=UTF-8`);
-write('_routes.json',JSON.stringify({version:1,include:['/','/articles','/articles/*','/issues','/issues/*','/records','/records/*','/about','/rss.xml','/sitemap.xml','/api/*','/media/*'],exclude:['/assets/*','/admin/*','/.well-known/*','/records/world-word-history/gallery/*','/records/world-word-history/museum/*']},null,2));
+write('_routes.json',JSON.stringify({version:1,include:['/','/articles','/articles/*','/issues','/issues/*','/records','/records/*','/post','/post.html','/about','/rss.xml','/sitemap.xml','/api/*','/media/*'],exclude:['/assets/*','/admin/*','/.well-known/*','/records/world-word-history/gallery/*','/records/world-word-history/museum/*']},null,2));
 console.log(`Built CRIVU academic site in ${dist}`);

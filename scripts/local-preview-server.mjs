@@ -96,7 +96,6 @@ const redirects = new Map([
   ['/issues.html', '/issues'],
   ['/records.html', '/issues'],
   ['/about.html', '/about'],
-  ['/post.html', '/articles'],
   ['/preview', '/articles'],
   ['/preview/index.html', '/articles'],
   ['/preview/articles.html', '/articles'],
@@ -144,9 +143,11 @@ const server = http.createServer(async (req, res) => {
     const url = new URL(req.url, 'http://127.0.0.1:8788');
     const rawPathname = decodeURIComponent(url.pathname);
     const pathname = rawPathname.replace(/\/$/, '') || '/';
-    const redirect = pathname === '/' ? '/articles' : redirectFor(rawPathname);
+    const legacySlug=['/post','/post.html'].includes(pathname)?String(url.searchParams.get('slug')||'').trim().toLowerCase():'';
+    const legacyPostRedirect=['/post','/post.html'].includes(pathname)?(/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(legacySlug)?`/articles/${encodeURIComponent(legacySlug)}`:'/articles'):'';
+    const redirect = pathname === '/' ? '/articles' : legacyPostRedirect||redirectFor(rawPathname);
     if (redirect) {
-      res.writeHead(pathname === '/' ? 308 : 301, { Location: `${redirect}${url.search}` });
+      res.writeHead(pathname === '/' ? 308 : 301, { Location: legacyPostRedirect?redirect:`${redirect}${url.search}` });
       res.end();
       return;
     }
