@@ -52,16 +52,16 @@ button { cursor:pointer; }
 .row-excerpt { max-width:760px; overflow:hidden; color:#4d4842; font:400 13px/1.55 var(--sans); text-overflow:ellipsis; white-space:nowrap; }
 .empty { padding:40px; text-align:center; color:var(--muted); }
 
-.comment-row { display:grid; gap:12px; padding:20px 22px; border-bottom:1px solid var(--line); }
-.comment-row:last-child { border-bottom:0; }
-.comment-row header,.comment-row header>div,.comment-actions,.inline-actions { display:flex; align-items:center; gap:10px; }
-.comment-row header { justify-content:space-between; }
-.comment-row header strong { font:600 16px var(--serif); }
-.comment-row time { color:var(--muted); font-size:11px; }
-.comment-row p { margin:0; font:400 16px/1.75 var(--serif); white-space:pre-wrap; }
-.comment-row blockquote { display:grid; gap:4px; margin:0; padding:10px 12px; border-left:2px solid var(--teal); background:var(--alt); font-size:13px; }
-.comment-actions { flex-wrap:wrap; }
-.comment-actions button,.inline-actions button { padding:6px 10px; border:1px solid var(--line); border-radius:5px; background:#fff; font-size:12px; }
+.guestbook-row { display:grid; gap:12px; padding:20px 22px; border-bottom:1px solid var(--line); }
+.guestbook-row:last-child { border-bottom:0; }
+.guestbook-row header,.guestbook-row header>div,.guestbook-actions,.inline-actions { display:flex; align-items:center; gap:10px; }
+.guestbook-row header { justify-content:space-between; }
+.guestbook-row header strong { font:600 16px var(--serif); }
+.guestbook-row time { color:var(--muted); font-size:11px; }
+.guestbook-row p { margin:0; font:400 16px/1.75 var(--serif); white-space:pre-wrap; }
+.guestbook-row blockquote { display:grid; gap:4px; margin:0; padding:10px 12px; border-left:2px solid var(--teal); background:var(--alt); font-size:13px; }
+.guestbook-actions { flex-wrap:wrap; }
+.guestbook-actions button,.inline-actions button { padding:6px 10px; border:1px solid var(--line); border-radius:5px; background:#fff; font-size:12px; }
 .status { padding:3px 7px; border-radius:999px; background:var(--alt); color:var(--muted); font-size:10px; }
 .status--approved { background:rgba(28,107,106,.1); color:var(--teal); }
 .status--pending { background:rgba(159,60,60,.1); color:var(--accent); }
@@ -139,6 +139,6 @@ summary { cursor:pointer; font-weight:650; }
   .top-actions { max-width:58%; }
   .top-actions button { padding:8px 10px; }
   .row-main time { display:none; }
-  .comment-row { padding:16px; }
-  .comment-row header { align-items:flex-start; flex-direction:column; }
+  .guestbook-row { padding:16px; }
+  .guestbook-row header { align-items:flex-start; flex-direction:column; }
 }

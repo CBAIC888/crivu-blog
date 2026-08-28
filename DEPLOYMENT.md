@@ -1,6 +1,6 @@
 # CRIVU 學術版運行手冊
 
-目前只保留 Cloudflare Pages。EdgeOne、FSNotes、Decap CMS 與 GitHub Content API 已移除；GitHub 用於源碼、部署觸發與第一階段管理員登入，文章與媒體不再寫入 GitHub。
+目前只保留 Cloudflare Pages。GitHub 用於源碼、部署觸發與管理員登入，文章與媒體不寫入 GitHub。
 
 ## 本機檢查
 
@@ -10,6 +10,7 @@ node scripts/build-content-seed.mjs --output /tmp/crivu-content-seed.sql
 sqlite3 /tmp/crivu.db < migrations/0001_comments.sql
 sqlite3 /tmp/crivu.db < migrations/0002_comments_source.sql
 sqlite3 /tmp/crivu.db < migrations/0003_content_platform.sql
+sqlite3 /tmp/crivu.db < migrations/0004_remove_article_comments.sql
 sqlite3 /tmp/crivu.db < /tmp/crivu-content-seed.sql
 ```
 
@@ -38,9 +39,9 @@ sqlite3 /tmp/crivu.db < /tmp/crivu-content-seed.sql
 1. 備份 D1、R2 與 `posts/*.json`。
 2. 明確核對目標資料庫名稱後執行 migrations。
 3. 以 `scripts/build-content-seed.mjs` 生成可重複執行的 SQL，匯入後用 `scripts/audit-content-migration.mjs <origin>` 核對數量。
-4. `0003_content_platform.sql` 只複製舊 `slug=about` 留言到 `guestbook_entries`，不會刪除舊評論。
+4. `0003_content_platform.sql` 將舊 `slug=about` 留言複製到 `guestbook_entries`；`0004_remove_article_comments.sql` 隨後移除舊文章評論表。
 5. `node scripts/migrate-media-to-r2.mjs` 只列出媒體；人工核對 bucket 後才可加 `--execute --bucket <name>`。
-6. 確認 R2 文件與 D1 媒體資料完整後，才可另行刪除舊 Git 媒體或舊評論。這些刪除不得與首次遷移同批執行。
+6. 確認 R2 文件與 D1 媒體資料完整後，才可刪除已遷移的舊 Git 媒體。
 
 ## 發布前驗收
 

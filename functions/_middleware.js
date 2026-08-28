@@ -1,5 +1,5 @@
-const blockedFiles=new Set(['/.gitignore','/package.json','/wrangler.jsonc','/DEPLOYMENT.md','/CRIVU學術版後端重構規劃.md']);
-const blockedPrefixes=['/functions/','/migrations/','/scripts/','/src/','/posts/','/private/'];
+const blockedFiles=new Set(['/.gitignore','/package.json','/wrangler.jsonc','/DEPLOYMENT.md']);
+const blockedPrefixes=['/functions/','/migrations/','/scripts/','/src/','/posts/'];
 export async function onRequest(context){
   const path=new URL(context.request.url).pathname;
   if(blockedFiles.has(path)||blockedPrefixes.some(prefix=>path.startsWith(prefix))||/^\/\.(?:git|env|hg|svn)(?:\/|$)/.test(path))return new Response('Not found',{status:404,headers:{'Cache-Control':'no-store','Content-Type':'text/plain; charset=utf-8'}});

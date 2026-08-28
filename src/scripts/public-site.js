@@ -193,5 +193,4 @@ function enhanceResearchArticle(container) {
   });
 
   container.querySelectorAll('.research-figure').forEach((figure) => figure.remove());
-  /* Research articles remain text-first. The image archive lives on its own dark gallery page. */
 }

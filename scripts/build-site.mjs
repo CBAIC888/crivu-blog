@@ -14,22 +14,9 @@ const buildVersion=String(process.env.CF_PAGES_COMMIT_SHA||crypto.createHash('sh
 const versionAssets=(html)=>html.replace(/((?:href|src)="\/assets\/(?:academic|css|js)\/[^"?]+)(")/g,`$1?v=${buildVersion}$2`);
 
 copy('assets/img');
-copy('assets/css/world-reader.css');
-copy('assets/js/world-reader.js');
 copy('admin/index.html');copy('admin/custom.css');copy('admin/custom.js');
 copy('.well-known');copy('google974aaeec2e4594c9.html');
-const academicStyle=fs.readFileSync(path.join(root,'src/styles/style.css'),'utf8')
-  .replaceAll('comments-','guestbook-')
-  .replaceAll('comments__empty','guestbook-empty')
-  .replaceAll('guestbook-preview','guestbook-panel')
-  .replaceAll('comment-item','guestbook-entry')
-  .replace('/* Comments */','/* Guestbook */')
-  .replace(/^\.research-comments[^\n]*\n/gm,'')
-  .replace(/^\.script-comments[^\n]*\n/gm,'')
-  .replace(/,\n\s*\.migrated-script \.script-comments/g,'')
-  .replace(/^[ \t]*\.research-comments,\n/gm,'')
-  .replace(/,\n\s*\.script-comments(?=\s*\{)/g,'');
-write('assets/academic/style.css',academicStyle);copy('src/styles/typography.css','assets/academic/typography.css');copy('src/styles/gallery.css','assets/academic/gallery.css');
+copy('src/styles/style.css','assets/academic/style.css');copy('src/styles/typography.css','assets/academic/typography.css');copy('src/styles/gallery.css','assets/academic/gallery.css');
 copy('src/scripts/public-site.js','assets/academic/public-site.js');copy('src/scripts/guestbook.js','assets/academic/guestbook.js');copy('src/scripts/analytics.js','assets/academic/analytics.js');
 write('assets/academic/gallery.js',fs.readFileSync(path.join(root,'src/scripts/gallery.js'),'utf8').replaceAll('/preview/assets/world-gallery/','/assets/world-gallery/').replaceAll('/preview/research-en.html','/articles/world-word-exploration-en'));
 copy('src/assets/world-gallery','assets/world-gallery');

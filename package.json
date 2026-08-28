@@ -3,7 +3,6 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "generate:preview": "node scripts/generate-preview-site.mjs",
     "build:seed": "node scripts/build-content-seed.mjs --output dist/content-seed.sql",
     "audit:migration": "node scripts/audit-content-migration.mjs",
     "build": "node scripts/build-site.mjs",

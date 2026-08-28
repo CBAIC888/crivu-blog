@@ -10,7 +10,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const dist = path.join(root, 'dist');
 const db = new DatabaseSync(':memory:');
 
-for (const file of ['migrations/0001_comments.sql', 'migrations/0002_comments_source.sql', 'migrations/0003_content_platform.sql']) {
+for (const file of ['migrations/0001_comments.sql', 'migrations/0002_comments_source.sql', 'migrations/0003_content_platform.sql', 'migrations/0004_remove_article_comments.sql']) {
   db.exec(fs.readFileSync(path.join(root, file), 'utf8'));
 }
 

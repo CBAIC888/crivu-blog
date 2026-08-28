@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "crivu-blog",
+  "name": "crivu-academic",
   "pages_build_output_dir": "./dist",
   "compatibility_date": "2026-08-14",
   "compatibility_flags": ["nodejs_compat"],

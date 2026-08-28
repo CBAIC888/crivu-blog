@@ -1,18 +1,4 @@
-export const FALLBACK_COVER = '/assets/img/cover-01.svg';
-export const DEFAULT_SITE_ORIGIN = 'https://cbc688.com';
-export const BUILD_VERSION_PLACEHOLDER = '__BUILD_VERSION__';
-
-export const isPublished = (item) => item?.published !== false;
-export const isConfirmedRecord = (item) => item?.published === true;
-
-const PLACEHOLDER_PATTERNS = [
-  /yourname/i,
-  /your city/i,
-  /你的城市/u,
-  /hello@yourname\.com/i,
-  /這裡是你的個人博客/u,
-  /your-domain\.com/i,
-];
+const DEFAULT_SITE_ORIGIN = 'https://cbc688.com';
 
 const collapseWhitespace = (value) => String(value ?? '').replace(/\s+/g, ' ').trim();
 
@@ -25,22 +11,6 @@ const resolveBaseOrigin = (baseOrigin) => {
     return DEFAULT_SITE_ORIGIN;
   }
 };
-
-export const isPlaceholderText = (value) => {
-  const text = collapseWhitespace(value);
-  if (!text) return false;
-  return PLACEHOLDER_PATTERNS.some((pattern) => pattern.test(text));
-};
-
-export const normalizeText = (value, options = {}) => {
-  const { allowPlaceholder = false } = options;
-  const text = collapseWhitespace(value);
-  if (!text) return '';
-  if (!allowPlaceholder && isPlaceholderText(text)) return '';
-  return text;
-};
-
-export const isValidEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizeText(value, { allowPlaceholder: true }));
 
 export const escapeHtml = (input) =>
   String(input ?? '')
@@ -68,59 +38,6 @@ export const sanitizeUrl = (value, options = {}) => {
   return '#';
 };
 
-export const safeCoverUrl = (value, options = {}) => {
-  const safe = sanitizeUrl(value, { allowHash: false, baseOrigin: options.baseOrigin });
-  return safe === '#' ? FALLBACK_COVER : safe;
-};
-
-export const getBuildVersion = (doc = globalThis?.document) => {
-  if (!doc || typeof doc.querySelector !== 'function') return '';
-  const raw = doc.querySelector('meta[name="build-version"]')?.getAttribute('content') || '';
-  const version = raw.trim();
-  if (!version || version === BUILD_VERSION_PLACEHOLDER) return '';
-  return version;
-};
-
-export const withBuildVersion = (url, version = getBuildVersion()) => {
-  if (!version) return url;
-  const separator = url.includes('?') ? '&' : '?';
-  return `${url}${separator}v=${encodeURIComponent(version)}`;
-};
-
-export const articlePath = (slug) => {
-  const normalized = normalizeText(slug, { allowPlaceholder: true });
-  return normalized ? `/articles/${encodeURIComponent(normalized)}` : '/articles.html';
-};
-
-export const postPath = (post) => {
-  const direct = normalizeText(post?.page, { allowPlaceholder: true });
-  return direct || articlePath(post?.slug);
-};
-
-export const formatDate = (iso) => {
-  const raw = normalizeText(iso, { allowPlaceholder: true });
-  const match = raw.match(/^(\d{4})-(\d{2})-(\d{2})/);
-  if (!match) return raw;
-  return `${match[1]}/${match[2]}/${match[3]}`;
-};
-
-/**
- * 將 ISO datetime (或純日期) 正規化為 `YYYY-MM-DD`，用於卡片列、搜尋結果等
- * 只需要顯示日期的場景。兼容舊的 `2026-05-11` 與新的 `2026-05-11T14:30:00+08:00`。
- */
-export const toDisplayDate = (iso) => {
-  const raw = normalizeText(iso, { allowPlaceholder: true });
-  const match = raw.match(/^(\d{4}-\d{2}-\d{2})/);
-  return match ? match[1] : raw;
-};
-
-const trimDescription = (value, maxLength) => {
-  const text = collapseWhitespace(value);
-  if (!text) return '';
-  if (text.length <= maxLength) return text;
-  return `${text.slice(0, Math.max(0, maxLength - 1)).trimEnd()}…`;
-};
-
 export const stripMarkdown = (raw) => {
   const src = String(raw ?? '')
     .replace(/\r\n/g, '\n')
@@ -137,60 +54,6 @@ export const stripMarkdown = (raw) => {
   return collapseWhitespace(src);
 };
 
-export const buildDescription = (post, maxLength = 140) => {
-  const excerpt = normalizeText(post?.excerpt);
-  if (excerpt) return trimDescription(excerpt, maxLength);
-  const bodyText = stripMarkdown(post?.body ?? '');
-  return trimDescription(bodyText, maxLength);
-};
-
-export const buildSearchText = (post) => {
-  const tags = Array.isArray(post?.tags) ? post.tags.map((tag) => normalizeText(tag, { allowPlaceholder: true })) : [];
-  return collapseWhitespace(
-    [
-      normalizeText(post?.title, { allowPlaceholder: true }),
-      normalizeText(post?.excerpt, { allowPlaceholder: true }),
-      stripMarkdown(post?.body ?? ''),
-      normalizeText(post?.category, { allowPlaceholder: true }),
-      normalizeText(post?.issue, { allowPlaceholder: true }),
-      tags.join(' '),
-    ]
-      .filter(Boolean)
-      .join(' ')
-  );
-};
-
-const buildSnippetWindow = (text, query, maxLength) => {
-  const source = collapseWhitespace(text);
-  if (!source) return '';
-  if (!query) return trimDescription(source, maxLength);
-
-  const lower = source.toLowerCase();
-  const target = query.toLowerCase();
-  const at = lower.indexOf(target);
-  if (at === -1) return trimDescription(source, maxLength);
-
-  const radius = Math.max(18, Math.floor((maxLength - target.length) / 2));
-  const start = Math.max(0, at - radius);
-  const end = Math.min(source.length, at + target.length + radius);
-  const prefix = start > 0 ? '…' : '';
-  const suffix = end < source.length ? '…' : '';
-  return `${prefix}${source.slice(start, end).trim()}${suffix}`;
-};
-
-export const buildSearchSnippet = (post, query, maxLength = 88) => {
-  const normalizedQuery = normalizeText(query, { allowPlaceholder: true });
-  const candidates = [
-    normalizeText(post?.excerpt, { allowPlaceholder: true }),
-    stripMarkdown(post?.body ?? ''),
-    normalizeText(post?.title, { allowPlaceholder: true }),
-  ].filter(Boolean);
-
-  const matched = candidates.find((candidate) => candidate.toLowerCase().includes(normalizedQuery.toLowerCase()));
-  if (matched) return buildSnippetWindow(matched, normalizedQuery, maxLength);
-  return buildDescription(post, maxLength);
-};
-
 const inlineMarkdownLink = (label, href, baseOrigin) => {
   const safeHref = sanitizeUrl(href, { baseOrigin });
   return `<a href="${escapeHtml(safeHref)}" target="_blank" rel="noopener noreferrer nofollow">${escapeHtml(label)}</a>`;
@@ -199,8 +62,6 @@ const inlineMarkdownLink = (label, href, baseOrigin) => {
 const normalizeCmsMarkdown = (raw) =>
   String(raw || '')
     .replace(/\r\n/g, '\n')
-    // Some pasted/CMS-saved text contains protective slashes before Markdown
-    // markers. Remove those only where they block formatting syntax.
     .replace(/^\\(#{1,6}\s+)/gm, '$1')
     .replace(/^\\(>\s?)/gm, '$1')
     .replace(/^\\([-*]\s+)/gm, '$1')
@@ -383,11 +244,9 @@ export const simpleMarkdown = (raw, options = {}) => {
     if (imageMatch) {
       let caption = '';
       let skip = 0;
-      // 後一行若是 <!-- preset:... --> 就忽略
       const nextLine = (lines[i + 1] || '').trim();
       const presetMatch = nextLine.match(/^<!--\s*preset:.*?\s*-->$/);
       if (presetMatch) skip = 1;
-      // 再往後若是 *caption* 則作為說明
       const afterPresetLine = (lines[i + 1 + skip] || '').trim();
       const captionMatch = afterPresetLine.match(/^\*(.*?)\*$/);
       if (captionMatch) {
@@ -406,7 +265,6 @@ export const simpleMarkdown = (raw, options = {}) => {
       continue;
     }
 
-    // 孤立的 preset 註釋（無前置圖）直接跳過，避免漏出
     if (/^<!--\s*preset:.*?\s*-->$/.test(trimmed)) {
       continue;
     }
@@ -512,25 +370,4 @@ export const simpleMarkdown = (raw, options = {}) => {
   flushQuote();
   closeList();
   return out.join('\n');
-};
-
-export const renderNavItems = (items, currentPath, options = {}) => {
-  const baseOrigin = resolveBaseOrigin(options.baseOrigin);
-  if (!Array.isArray(items) || items.length === 0) return '';
-
-  return items
-    .filter((item) => item && normalizeText(item.label) && normalizeText(item.href, { allowPlaceholder: true }))
-    .map((item) => {
-      const safeHref = sanitizeUrl(item.href, { baseOrigin });
-      const normalized = new URL(safeHref, baseOrigin).pathname.replace(/\/index\.html$/, '/') || '/';
-      const isHome = normalized === '/';
-      const normalizedBase = normalized.endsWith('.html') ? normalized.replace(/\.html$/, '') : normalized;
-      const isActive = isHome
-        ? currentPath === '/'
-        : currentPath === normalized ||
-          currentPath.startsWith(`${normalized}/`) ||
-          (normalizedBase !== normalized && (currentPath === normalizedBase || currentPath.startsWith(`${normalizedBase}/`)));
-      return `<a href="${escapeHtml(safeHref)}"${isActive ? ' class="active"' : ''}>${escapeHtml(item.label)}</a>`;
-    })
-    .join('');
 };

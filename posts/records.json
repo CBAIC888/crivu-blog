@@ -5,7 +5,7 @@
       "date": "2026-07-23T04:00:00+08:00",
       "id": "world-word-history",
       "title": "「世界」一词真的是佛教带进汉语的吗？",
-      "cover": "/assets/img/uploads/20260723/world-word-exploration-cover.webp",
+      "cover": "/assets/img/projects/world-word-history-cover.webp",
       "summary": "从先秦两汉的旧字、东汉译经与佛教宇宙论出发，追索「世界」一词近两千年的形成、传播与意义变化。",
       "page": "/articles/world-word-exploration"
     },
@@ -14,26 +14,25 @@
       "date": "2026-06-20T21:10:51+08:00",
       "id": "zrc",
       "title": "京劇程派趙榮琛唱段",
-      "cover": "/assets/img/uploads/20260620/image-65a9d5204cf1.png",
       "summary": "趙榮琛唱段選集",
       "videos": [
         {
           "published": true,
           "url": "https://v.douyin.com/1Z2Z9rgzVuI/ :3pm Ulp:/ m@Q.Xz 09/22 ",
           "title": "《鴛鴦冢》女兒家婚姻事羞人答答",
-          "cover": "/assets/img/uploads/20260620/image-92c5c70b012d.png",
+          "cover": "/assets/img/projects/zhaorongchen-yuanyangzhong.png",
           "description": ""
         },
         {
           "published": true,
           "title": "《苗青娘》頓然間禁不住淚濕襟袖",
-          "cover": "/assets/img/uploads/20260620/image-a5b2339990b7.png",
+          "cover": "/assets/img/projects/zhaorongchen-miaoqingniang.png",
           "url": "https://v.douyin.com/PDIyaMfy4lQ/ M@w.fO Hic:/ 07/16 :8pm "
         },
         {
           "published": true,
           "title": "諧趣緣",
-          "cover": "/assets/img/uploads/20260620/1-c63c643c0cae.png",
+          "cover": "/assets/img/projects/zhaorongchen-xiequyuan.png",
           "url": "https://v.douyin.com/DURUeF65iVg/ :7pm W@m.qr 08/21 DUY:/ "
         }
       ]

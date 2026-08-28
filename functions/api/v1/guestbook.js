@@ -30,7 +30,7 @@ export const onRequestPost = handle(async (context) => {
   const { env, request } = context;
   const db = getDb(env);
   if (!db) return failure(503, 'database_unavailable', 'Guestbook is not configured');
-  const salt = cleanText(env.GUESTBOOK_HASH_SALT || env.COMMENT_HASH_SALT, 500);
+  const salt = cleanText(env.GUESTBOOK_HASH_SALT, 500);
   if (!salt) return failure(503, 'privacy_unavailable', 'Guestbook privacy hashing is not configured');
   const payload = await parseJson(request, 16_000);
   if (payload.website) return json({ accepted: true }, 202);
