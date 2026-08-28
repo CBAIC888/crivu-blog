@@ -2,7 +2,7 @@ const app = document.querySelector('#app');
 
 const state = {
   resource: 'articles', items: [], current: null, articles: [], dirty: false,
-  saving: false, saveQueued: false, autosave: 0, changeToken: 0,
+  saving: false, saveQueued: false, autosave: 0, changeToken: 0, mediaAudit: {}, mediaProblems: [],
 };
 
 const resources = [
@@ -32,7 +32,7 @@ const api = async (path, options={}) => {
     },
   });
   const data = await response.json().catch(()=>({}));
-  if(!response.ok) throw new Error(data.error?.message || '操作失敗');
+  if(!response.ok){const error=new Error(data.error?.message||'操作失敗');error.code=data.error?.code;error.details=data.error?.details;error.status=response.status;throw error;}
   return data;
 };
 
@@ -144,7 +144,7 @@ const openResource = async (resource) => {
   state.resource=resource;state.current=null;state.dirty=false;resetTopActions();
   document.querySelectorAll('[data-nav]').forEach((item)=>item.classList.toggle('active',item.dataset.nav===resource));
   document.querySelector('[data-heading]').textContent=resources.find(([id])=>id===resource)?.[1]||resource;
-  const newButton=document.querySelector('[data-new]');newButton.hidden=resource==='settings';newButton.textContent=resource==='guestbook'?'新增捧場':'新增';
+  const newButton=document.querySelector('[data-new]');newButton.hidden=['settings','media'].includes(resource);newButton.textContent=resource==='guestbook'?'新增捧場':'新增';
   notify('載入中…');
   try{
     const data=await api(resource);
@@ -289,7 +289,66 @@ const renderGuestbookEditor = () => {
   });
 };
 
-const renderMedia = (surface) => {surface.innerHTML=`<div class="media-layout"><form class="upload" data-upload><h2>上傳到 R2</h2><input type="file" name="file" required/><input name="title" placeholder="標題"/><input name="altText" placeholder="替代文字"/><button class="primary">上傳</button></form><div class="media-grid">${state.items.map((item)=>`<article><div class="media-thumb">${String(item.mimeType).startsWith('image/')?`<img src="${escapeHtml(item.publicUrl)}" alt="${escapeHtml(item.altText||'')}"/>`:'<span>檔案</span>'}</div><strong>${escapeHtml(item.title||item.filename)}</strong><small>${escapeHtml(item.mimeType)} · ${Math.round((item.sizeBytes||0)/1024)} KB</small><button data-copy="${escapeHtml(item.publicUrl)}">複製網址</button></article>`).join('')}</div></div>`;surface.querySelector('[data-upload]').addEventListener('submit',async(event)=>{event.preventDefault();notify('上傳中…');try{await api('media',{method:'POST',body:new FormData(event.target)});await openResource('media');}catch(error){notify(error.message,true);}});surface.querySelectorAll('[data-copy]').forEach((button)=>button.addEventListener('click',()=>navigator.clipboard.writeText(button.dataset.copy)));};
+const mediaRoleName = (role) => ({cover:'封面','body-start':'正文開頭','body-end':'正文末尾',body:'正文中','document':'文件附件',attachment:'附件'}[role]||role);
+const mediaOwnerName = (type) => ({article:'文章',collection:'專項',project:'專項資料',page:'頁面'}[type]||type);
+const mediaStatusMarkup = (item) => {
+  const result=state.mediaAudit[item.id];
+  if(!result)return '<span class="media-health media-health--unknown">未檢查</span>';
+  return `<span class="media-health media-health--${result.status}">${result.status==='healthy'?'正常':'有問題'}</span>`;
+};
+const renderMedia = (surface) => {
+  const cards=state.items.map((item)=>`<article class="media-card" data-media-card="${escapeHtml(item.id)}" data-media-search="${escapeHtml([item.title,item.filename,item.altText,item.caption].filter(Boolean).join(' ').toLowerCase())}" data-media-health="${escapeHtml(state.mediaAudit[item.id]?.status||'unknown')}"><div class="media-thumb">${String(item.mimeType).startsWith('image/')?`<img src="${escapeHtml(item.publicUrl)}" alt="${escapeHtml(item.altText||'')}" data-media-image="${escapeHtml(item.id)}"/>`:'<span>檔案</span>'}</div><div class="media-card__head"><strong>${escapeHtml(item.title||item.filename)}</strong>${mediaStatusMarkup(item)}</div><small>${escapeHtml(item.filename)} · ${Math.round((item.sizeBytes||0)/1024)} KB</small><small>${Number(item.usageCount||0)?`使用於 ${Number(item.usageCount)} 處`:'目前未使用'}</small><div class="media-card__actions"><button data-media-open="${escapeHtml(item.id)}">管理</button><button data-copy="${escapeHtml(item.publicUrl)}">複製網址</button></div></article>`).join('')||'<p class="empty">暫無媒體</p>';
+  const problems=state.mediaProblems.length?`<section class="media-problems"><h2>需要更換的圖片 · ${state.mediaProblems.length}</h2><p>以下網址無法載入，已按使用位置列出。</p><ul>${state.mediaProblems.map((problem)=>`<li><div><strong>${escapeHtml(problem.title||problem.ownerId)}</strong><span>${escapeHtml(mediaOwnerName(problem.ownerType))} · ${escapeHtml(mediaRoleName(problem.role))}</span></div><a href="${escapeHtml(problem.url)}" target="_blank" rel="noopener">${escapeHtml(problem.url)}</a></li>`).join('')}</ul></section>`:'';
+  surface.innerHTML=`<div class="media-layout"><form class="upload" data-upload><h2>上傳圖片到媒體庫</h2><input type="file" name="files" accept="image/*" multiple required/><div class="form-row"><input name="title" placeholder="標題（多張上傳時可留空）"/><input name="altText" placeholder="替代文字（多張上傳時可留空）"/></div><button class="primary">上傳</button><small>圖片只保存到 R2，不另外同步至本地專案。</small></form><div class="media-tools"><input type="search" placeholder="搜尋圖片名稱或說明" data-media-search/><select data-media-filter><option value="">全部圖片</option><option value="broken">只看有問題</option><option value="healthy">只看正常</option><option value="unknown">尚未檢查</option></select><button data-audit-all>檢查全部圖片</button></div>${problems}<div class="media-grid" data-media-grid>${cards}</div></div>`;
+  const applyFilters=()=>{const query=surface.querySelector('[data-media-search]').value.trim().toLowerCase(),status=surface.querySelector('[data-media-filter]').value;surface.querySelectorAll('[data-media-card]').forEach((card)=>{card.hidden=Boolean((query&&!card.dataset.mediaSearch.includes(query))||(status&&card.dataset.mediaHealth!==status));});};
+  surface.querySelector('[data-media-search]').addEventListener('input',applyFilters);
+  surface.querySelector('[data-media-filter]').addEventListener('change',applyFilters);
+  surface.querySelector('[data-upload]').addEventListener('submit',async(event)=>{
+    event.preventDefault();const files=[...(event.target.elements.files.files||[])];if(!files.length)return;notify(`正在上傳 ${files.length} 張圖片…`);
+    try{for(const file of files){const form=new FormData();form.append('file',file);form.append('title',files.length===1?event.target.elements.title.value:file.name);form.append('altText',files.length===1?event.target.elements.altText.value:file.name.replace(/\.[^.]+$/,''));await api('media',{method:'POST',body:form});}await openResource('media');notify(`已上傳 ${files.length} 張圖片`);}catch(error){notify(error.message,true);}
+  });
+  surface.querySelectorAll('[data-media-open]').forEach((button)=>button.addEventListener('click',()=>openMedia(button.dataset.mediaOpen)));
+  surface.querySelectorAll('[data-copy]').forEach((button)=>button.addEventListener('click',async()=>{await navigator.clipboard.writeText(button.dataset.copy);notify('已複製圖片網址');}));
+  surface.querySelectorAll('[data-media-image]').forEach((image)=>image.addEventListener('error',()=>{state.mediaAudit[image.dataset.mediaImage]={status:'broken',message:'圖片載入失敗'};const card=image.closest('[data-media-card]');card.dataset.mediaHealth='broken';card.querySelector('.media-health').outerHTML=mediaStatusMarkup({id:image.dataset.mediaImage});}));
+  surface.querySelector('[data-audit-all]').addEventListener('click',auditAllMedia);
+};
+
+const checkMedia = async (id) => {
+  try{const data=await api(`media/${encodeURIComponent(id)}/audit`);state.mediaAudit[id]=data.result;return data.result;}catch(error){state.mediaAudit[id]={status:'broken',message:error.message};return state.mediaAudit[id];}
+};
+const checkImageUrl = (url) => new Promise((resolve)=>{const image=new Image(),timer=setTimeout(()=>{image.src='';resolve(false);},9000);image.onload=()=>{clearTimeout(timer);resolve(true);};image.onerror=()=>{clearTimeout(timer);resolve(false);};image.src=new URL(url,location.origin).href;});
+const auditMediaReferences = async () => {
+  const references=(await api('media/references')).items||[],groups=new Map();
+  for(const reference of references){const url=new URL(reference.url,location.origin).href;if(!groups.has(url))groups.set(url,[]);groups.get(url).push({...reference,url});}
+  const entries=[...groups],broken=new Set();let cursor=0;
+  const worker=async()=>{while(cursor<entries.length){const [url]=entries[cursor++];if(!await checkImageUrl(url))broken.add(url);}};
+  await Promise.all(Array.from({length:Math.min(6,entries.length)},worker));
+  state.mediaProblems=entries.filter(([url])=>broken.has(url)).flatMap(([,references])=>references);
+};
+const auditAllMedia = async () => {
+  const button=document.querySelector('[data-audit-all]');if(button)button.disabled=true;notify(`正在檢查 ${state.items.length} 張圖片…`);
+  let cursor=0;const worker=async()=>{while(cursor<state.items.length){const item=state.items[cursor++];await checkMedia(item.id);}};
+  await Promise.all([Promise.all(Array.from({length:Math.min(6,state.items.length)},worker)),auditMediaReferences()]);
+  const brokenUrls=new Set([...state.items.filter((item)=>state.mediaAudit[item.id]?.status==='broken').map((item)=>new URL(item.publicUrl,location.origin).href),...state.mediaProblems.map((item)=>item.url)]);renderMedia(document.querySelector('[data-surface]'));notify(brokenUrls.size?`檢查完成：${brokenUrls.size} 張圖片有問題`:'檢查完成：全部圖片正常',Boolean(brokenUrls.size));
+};
+
+const renderMediaEditor = (item) => {
+  const surface=document.querySelector('[data-surface]'),usages=item.usages||[],audit=state.mediaAudit[item.id];resetTopActions();
+  const usageMarkup=usages.length?usages.map((usage)=>`<li><strong>${escapeHtml(usage.title||usage.ownerId)}</strong><span>${escapeHtml(mediaOwnerName(usage.ownerType))} · ${escapeHtml(mediaRoleName(usage.role))}</span></li>`).join(''):'<li class="empty-inline">目前沒有內容使用這張圖片</li>';
+  const articleOptions=state.articles.map((article)=>`<option value="${escapeHtml(article.id)}">${escapeHtml(article.title)}</option>`).join('');
+  surface.innerHTML=`<div class="media-editor"><section class="media-editor__preview">${String(item.mimeType).startsWith('image/')?`<img src="${escapeHtml(item.publicUrl)}" alt="${escapeHtml(item.altText)}"/>`:'<span>檔案</span>'}<div>${mediaStatusMarkup(item)}<span>${escapeHtml(audit?.message||'尚未檢查實際檔案')}</span></div></section><form class="form" data-media-form><h2>圖片資料</h2>${label('檔案名稱','filename',input('filename',item.filename,'text','required'))}${label('標題','title',input('title',item.title))}${label('替代文字','altText',input('altText',item.altText))}${label('圖片說明','caption',textarea('caption',item.caption,3))}<div class="form-row">${label('作者／攝影者','creator',input('creator',item.creator))}${label('年代','period',input('period',item.period))}</div>${label('來源','source',input('source',item.source))}${label('授權','license',input('license',item.license))}<small>重新命名不會改變圖片網址，因此既有文章不會失效。</small><div class="inline-actions"><button type="button" data-media-back>返回媒體庫</button><button type="button" data-media-check>檢查圖片</button><button class="primary">儲存資料</button></div></form><section class="form media-use"><h2>使用於何處</h2><ul class="media-usages">${usageMarkup}</ul><h2>套用到文章</h2><select data-use-article><option value="">選擇文章…</option>${articleOptions}</select><div class="inline-actions"><button type="button" data-use-role="cover">設為封面</button><button type="button" data-use-role="body-start">放到開頭</button><button type="button" data-use-role="body-end">放到末尾</button></div><div class="media-danger"><p>刪除會同時清理 R2 檔案及媒體記錄。若圖片正在使用，會先解除上述引用。</p><button type="button" class="danger" data-media-delete>刪除圖片</button></div></section></div>`;
+  surface.querySelector('[data-media-back]').addEventListener('click',()=>openResource('media'));
+  surface.querySelector('[data-media-check]').addEventListener('click',async()=>{notify('正在檢查圖片…');const result=await checkMedia(item.id);notify(result.message,result.status==='broken');await openMedia(item.id);});
+  surface.querySelector('[data-media-form]').addEventListener('submit',async(event)=>{event.preventDefault();const body=Object.fromEntries(new FormData(event.target));try{const data=await api(`media/${encodeURIComponent(item.id)}`,{method:'PUT',body:JSON.stringify(body)});notify('圖片資料已儲存');renderMediaEditor(data.item);}catch(error){notify(error.message,true);}});
+  surface.querySelectorAll('[data-use-role]').forEach((button)=>button.addEventListener('click',async()=>{const articleId=surface.querySelector('[data-use-article]').value;if(!articleId){notify('請先選擇文章',true);return;}try{await api(`media/${encodeURIComponent(item.id)}/use`,{method:'POST',body:JSON.stringify({articleId,role:button.dataset.useRole})});notify(`已${mediaRoleName(button.dataset.useRole)}套用到文章`);state.articles=(await api('articles')).items||[];await openMedia(item.id);}catch(error){notify(error.message,true);}}));
+  surface.querySelector('[data-media-delete]').addEventListener('click',()=>deleteMediaItem(item));
+};
+const openMedia = async (id) => {notify('載入圖片資料…');try{const data=await api(`media/${encodeURIComponent(id)}`);state.current=data.item;renderMediaEditor(data.item);notify('已載入圖片資料');}catch(error){notify(error.message,true);}};
+const deleteMediaItem = async (item) => {
+  const count=(item.usages||[]).length,message=count?`這張圖片使用於 ${count} 處。刪除後會從相關封面及正文移除，且無法復原。\n\n確定刪除「${item.title||item.filename}」？`:`確定永久刪除「${item.title||item.filename}」？`;
+  if(!confirm(message))return;
+  try{const data=await api(`media/${encodeURIComponent(item.id)}${count?'/purge':''}`,{method:'DELETE'});delete state.mediaAudit[item.id];await openResource('media');notify(data.legacyStaticCopy?'媒體記錄與引用已刪除；舊版靜態檔會在後續清理部署時移除':'圖片、引用與 R2 檔案已刪除');}catch(error){notify(error.message,true);}
+};
 const renderSettings = (settings) => {const get=(key)=>settings[key]?.value??'';document.querySelector('[data-surface]').innerHTML=`<form class="form single" data-settings>${label('站名','siteName',input('siteName',get('siteName')))}${label('網站描述','siteDescription',textarea('siteDescription',get('siteDescription'),4))}${label('頁尾','footerText',input('footerText',get('footerText')))}${label('搜尋提示','searchPlaceholder',input('searchPlaceholder',get('searchPlaceholder')))}${label('導航 JSON','navigation',textarea('navigation',JSON.stringify(get('navigation')||[],null,2),9))}<button class="primary">儲存設定</button></form>`;document.querySelector('[data-settings]').addEventListener('submit',async(event)=>{event.preventDefault();await api('settings',{method:'PUT',body:JSON.stringify({settings:{siteName:{value:value('siteName')},siteDescription:{value:value('siteDescription')},footerText:{value:value('footerText')},searchPlaceholder:{value:value('searchPlaceholder')},navigation:{value:JSON.parse(value('navigation')||'[]')}}})});notify('設定已儲存');});notify('已載入設定');};
 
 try{const session=await api('session');shell(session.user);await openResource('articles');}catch{app.innerHTML=`<main class="login"><div><a class="brand" href="/articles">CRIVU</a><h1>內容管理</h1><p>使用獲准的 GitHub 帳號登入。GitHub 只用於確認身分，內容不再寫入 GitHub。</p><a class="login-button" href="/api/auth?provider=github&returnTo=/admin/">使用 GitHub 登入</a></div></main>`;}

@@ -168,6 +168,138 @@ const mediaUpload = async (context, db, session) => {
   return json({item:{id,filename:file.name,mimeType:file.type,sizeBytes:file.size,r2Key:key,publicUrl,etag:object?.httpEtag||''}},201);
 };
 
+const serializeMedia = (row) => ({
+  id:row.id,filename:row.filename,mimeType:row.mime_type,sizeBytes:row.size_bytes,width:row.width,height:row.height,
+  durationSeconds:row.duration_seconds,title:row.title||'',altText:row.alt_text||'',caption:row.caption||'',creator:row.creator||'',
+  period:row.period||'',source:row.source||'',license:row.license||'',r2Key:row.r2_key,publicUrl:row.public_url||'',
+  createdAt:row.created_at,updatedAt:row.updated_at,usageCount:Number(row.usage_count||0),
+});
+
+const mediaUsages = async (db, item) => {
+  const url=item.public_url||'', id=item.id;
+  const [articles,collections,projects,pages,relations]=await Promise.all([
+    db.prepare(`SELECT id,title,slug,cover_media_id AS coverMediaId,cover_url AS coverUrl,body_markdown AS bodyMarkdown FROM articles WHERE cover_media_id=? OR cover_url=? OR (?<>'' AND instr(body_markdown,?)>0)`).bind(id,url,url,url).all(),
+    db.prepare(`SELECT id,title,cover_media_id AS coverMediaId,cover_url AS coverUrl,pdf_media_id AS pdfMediaId FROM collections WHERE cover_media_id=? OR cover_url=? OR pdf_media_id=?`).bind(id,url,id).all(),
+    db.prepare(`SELECT id,title,slug,cover_media_id AS coverMediaId,cover_url AS coverUrl,body_markdown AS bodyMarkdown FROM projects WHERE cover_media_id=? OR cover_url=? OR (?<>'' AND instr(body_markdown,?)>0)`).bind(id,url,url,url).all(),
+    db.prepare(`SELECT id,title,slug,body_markdown AS bodyMarkdown FROM pages WHERE ?<>'' AND instr(body_markdown,?)>0`).bind(url,url).all(),
+    db.prepare(`SELECT owner_type AS ownerType,owner_id AS ownerId,role,sort_order AS sortOrder FROM media_relations WHERE media_id=? ORDER BY owner_type,owner_id,sort_order`).bind(id).all(),
+  ]);
+  const usages=[], seen=new Set();
+  const add=(usage)=>{const key=`${usage.ownerType}:${usage.ownerId}:${usage.role}`;if(!seen.has(key)){seen.add(key);usages.push(usage);}};
+  const bodyRole=(body)=>{const text=String(body||''),first=text.indexOf(url),last=text.lastIndexOf(url);if(first!==last)return'body';if(first<0)return'body';if(first<=Math.max(120,text.length*.08))return'body-start';if(first>=text.length-Math.max(120,text.length*.08))return'body-end';return'body';};
+  for(const row of rows(articles)){
+    if(row.coverMediaId===id||row.coverUrl===url)add({ownerType:'article',ownerId:row.id,title:row.title,slug:row.slug,role:'cover'});
+    if(url&&String(row.bodyMarkdown||'').includes(url))add({ownerType:'article',ownerId:row.id,title:row.title,slug:row.slug,role:bodyRole(row.bodyMarkdown)});
+  }
+  for(const row of rows(collections)){
+    if(row.coverMediaId===id||row.coverUrl===url)add({ownerType:'collection',ownerId:row.id,title:row.title,role:'cover'});
+    if(row.pdfMediaId===id)add({ownerType:'collection',ownerId:row.id,title:row.title,role:'document'});
+  }
+  for(const row of rows(projects)){
+    if(row.coverMediaId===id||row.coverUrl===url)add({ownerType:'project',ownerId:row.id,title:row.title,slug:row.slug,role:'cover'});
+    if(url&&String(row.bodyMarkdown||'').includes(url))add({ownerType:'project',ownerId:row.id,title:row.title,slug:row.slug,role:bodyRole(row.bodyMarkdown)});
+  }
+  for(const row of rows(pages))add({ownerType:'page',ownerId:row.id,title:row.title,slug:row.slug,role:bodyRole(row.bodyMarkdown)});
+  for(const row of rows(relations))if(!['cover','body','body-start','body-end'].includes(row.role))add({...row,title:row.ownerId});
+  return usages;
+};
+
+const mediaDetail = async (db, id) => {
+  const row=await db.prepare(`SELECT * FROM media WHERE id=?`).bind(id).first();
+  return row?{...serializeMedia(row),usages:await mediaUsages(db,row)}:null;
+};
+
+const mediaReferences = async (db) => {
+  const [articles,collections,projects,pages]=await Promise.all([
+    db.prepare(`SELECT a.id,a.title,a.slug,a.cover_url AS coverUrl,m.public_url AS coverPublicUrl,a.body_markdown AS bodyMarkdown FROM articles a LEFT JOIN media m ON m.id=a.cover_media_id`).all(),
+    db.prepare(`SELECT c.id,c.title,c.cover_url AS coverUrl,m.public_url AS coverPublicUrl FROM collections c LEFT JOIN media m ON m.id=c.cover_media_id`).all(),
+    db.prepare(`SELECT p.id,p.title,p.slug,p.cover_url AS coverUrl,m.public_url AS coverPublicUrl,p.body_markdown AS bodyMarkdown FROM projects p LEFT JOIN media m ON m.id=p.cover_media_id`).all(),
+    db.prepare(`SELECT id,title,slug,body_markdown AS bodyMarkdown FROM pages`).all(),
+  ]);
+  const references=[],seen=new Set(),add=(reference)=>{const url=cleanText(reference.url,1000);if(!url)return;const key=`${reference.ownerType}:${reference.ownerId}:${reference.role}:${url}`;if(!seen.has(key)){seen.add(key);references.push({...reference,url});}};
+  const bodyUrls=(body)=>{const text=String(body||''),found=[];for(const match of text.matchAll(/!\[[^\]]*\]\(([^)\s]+)(?:\s+["'][^"']*["'])?\)/g))found.push(match[1]);for(const match of text.matchAll(/<img\b[^>]*\bsrc=["']([^"']+)["'][^>]*>/gi))found.push(match[1]);return[...new Set(found)];};
+  for(const row of rows(articles)){add({ownerType:'article',ownerId:row.id,title:row.title,slug:row.slug,role:'cover',url:row.coverPublicUrl||row.coverUrl});for(const url of bodyUrls(row.bodyMarkdown))add({ownerType:'article',ownerId:row.id,title:row.title,slug:row.slug,role:'body',url});}
+  for(const row of rows(collections))add({ownerType:'collection',ownerId:row.id,title:row.title,role:'cover',url:row.coverPublicUrl||row.coverUrl});
+  for(const row of rows(projects)){add({ownerType:'project',ownerId:row.id,title:row.title,slug:row.slug,role:'cover',url:row.coverPublicUrl||row.coverUrl});for(const url of bodyUrls(row.bodyMarkdown))add({ownerType:'project',ownerId:row.id,title:row.title,slug:row.slug,role:'body',url});}
+  for(const row of rows(pages))for(const url of bodyUrls(row.bodyMarkdown))add({ownerType:'page',ownerId:row.id,title:row.title,slug:row.slug,role:'body',url});
+  return references.slice(0,2000);
+};
+
+const auditMedia = async (context, item) => {
+  if(!item.public_url)return {status:'broken',message:'沒有公開網址'};
+  try{
+    if(item.public_url.startsWith('/media/')){
+      const bucket=context.env.MEDIA_BUCKET;
+      if(!bucket)return {status:'broken',message:'R2 媒體綁定不存在'};
+      const object=typeof bucket.head==='function'?await bucket.head(item.r2_key):await bucket.get(item.r2_key);
+      return object?{status:'healthy',message:'R2 檔案正常'}:{status:'broken',message:'R2 找不到實際檔案'};
+    }
+    const target=new URL(item.public_url,context.request.url);
+    let response=await fetch(target,{method:'HEAD',redirect:'follow'});
+    if(response.status===405)response=await fetch(target,{method:'GET',headers:{Range:'bytes=0-0'},redirect:'follow'});
+    return response.ok||response.status===206?{status:'healthy',message:'圖片網址正常',httpStatus:response.status}:{status:'broken',message:`圖片網址回傳 ${response.status}`,httpStatus:response.status};
+  }catch{return {status:'broken',message:'圖片無法讀取'};}
+};
+
+const escapeRegex = (value) => String(value).replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+const removeMediaFromBody = (body, url) => {
+  if(!url)return String(body||'');
+  const escaped=escapeRegex(url), imageBlock=new RegExp(`^!\\[[^\\]]*\\]\\(${escaped}(?:\\s+["'][^"']*["'])?\\)$`), htmlFigure=new RegExp(`<figure\\b[^>]*>(?:(?!<\\/figure>)[\\s\\S])*?<img\\b[^>]*\\bsrc=["']${escaped}["'][^>]*>(?:(?!<\\/figure>)[\\s\\S])*?<\\/figure>`,`gi`),htmlImage=new RegExp(`<img\\b[^>]*\\bsrc=["']${escaped}["'][^>]*>`,`gi`);
+  return String(body||'').replace(htmlFigure,'').replace(htmlImage,'').split(/\n{2,}/).filter((block)=>!imageBlock.test(block.trim())).join('\n\n').replace(/\n{3,}/g,'\n\n').trim();
+};
+
+const applyMediaToArticle = async (db, mediaId, payload, session) => {
+  const media=await db.prepare(`SELECT * FROM media WHERE id=?`).bind(mediaId).first();
+  const article=await db.prepare(`SELECT * FROM articles WHERE id=?`).bind(cleanText(payload.articleId,120)).first();
+  if(!media||!article)return null;
+  const role=allowed(payload.role,['cover','body-start','body-end'],'cover'), nextVersion=Number(article.version)+1;
+  let body=article.body_markdown||'', coverMediaId=article.cover_media_id, coverUrl=article.cover_url;
+  if(role==='cover'){coverMediaId=media.id;coverUrl=media.public_url;}
+  else{
+    body=removeMediaFromBody(body,media.public_url);
+    const alt=cleanText(media.alt_text||media.title||media.filename,500),format=safeJson(article.metadata_json)?.format;
+    const htmlAlt=alt.replaceAll('&','&amp;').replaceAll('"','&quot;').replaceAll('<','&lt;').replaceAll('>','&gt;'),markdownAlt=alt.replace(/[\]\r\n]/g,'');
+    const marker=format==='html'?`<figure><img src="${media.public_url}" alt="${htmlAlt}"></figure>`:`![${markdownAlt}](${media.public_url})`;
+    body=role==='body-start'?`${marker}\n\n${body}`.trim():`${body}\n\n${marker}`.trim();
+  }
+  await db.batch([
+    db.prepare(`INSERT OR IGNORE INTO article_revisions (id,article_id,version,snapshot_json,changed_by) VALUES (?,?,?,?,?)`).bind(makeId('rev'),article.id,article.version,JSON.stringify(serializeArticle(article)),session.login),
+    db.prepare(`UPDATE articles SET cover_media_id=?,cover_url=?,body_markdown=?,version=?,updated_at=? WHERE id=?`).bind(coverMediaId,coverUrl,body,nextVersion,now(),article.id),
+    db.prepare(`DELETE FROM media_relations WHERE owner_type='article' AND owner_id=? AND role=?`).bind(article.id,role),
+    db.prepare(`INSERT OR REPLACE INTO media_relations (media_id,owner_type,owner_id,role,sort_order) VALUES (?,'article',?,?,0)`).bind(media.id,article.id,role),
+  ]);
+  return {articleId:article.id,title:article.title,role,version:nextVersion};
+};
+
+const deleteMedia = async (context, db, id, force, session) => {
+  const item=await db.prepare(`SELECT * FROM media WHERE id=?`).bind(id).first();
+  if(!item)return failure(404,'not_found','Media not found');
+  const usages=await mediaUsages(db,item);
+  if(usages.length&&!force)return failure(409,'media_in_use','圖片仍在使用中；請確認受影響內容後再解除引用並刪除',{usages});
+  const statements=[];
+  if(force){
+    const [articles,projects,pages]=await Promise.all([
+      db.prepare(`SELECT * FROM articles WHERE cover_media_id=? OR cover_url=? OR (?<>'' AND instr(body_markdown,?)>0)`).bind(id,item.public_url,item.public_url,item.public_url).all(),
+      db.prepare(`SELECT * FROM projects WHERE cover_media_id=? OR cover_url=? OR (?<>'' AND instr(body_markdown,?)>0)`).bind(id,item.public_url,item.public_url,item.public_url).all(),
+      db.prepare(`SELECT * FROM pages WHERE ?<>'' AND instr(body_markdown,?)>0`).bind(item.public_url,item.public_url).all(),
+    ]);
+    for(const row of rows(articles))statements.push(
+      db.prepare(`INSERT OR IGNORE INTO article_revisions (id,article_id,version,snapshot_json,changed_by) VALUES (?,?,?,?,?)`).bind(makeId('rev'),row.id,row.version,JSON.stringify(serializeArticle(row)),session.login),
+      db.prepare(`UPDATE articles SET cover_media_id=CASE WHEN cover_media_id=? THEN NULL ELSE cover_media_id END,cover_url=CASE WHEN cover_media_id=? OR cover_url=? THEN NULL ELSE cover_url END,body_markdown=?,version=version+1,updated_at=? WHERE id=?`).bind(id,id,item.public_url,removeMediaFromBody(row.body_markdown,item.public_url),now(),row.id),
+    );
+    for(const row of rows(projects))statements.push(db.prepare(`UPDATE projects SET cover_media_id=CASE WHEN cover_media_id=? THEN NULL ELSE cover_media_id END,cover_url=CASE WHEN cover_media_id=? OR cover_url=? THEN NULL ELSE cover_url END,body_markdown=?,version=version+1,updated_at=? WHERE id=?`).bind(id,id,item.public_url,removeMediaFromBody(row.body_markdown,item.public_url),now(),row.id));
+    for(const row of rows(pages))statements.push(db.prepare(`UPDATE pages SET body_markdown=?,version=version+1,updated_at=? WHERE id=?`).bind(removeMediaFromBody(row.body_markdown,item.public_url),now(),row.id));
+    statements.push(
+      db.prepare(`UPDATE collections SET cover_media_id=CASE WHEN cover_media_id=? THEN NULL ELSE cover_media_id END,cover_url=CASE WHEN cover_media_id=? OR cover_url=? THEN NULL ELSE cover_url END,pdf_media_id=CASE WHEN pdf_media_id=? THEN NULL ELSE pdf_media_id END,version=version+1,updated_at=? WHERE cover_media_id=? OR cover_url=? OR pdf_media_id=?`).bind(id,id,item.public_url,id,now(),id,item.public_url,id),
+      db.prepare(`DELETE FROM project_relations WHERE relation_type='media' AND target_id=?`).bind(id),
+    );
+  }
+  statements.push(db.prepare(`DELETE FROM media_relations WHERE media_id=?`).bind(id),db.prepare(`DELETE FROM media WHERE id=?`).bind(id));
+  if(statements.length)await db.batch(statements);
+  await context.env.MEDIA_BUCKET?.delete(item.r2_key);
+  return json({deleted:true,removedUsages:force?usages.length:0,legacyStaticCopy:Boolean(item.public_url&&!item.public_url.startsWith('/media/'))});
+};
+
 const archiveResource = async (db, table, id) => {
   const result = await db.prepare(`UPDATE ${table} SET status='archived',version=version+1,updated_at=? WHERE id=?`).bind(now(),id).run();
   return Number(result.meta?.changes || 0) ? json({archived:true}) : failure(404,'not_found','Item not found');
@@ -233,10 +365,19 @@ export const onRequest = handle(async (context) => {
   }
 
   if(resource==='media'){
-    if(method==='GET'&&!id){const result=await db.prepare(`SELECT id,filename,mime_type AS mimeType,size_bytes AS sizeBytes,width,height,duration_seconds AS durationSeconds,title,alt_text AS altText,caption,creator,period,source,license,r2_key AS r2Key,public_url AS publicUrl,created_at AS createdAt FROM media ORDER BY created_at DESC LIMIT 300`).all();return json({items:rows(result)});}
+    if(method==='GET'&&!id){const result=await db.prepare(`SELECT m.*,
+      ((SELECT COUNT(*) FROM articles a WHERE a.cover_media_id=m.id OR a.cover_url=m.public_url OR (m.public_url<>'' AND instr(a.body_markdown,m.public_url)>0))+
+       (SELECT COUNT(*) FROM collections c WHERE c.cover_media_id=m.id OR c.cover_url=m.public_url OR c.pdf_media_id=m.id)+
+       (SELECT COUNT(*) FROM projects p WHERE p.cover_media_id=m.id OR p.cover_url=m.public_url OR (m.public_url<>'' AND instr(p.body_markdown,m.public_url)>0))+
+       (SELECT COUNT(*) FROM pages g WHERE m.public_url<>'' AND instr(g.body_markdown,m.public_url)>0)) AS usage_count
+      FROM media m ORDER BY m.created_at DESC LIMIT 300`).all();return json({items:rows(result).map(serializeMedia)});}
     if(method==='POST'&&!id)return mediaUpload(context,db,session);
-    if(method==='PUT'&&id){const p=await parseJson(context.request);await db.prepare(`UPDATE media SET title=?,alt_text=?,caption=?,creator=?,period=?,source=?,license=?,updated_at=? WHERE id=?`).bind(cleanText(p.title,300),cleanText(p.altText,500),cleanText(p.caption,2000),cleanText(p.creator,500),cleanText(p.period,200),cleanText(p.source,1000),cleanText(p.license,500),now(),id).run();return json({saved:true});}
-    if(method==='DELETE'&&id){const refs=await db.prepare(`SELECT COUNT(*) AS count FROM media_relations WHERE media_id=?`).bind(id).first();if(Number(refs?.count||0))return failure(409,'media_in_use','Media is still referenced');const item=await db.prepare(`SELECT r2_key FROM media WHERE id=?`).bind(id).first();if(!item)return failure(404,'not_found','Media not found');await context.env.MEDIA_BUCKET?.delete(item.r2_key);await db.prepare(`DELETE FROM media WHERE id=?`).bind(id).run();return json({deleted:true});}
+    if(method==='GET'&&id==='references'&&!action)return json({items:await mediaReferences(db)});
+    if(method==='GET'&&id&&action==='audit'){const item=await db.prepare(`SELECT * FROM media WHERE id=?`).bind(id).first();return item?json({result:await auditMedia(context,item)}):failure(404,'not_found','Media not found');}
+    if(method==='GET'&&id){const item=await mediaDetail(db,id);return item?json({item}):failure(404,'not_found','Media not found');}
+    if(method==='POST'&&id&&action==='use'){const result=await applyMediaToArticle(db,id,await parseJson(context.request),session);return result?json({applied:true,item:result}):failure(404,'not_found','圖片或文章不存在');}
+    if(method==='PUT'&&id){const p=await parseJson(context.request),filename=cleanText(p.filename,300);const result=await db.prepare(`UPDATE media SET filename=?,title=?,alt_text=?,caption=?,creator=?,period=?,source=?,license=?,updated_at=? WHERE id=?`).bind(filename||'image',cleanText(p.title,300),cleanText(p.altText,500),cleanText(p.caption,2000),cleanText(p.creator,500),cleanText(p.period,200),cleanText(p.source,1000),cleanText(p.license,500),now(),id).run();return Number(result.meta?.changes||0)?json({item:await mediaDetail(db,id)}):failure(404,'not_found','Media not found');}
+    if(method==='DELETE'&&id)return deleteMedia(context,db,id,action==='purge',session);
   }
 
   if(resource==='guestbook'){

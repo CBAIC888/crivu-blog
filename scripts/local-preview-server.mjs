@@ -50,6 +50,10 @@ const MEDIA_BUCKET = {
     const object=mediaObjects.get(key);if(!object)return null;
     return {body:object.bytes,httpEtag:object.httpEtag,writeHttpMetadata:(headers)=>headers.set('content-type',object.contentType)};
   },
+  head: async (key) => {
+    const object=mediaObjects.get(key);if(!object)return null;
+    return {httpEtag:object.httpEtag,size:object.bytes.length,httpMetadata:{contentType:object.contentType}};
+  },
   delete: async (key) => mediaObjects.delete(key),
 };
 
