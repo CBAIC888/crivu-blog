@@ -77,6 +77,50 @@ const verify = async (value, signature, secret) => {
   try { return crypto.subtle.verify('HMAC', key, decodeBase64Url(signature), encoder.encode(value)); } catch { return false; }
 };
 
+const ACCESS_TEAM_DOMAIN = 'https://broken-waterfall-0726.cloudflareaccess.com';
+const ACCESS_AUD = '82d8d9f82ddf322a8b94627216725cea07b1369adc946cc50269e8cc8b15614f';
+let accessKeys = { expiresAt: 0, items: [] };
+
+const accessConfig = (env) => ({
+  domain: cleanText(env?.CF_ACCESS_TEAM_DOMAIN || ACCESS_TEAM_DOMAIN, 300).replace(/\/$/, ''),
+  aud: cleanText(env?.CF_ACCESS_AUD || ACCESS_AUD, 200),
+});
+
+const jwtJson = (value) => JSON.parse(new TextDecoder().decode(decodeBase64Url(value)));
+
+const loadAccessKeys = async (domain, force = false) => {
+  if (!force && accessKeys.items.length && accessKeys.expiresAt > Date.now()) return accessKeys.items;
+  const response = await fetch(`${domain}/cdn-cgi/access/certs`, { headers: { Accept: 'application/json' } });
+  if (!response.ok) throw new Error('Cloudflare Access keys are unavailable');
+  const data = await response.json();
+  accessKeys = { expiresAt: Date.now() + 5 * 60 * 1000, items: Array.isArray(data.keys) ? data.keys : [] };
+  return accessKeys.items;
+};
+
+const accessSession = async (request, env) => {
+  const token = cleanText(request.headers.get('cf-access-jwt-assertion'), 20_000);
+  if (!token) return null;
+  const { domain, aud } = accessConfig(env);
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) return null;
+    const header = jwtJson(parts[0]), payload = jwtJson(parts[1]), now = Math.floor(Date.now() / 1000);
+    const audiences = Array.isArray(payload.aud) ? payload.aud : [payload.aud];
+    if (header.alg !== 'RS256' || !header.kid || payload.iss !== domain || !audiences.includes(aud)) return null;
+    if (!payload.email || Number(payload.exp) <= now || (payload.nbf && Number(payload.nbf) > now)) return null;
+    let keys = await loadAccessKeys(domain), jwk = keys.find((item) => item.kid === header.kid);
+    if (!jwk) { keys = await loadAccessKeys(domain, true); jwk = keys.find((item) => item.kid === header.kid); }
+    if (!jwk) return null;
+    const algorithm = { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' };
+    const key = await crypto.subtle.importKey('jwk', jwk, algorithm, false, ['verify']);
+    const valid = await crypto.subtle.verify(algorithm, key, decodeBase64Url(parts[2]), encoder.encode(`${parts[0]}.${parts[1]}`));
+    if (!valid) return null;
+    return { login: payload.email, name: '管理員', avatarUrl: '', exp: Number(payload.exp) * 1000 };
+  } catch {
+    return null;
+  }
+};
+
 export const createSession = async ({ login, name, avatarUrl }, env) => {
   const secret = cleanText(env?.SESSION_SECRET, 500);
   if (!secret) throw new Error('SESSION_SECRET is missing');
@@ -90,6 +134,8 @@ const cookie = (request, name) => {
 };
 
 export const readSession = async (request, env) => {
+  const cloudflareSession = await accessSession(request, env);
+  if (request.headers.get('cf-access-jwt-assertion')) return cloudflareSession;
   const token = cookie(request, 'crivu_admin');
   const secret = cleanText(env?.SESSION_SECRET, 500);
   if (!token || !secret) return null;

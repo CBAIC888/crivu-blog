@@ -95,7 +95,7 @@ const shell = (user) => {
   document.querySelector('[data-save]').addEventListener('click',()=>saveCurrent(false));
   document.querySelector('[data-archive]').addEventListener('click',archiveCurrent);
   document.querySelector('[data-purge]').addEventListener('click',purgeCurrent);
-  document.querySelector('[data-logout]').addEventListener('click',async()=>{await api('logout',{method:'POST'});location.reload();});
+  document.querySelector('[data-logout]').addEventListener('click',()=>{location.href='/cdn-cgi/access/logout';});
 };
 
 const resetTopActions = () => {
@@ -351,4 +351,4 @@ const deleteMediaItem = async (item) => {
 };
 const renderSettings = (settings) => {const get=(key)=>settings[key]?.value??'';document.querySelector('[data-surface]').innerHTML=`<form class="form single" data-settings>${label('站名','siteName',input('siteName',get('siteName')))}${label('網站描述','siteDescription',textarea('siteDescription',get('siteDescription'),4))}${label('頁尾','footerText',input('footerText',get('footerText')))}${label('搜尋提示','searchPlaceholder',input('searchPlaceholder',get('searchPlaceholder')))}${label('導航 JSON','navigation',textarea('navigation',JSON.stringify(get('navigation')||[],null,2),9))}<button class="primary">儲存設定</button></form>`;document.querySelector('[data-settings]').addEventListener('submit',async(event)=>{event.preventDefault();await api('settings',{method:'PUT',body:JSON.stringify({settings:{siteName:{value:value('siteName')},siteDescription:{value:value('siteDescription')},footerText:{value:value('footerText')},searchPlaceholder:{value:value('searchPlaceholder')},navigation:{value:JSON.parse(value('navigation')||'[]')}}})});notify('設定已儲存');});notify('已載入設定');};
 
-try{const session=await api('session');shell(session.user);await openResource('articles');}catch{app.innerHTML=`<main class="login"><div><a class="brand" href="/articles">CRIVU</a><h1>內容管理</h1><p>使用獲准的 GitHub 帳號登入。GitHub 只用於確認身分，內容不再寫入 GitHub。</p><a class="login-button" href="/api/auth?provider=github&returnTo=/admin/">使用 GitHub 登入</a></div></main>`;}
+try{const session=await api('session');shell(session.user);await openResource('articles');}catch{app.innerHTML=`<main class="login"><div><a class="brand" href="/articles">CRIVU</a><h1>內容管理</h1><p>使用獲准的郵箱接收一次性驗證碼後登入。</p><a class="login-button" href="/cdn-cgi/access/logout">重新驗證郵箱</a></div></main>`;}
