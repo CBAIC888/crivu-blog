@@ -132,7 +132,7 @@ const renderList = () => {
   surface.innerHTML=`<div class="list"><div class="list-head"><input type="search" placeholder="搜尋標題、內容或作者" data-list-search/><select data-list-status><option value="">全部狀態</option>${statuses.map((status)=>`<option value="${escapeHtml(status)}">${escapeHtml(statusName(status))}</option>`).join('')}</select></div><div data-list-rows>${rows}</div></div>`;
   surface.querySelectorAll('[data-open-index]').forEach((button)=>button.addEventListener('click',()=>editItem(state.items[Number(button.dataset.openIndex)].id)));
   surface.querySelectorAll('[data-guestbook-edit]').forEach((button)=>button.addEventListener('click',()=>editItem(state.items[Number(button.dataset.index)].id)));
-  surface.querySelectorAll('[data-guestbook-status]').forEach((button)=>button.addEventListener('click',()=>quickUpdateGuestbook(Number(button.dataset.index),button.dataset.commentStatus)));
+  surface.querySelectorAll('[data-guestbook-status]').forEach((button)=>button.addEventListener('click',()=>quickUpdateGuestbook(Number(button.dataset.index),button.dataset.guestbookStatus)));
   surface.querySelectorAll('[data-guestbook-delete]').forEach((button)=>button.addEventListener('click',()=>deleteGuestbookEntry(Number(button.dataset.index))));
   const applyFilters=()=>{const query=surface.querySelector('[data-list-search]').value.trim().toLowerCase(),status=surface.querySelector('[data-list-status]').value;surface.querySelectorAll('[data-list-item]').forEach((row)=>{row.hidden=Boolean((query&&!row.dataset.search.includes(query))||(status&&row.dataset.status!==status));});};
   surface.querySelector('[data-list-search]').addEventListener('input',applyFilters);
