@@ -4,6 +4,7 @@ import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..'),dist=path.join(root,'dist');
+const isProductionBuild=Boolean(process.env.CF_PAGES_COMMIT_SHA);
 fs.rmSync(dist,{recursive:true,force:true});
 fs.mkdirSync(dist,{recursive:true});
 const copy=(from,to=from)=>{const source=path.join(root,from),target=path.join(dist,to);fs.mkdirSync(path.dirname(target),{recursive:true});fs.cpSync(source,target,{recursive:true});};
@@ -17,10 +18,9 @@ copy('assets/img');
 copy('admin/index.html');copy('admin/custom.css');copy('admin/custom.js');
 copy('.well-known');copy('google974aaeec2e4594c9.html');
 copy('src/styles/style.css','assets/academic/style.css');copy('src/styles/typography.css','assets/academic/typography.css');copy('src/styles/gallery.css','assets/academic/gallery.css');
-copy('src/styles/reading.css','assets/academic/reading.css');
 copy('src/scripts/public-site.js','assets/academic/public-site.js');copy('src/scripts/guestbook.js','assets/academic/guestbook.js');copy('src/scripts/analytics.js','assets/academic/analytics.js');
 copy('src/scripts/article-actions.js','assets/academic/article-actions.js');
-copy('src/scripts/reading','assets/academic/reading');
+if(!isProductionBuild){copy('src/styles/reading.css','assets/academic/reading.css');copy('src/scripts/reading','assets/academic/reading');}
 write('assets/academic/gallery.js',fs.readFileSync(path.join(root,'src/scripts/gallery.js'),'utf8').replaceAll('/preview/assets/world-gallery/','/assets/world-gallery/').replaceAll('/preview/research-en.html','/articles/world-word-exploration-en'));
 copy('src/assets/world-gallery','assets/world-gallery');
 write('records/world-word-history/museum/index.html',withAnalytics(fs.readFileSync(path.join(root,'records/world-word-history/museum.html'),'utf8').replace(/^\s*<meta name="robots"[^>]*>\s*$/m,''),buildVersion));
@@ -33,8 +33,7 @@ let gallery=fs.readFileSync(path.join(root,'src/templates/research-gallery.html'
   .replaceAll('/preview/research.html','/articles/world-word-exploration');
 write('records/world-word-history/gallery/index.html',withAnalytics(versionAssets(gallery),buildVersion));
 
-const reading=versionAssets(fs.readFileSync(path.join(root,'src/templates/reading.html'),'utf8'),buildVersion);
-for (const target of ['reading/index.html','books/index.html']) write(target,reading);
+if(!isProductionBuild){const reading=versionAssets(fs.readFileSync(path.join(root,'src/templates/reading.html'),'utf8'),buildVersion);for(const target of ['reading/index.html','books/index.html'])write(target,reading);}
 
 write('robots.txt',`User-agent: *\nAllow: /\nDisallow: /admin/\nDisallow: /api/v1/admin/\nSitemap: https://cbc688.com/sitemap.xml`);
 write('_redirects',`/index.html /articles 308
@@ -58,7 +57,7 @@ write('_redirects',`/index.html /articles 308
 /records/world-word-history /articles/world-word-exploration 308
 /records/world-word-history/ /articles/world-word-exploration 308
 /records/world-word-history/museum.html /records/world-word-history/museum/ 308
-/books/* /reading/index.html 200`);
+${isProductionBuild?'/reading /articles 302\n/reading/* /articles 302\n/books /articles 302\n/books/* /articles 302':'/books/* /reading/index.html 200'}`);
 write('_headers',`/*
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin

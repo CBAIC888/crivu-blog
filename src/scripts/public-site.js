@@ -10,7 +10,6 @@ const defaultNav = [
   ['articles', pageLanguage === 'en' ? 'Archive' : '收錄', '/articles'],
   ['issues', pageLanguage === 'en' ? 'Projects' : '專項', '/issues'],
   ['about', pageLanguage === 'en' ? 'About' : '關於', '/about'],
-  ['reading', pageLanguage === 'en' ? 'Reading' : '書房', '/reading'],
   ['rss', 'RSS', '/rss.xml'],
 ];
 const meta = (name) => document.querySelector(`meta[name="${name}"]`)?.content || '';
@@ -18,7 +17,7 @@ const navId = (href) => href.startsWith('/articles') ? 'articles' : href.startsW
 const configuredNavigation = (() => {
   if (pageLanguage === 'en' || !meta('crivu-navigation')) return [];
   try {
-    return JSON.parse(meta('crivu-navigation')).map((item) => [navId(String(item.href || '')), String(item.label || ''), String(item.href || '')]).filter((item) => item[1] && item[2]);
+    return JSON.parse(meta('crivu-navigation')).map((item) => [navId(String(item.href || '')), String(item.label || ''), String(item.href || '')]).filter((item) => item[1] && item[2] && !item[2].startsWith('/reading') && !item[2].startsWith('/books'));
   } catch { return []; }
 })();
 const nav = configuredNavigation.length ? configuredNavigation : defaultNav;
