@@ -20,7 +20,9 @@ button { cursor:pointer; }
 
 .admin-shell { min-height:100vh; display:grid; grid-template-columns:218px 1fr; }
 .sidebar { position:sticky; top:0; height:100vh; display:flex; flex-direction:column; padding:28px 18px 20px; background:#fff; border-right:1px solid var(--line); }
-.brand { color:var(--ink); font:700 22px/1 var(--serif); letter-spacing:.15em; text-decoration:none; }
+.brand { position:relative; width:120px; height:68px; display:block; overflow:hidden; border-radius:5px; text-decoration:none; }
+.brand img { position:absolute; top:50%; left:50%; width:150px; max-width:none; height:150px; transform:translate(-50%,-50%); }
+.brand:focus-visible { outline:2px solid var(--ink); outline-offset:3px; }
 .sidebar nav { display:grid; gap:5px; margin-top:38px; }
 .sidebar nav button { padding:10px 12px; border:0; border-radius:7px; background:transparent; color:var(--muted); text-align:left; }
 .sidebar nav button:hover,.sidebar nav button.active { background:var(--alt); color:var(--accent); }
