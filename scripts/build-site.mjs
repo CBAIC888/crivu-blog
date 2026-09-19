@@ -15,6 +15,7 @@ const buildVersion=String(process.env.CF_PAGES_COMMIT_SHA||crypto.createHash('sh
 const versionAssets=(html)=>html.replace(/((?:href|src)="\/assets\/(?:academic|css|js)\/[^"?]+)(")/g,`$1?v=${buildVersion}$2`);
 
 copy('assets/img');
+copy('assets/img/crivu-favicon-20260920.ico','favicon.ico');
 copy('admin/index.html');copy('admin/custom.css');copy('admin/custom.js');
 copy('.well-known');copy('google974aaeec2e4594c9.html');
 copy('src/styles/style.css','assets/academic/style.css');copy('src/styles/typography.css','assets/academic/typography.css');copy('src/styles/gallery.css','assets/academic/gallery.css');
