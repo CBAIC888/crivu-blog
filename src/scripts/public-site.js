@@ -35,9 +35,6 @@ const icon = (name) => name === 'search'
 document.body.insertAdjacentHTML('afterbegin', `
   <header class="site-header">
     <div class="site-header__inner">
-      <a class="site-brand" href="/articles" aria-label="CRIVU 首頁">
-        <img src="/assets/img/logo.svg" alt="CRIVU" />
-      </a>
       <nav class="site-nav" id="siteNav">${nav.map(([id, label, href]) => `<a class="${current === id ? 'active' : ''} ${id === 'rss' ? 'nav-rss' : ''}" href="${href}">${label}</a>`).join('')}</nav>
       <div class="header-tools">
         <button class="icon-button" data-search-open aria-label="${pageLanguage === 'en' ? 'Search' : '搜尋'}">${icon('search')}</button>
