@@ -10,14 +10,17 @@ const copy=(from,to=from)=>{const source=path.join(root,from),target=path.join(d
 const write=(file,content)=>{const target=path.join(dist,file);fs.mkdirSync(path.dirname(target),{recursive:true});fs.writeFileSync(target,`${content.trim()}\n`);};
 const analyticsTag=(buildVersion)=>`<script defer src="/assets/academic/analytics.js?v=${buildVersion}"></script>`;
 const withAnalytics=(html,buildVersion)=>String(html).replace(/<\/body>\s*<\/html>\s*$/i,`${analyticsTag(buildVersion)}</body></html>`);
-const buildVersion=String(process.env.CF_PAGES_COMMIT_SHA||crypto.createHash('sha256').update(['src/styles/style.css','src/styles/typography.css','src/styles/gallery.css','src/scripts/public-site.js','src/scripts/guestbook.js','src/scripts/gallery.js','src/scripts/analytics.js'].map(file=>fs.readFileSync(path.join(root,file))).join('\n')).digest('hex')).slice(0,12);
+const buildVersion=String(process.env.CF_PAGES_COMMIT_SHA||crypto.createHash('sha256').update(['src/styles/style.css','src/styles/typography.css','src/styles/gallery.css','src/styles/reading.css','src/scripts/public-site.js','src/scripts/article-actions.js','src/scripts/guestbook.js','src/scripts/gallery.js','src/scripts/analytics.js',...fs.readdirSync(path.join(root,'src/scripts/reading')).sort().map(file=>`src/scripts/reading/${file}`)].map(file=>fs.readFileSync(path.join(root,file))).join('\n')).digest('hex')).slice(0,12);
 const versionAssets=(html)=>html.replace(/((?:href|src)="\/assets\/(?:academic|css|js)\/[^"?]+)(")/g,`$1?v=${buildVersion}$2`);
 
 copy('assets/img');
 copy('admin/index.html');copy('admin/custom.css');copy('admin/custom.js');
 copy('.well-known');copy('google974aaeec2e4594c9.html');
 copy('src/styles/style.css','assets/academic/style.css');copy('src/styles/typography.css','assets/academic/typography.css');copy('src/styles/gallery.css','assets/academic/gallery.css');
+copy('src/styles/reading.css','assets/academic/reading.css');
 copy('src/scripts/public-site.js','assets/academic/public-site.js');copy('src/scripts/guestbook.js','assets/academic/guestbook.js');copy('src/scripts/analytics.js','assets/academic/analytics.js');
+copy('src/scripts/article-actions.js','assets/academic/article-actions.js');
+copy('src/scripts/reading','assets/academic/reading');
 write('assets/academic/gallery.js',fs.readFileSync(path.join(root,'src/scripts/gallery.js'),'utf8').replaceAll('/preview/assets/world-gallery/','/assets/world-gallery/').replaceAll('/preview/research-en.html','/articles/world-word-exploration-en'));
 copy('src/assets/world-gallery','assets/world-gallery');
 write('records/world-word-history/museum/index.html',withAnalytics(fs.readFileSync(path.join(root,'records/world-word-history/museum.html'),'utf8').replace(/^\s*<meta name="robots"[^>]*>\s*$/m,''),buildVersion));
@@ -29,6 +32,9 @@ let gallery=fs.readFileSync(path.join(root,'src/templates/research-gallery.html'
   .replaceAll('/preview/gallery.js','/assets/academic/gallery.js')
   .replaceAll('/preview/research.html','/articles/world-word-exploration');
 write('records/world-word-history/gallery/index.html',withAnalytics(versionAssets(gallery),buildVersion));
+
+const reading=versionAssets(fs.readFileSync(path.join(root,'src/templates/reading.html'),'utf8'),buildVersion);
+for (const target of ['reading/index.html','books/index.html']) write(target,reading);
 
 write('robots.txt',`User-agent: *\nAllow: /\nDisallow: /admin/\nDisallow: /api/v1/admin/\nSitemap: https://cbc688.com/sitemap.xml`);
 write('_redirects',`/index.html /articles 308
@@ -51,7 +57,8 @@ write('_redirects',`/index.html /articles 308
 /records/world-word-exploration /articles/world-word-exploration 308
 /records/world-word-history /articles/world-word-exploration 308
 /records/world-word-history/ /articles/world-word-exploration 308
-/records/world-word-history/museum.html /records/world-word-history/museum/ 308`);
+/records/world-word-history/museum.html /records/world-word-history/museum/ 308
+/books/* /reading/index.html 200`);
 write('_headers',`/*
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin

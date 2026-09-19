@@ -85,7 +85,7 @@ const publicSettings = {
   searchPlaceholder: site.searchPlaceholder || '搜尋', themeToggleEnabled: site.themeToggleEnabled !== false,
   navigation: [
     { label: '全部', href: '/articles' }, { label: '期刊', href: '/issues' }, { label: '紀錄', href: '/records' },
-    { label: '關於', href: '/about' }, { label: 'RSS', href: '/rss.xml' },
+    { label: '關於', href: '/about' }, { label: '書房', href: '/reading' }, { label: 'RSS', href: '/rss.xml' },
   ],
 };
 for (const [key, value] of Object.entries(publicSettings)) add(`INSERT INTO site_settings (key,value_json,is_public) VALUES (${q(key)},${q(JSON.stringify(value))},1) ON CONFLICT(key) DO UPDATE SET value_json=excluded.value_json,is_public=1`);

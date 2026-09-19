@@ -10,7 +10,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const dist = path.join(root, 'dist');
 const db = new DatabaseSync(':memory:');
 
-for (const file of ['migrations/0001_comments.sql', 'migrations/0002_comments_source.sql', 'migrations/0003_content_platform.sql', 'migrations/0004_remove_article_comments.sql']) {
+for (const file of ['migrations/0001_comments.sql', 'migrations/0002_comments_source.sql', 'migrations/0003_content_platform.sql', 'migrations/0004_remove_article_comments.sql', 'migrations/0005_article_likes.sql']) {
   db.exec(fs.readFileSync(path.join(root, file), 'utf8'));
 }
 
@@ -66,6 +66,7 @@ const modules = {
   '/sitemap.xml': await import('../functions/sitemap.xml.js'),
   apiArticles: await import('../functions/api/v1/articles/index.js'),
   apiArticle: await import('../functions/api/v1/articles/[slug].js'),
+  apiArticleLike: await import('../functions/api/v1/articles/[slug]/like.js'),
   apiIssues: await import('../functions/api/v1/issues/index.js'),
   apiIssue: await import('../functions/api/v1/issues/[id].js'),
   apiProjects: await import('../functions/api/v1/projects/index.js'),
@@ -76,7 +77,9 @@ const modules = {
   article: await import('../functions/articles/[slug].js'),
   issue: await import('../functions/issues/[id].js'),
   project: await import('../functions/records/[id].js'),
-  admin: await import('../functions/api/v1/admin/[[path]].js'),
+  admin: fs.existsSync(path.join(root, 'functions/api/v1/admin/[[path]].js'))
+    ? await import('../functions/api/v1/admin/[[path]].js')
+    : null,
   media: await import('../functions/media/[[key]].js'),
 };
 
@@ -176,6 +179,7 @@ const server = http.createServer(async (req, res) => {
 
     if (modules[pathname]) mod = modules[pathname];
     else if (pathname === '/api/v1/articles') mod = modules.apiArticles;
+    else if (/^\/api\/v1\/articles\/[^/]+\/like$/.test(pathname)) { mod = modules.apiArticleLike; params.slug = pathname.split('/')[4]; }
     else if (pathname.startsWith('/api/v1/articles/')) { mod = modules.apiArticle; params.slug = pathname.slice(17); }
     else if (pathname === '/api/v1/issues') mod = modules.apiIssues;
     else if (pathname.startsWith('/api/v1/issues/')) { mod = modules.apiIssue; params.id = pathname.slice(15); }
@@ -206,7 +210,8 @@ const server = http.createServer(async (req, res) => {
     }
 
     const staticRoot = rawPathname.startsWith('/preview/') ? root : dist;
-    let file = path.resolve(staticRoot, `.${rawPathname}`);
+    const isReadingRoute = pathname === '/reading' || pathname === '/books' || pathname.startsWith('/books/');
+    let file = isReadingRoute ? path.join(dist, 'reading/index.html') : path.resolve(staticRoot, `.${rawPathname}`);
     if (fs.existsSync(file) && fs.statSync(file).isDirectory()) file = path.join(file, 'index.html');
     if (path.relative(staticRoot, file).startsWith('..') || !fs.existsSync(file)) {
       res.writeHead(404);

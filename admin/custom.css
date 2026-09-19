@@ -49,6 +49,15 @@ button { cursor:pointer; }
 .row-copy { min-width:0; display:grid; gap:5px; }
 .row-copy strong { font:600 16px/1.3 var(--serif); }
 .row-copy small,.row-main time { color:var(--muted); font-size:11px; }
+.list-head--single { grid-template-columns:1fr; }
+.like-row { display:flex; align-items:center; justify-content:space-between; gap:20px; padding:14px 18px; border-bottom:1px solid var(--line); background:#fff; }
+.like-row:last-child { border-bottom:0; }
+.like-row>div:first-child { min-width:0; display:grid; gap:4px; }
+.like-row strong { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.like-row small { color:var(--muted); font-size:11px; }
+.like-row>div:last-child { display:flex; align-items:center; gap:8px; }
+.like-row input { width:92px; padding:8px 10px; border:1px solid var(--line); border-radius:5px; }
+.like-row button { padding:8px 11px; border:1px solid var(--line); border-radius:5px; background:#fff; }
 .row-excerpt { max-width:760px; overflow:hidden; color:#4d4842; font:400 13px/1.55 var(--sans); text-overflow:ellipsis; white-space:nowrap; }
 .empty { padding:40px; text-align:center; color:var(--muted); }
 
@@ -176,4 +185,5 @@ summary { cursor:pointer; font-weight:650; }
   .row-main time { display:none; }
   .guestbook-row { padding:16px; }
   .guestbook-row header { align-items:flex-start; flex-direction:column; }
+  .like-row { align-items:flex-start; flex-direction:column; }
 }

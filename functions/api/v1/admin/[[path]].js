@@ -1,5 +1,5 @@
 import {
-  cleanSlug, cleanText, failure, handle, json, makeId, parseJson, readSession,
+  cleanSlug, cleanText, ensureArticleLikesTable, failure, handle, json, makeId, parseJson, readSession,
   requireAdmin, requireDb, safeJson, validId, validSlug,
 } from '../_shared.js';
 
@@ -311,7 +311,9 @@ const purgeResource = async (db, resource, id) => {
   if (!item) return failure(404,'not_found','Item not found');
   if (item.status !== 'archived') return failure(409,'archive_required','Archive the item before permanently deleting it');
   const statements = [];
-  if (resource === 'articles') statements.push(
+  if (resource === 'articles') {
+    await ensureArticleLikesTable(db);
+    statements.push(
     db.prepare(`DELETE FROM article_translations WHERE article_id=? OR translation_article_id=?`).bind(id,id),
     db.prepare(`DELETE FROM research_sections WHERE article_id=?`).bind(id),
     db.prepare(`DELETE FROM research_notes WHERE article_id=?`).bind(id),
@@ -319,8 +321,10 @@ const purgeResource = async (db, resource, id) => {
     db.prepare(`DELETE FROM article_tags WHERE article_id=?`).bind(id),
     db.prepare(`DELETE FROM collection_articles WHERE article_id=?`).bind(id),
     db.prepare(`DELETE FROM article_revisions WHERE article_id=?`).bind(id),
+    db.prepare(`DELETE FROM article_likes WHERE article_id=?`).bind(id),
     db.prepare(`DELETE FROM project_relations WHERE relation_type IN ('article','translation') AND target_id=?`).bind(id),
-  );
+    );
+  }
   if (resource === 'collections') statements.push(
     db.prepare(`DELETE FROM collection_articles WHERE collection_id=?`).bind(id),
     db.prepare(`DELETE FROM project_relations WHERE relation_type='collection' AND target_id=?`).bind(id),
@@ -348,6 +352,12 @@ export const onRequest = handle(async (context) => {
     if(method==='POST'&&id&&action==='restore'){const payload=await parseJson(context.request),item=await restoreArticle(db,id,payload.revisionId,session);return item?json({item},200,etag(item.version)):failure(404,'not_found','Revision not found');}
     if(method==='DELETE'&&id&&action==='purge')return purgeResource(db,'articles',id);
     if(method==='DELETE'&&id)return archiveResource(db,'articles',id);
+  }
+
+  if(resource==='likes'){
+    await ensureArticleLikesTable(db);
+    if(method==='GET'&&!id){const result=await db.prepare(`SELECT a.id,a.slug,a.title,a.published_at AS publishedAt,COALESCE(l.like_count,0) AS likeCount FROM articles a LEFT JOIN article_likes l ON l.article_id=a.id WHERE a.status IN ('published','scheduled') ORDER BY COALESCE(a.published_at,a.scheduled_at,a.created_at) DESC LIMIT 300`).all();return json({items:rows(result).map(item=>({...item,likeCount:Number(item.likeCount||0)}))});}
+    if(method==='PUT'&&id){const payload=await parseJson(context.request,10_000),count=Math.max(0,Math.floor(Number(payload.likeCount)||0)),article=await db.prepare(`SELECT id FROM articles WHERE id=?`).bind(id).first();if(!article)return failure(404,'not_found','Article not found');await db.prepare(`INSERT INTO article_likes (article_id,like_count,updated_at) VALUES (?,?,?) ON CONFLICT(article_id) DO UPDATE SET like_count=excluded.like_count,updated_at=excluded.updated_at`).bind(id,count,now()).run();return json({saved:true,likeCount:count});}
   }
 
   if(['collections','projects','pages'].includes(resource)){

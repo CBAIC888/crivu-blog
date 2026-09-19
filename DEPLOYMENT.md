@@ -11,6 +11,7 @@ sqlite3 /tmp/crivu.db < migrations/0001_comments.sql
 sqlite3 /tmp/crivu.db < migrations/0002_comments_source.sql
 sqlite3 /tmp/crivu.db < migrations/0003_content_platform.sql
 sqlite3 /tmp/crivu.db < migrations/0004_remove_article_comments.sql
+sqlite3 /tmp/crivu.db < migrations/0005_article_likes.sql
 sqlite3 /tmp/crivu.db < /tmp/crivu-content-seed.sql
 ```
 

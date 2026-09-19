@@ -23,6 +23,14 @@ export const requireDb = (env) => {
   return db;
 };
 
+let articleLikesReady = false;
+export const ensureArticleLikesTable = async (db) => {
+  if (articleLikesReady) return;
+  await db.prepare(`CREATE TABLE IF NOT EXISTS article_likes (article_id TEXT PRIMARY KEY, like_count INTEGER NOT NULL DEFAULT 0 CHECK (like_count >= 0), updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')), FOREIGN KEY (article_id) REFERENCES articles(id) ON DELETE CASCADE)`).run();
+  await db.prepare(`CREATE INDEX IF NOT EXISTS idx_article_likes_count ON article_likes (like_count DESC)`).run();
+  articleLikesReady = true;
+};
+
 export const cleanText = (value, max = 10_000) =>
   String(value ?? '').replace(/\r\n/g, '\n').trim().slice(0, max);
 
@@ -189,12 +197,16 @@ export const publicArticle = (row) => ({
 });
 
 export const loadArticleRelations = async (db, article) => {
-  const [authors, tags, translations, sections, notes] = await Promise.all([
+  const [authors, tags, translations, sections, notes, collections, project] = await Promise.all([
     db.prepare(`SELECT a.id, a.name, a.orcid, a.institution, aa.is_corresponding AS isCorresponding FROM article_authors aa JOIN authors a ON a.id = aa.author_id WHERE aa.article_id = ? ORDER BY aa.sort_order`).bind(article.id).all(),
     db.prepare(`SELECT t.id, t.slug, t.name FROM article_tags at JOIN tags t ON t.id = at.tag_id WHERE at.article_id = ? ORDER BY t.name`).bind(article.id).all(),
     db.prepare(`SELECT at.language, at.hreflang, a.slug, a.title FROM article_translations at JOIN articles a ON a.id = at.translation_article_id WHERE at.article_id = ?`).bind(article.id).all(),
     db.prepare(`SELECT id, section_key AS sectionKey, title, body_markdown AS bodyMarkdown, sort_order AS sortOrder FROM research_sections WHERE article_id = ? ORDER BY sort_order`).bind(article.id).all(),
     db.prepare(`SELECT id, note_number AS noteNumber, body_markdown AS bodyMarkdown, citation_json AS citationJson, sort_order AS sortOrder FROM research_notes WHERE article_id = ? ORDER BY sort_order`).bind(article.id).all(),
+    db.prepare(`SELECT c.id, c.title FROM collection_articles ca JOIN collections c ON c.id = ca.collection_id WHERE ca.article_id = ? AND c.status = 'published' ORDER BY ca.sort_order, c.published_at DESC`).bind(article.id).all(),
+    article.metadata?.projectSlug
+      ? db.prepare(`SELECT slug, title FROM projects WHERE slug = ? AND status = 'published' LIMIT 1`).bind(article.metadata.projectSlug).first()
+      : Promise.resolve(null),
   ]);
   return {
     ...article,
@@ -203,6 +215,10 @@ export const loadArticleRelations = async (db, article) => {
     translations: translations.results || [],
     sections: sections.results || [],
     notes: (notes.results || []).map((item) => ({ ...item, citation: safeJson(item.citationJson) })),
+    sources: [
+      ...(project ? [{ title: project.title, href: project.slug === 'world-word-history' ? '/articles/world-word-exploration' : `/records/${encodeURIComponent(project.slug)}` }] : []),
+      ...(collections.results || []).map((item) => ({ title: item.title, href: `/issues/${encodeURIComponent(item.id)}` })),
+    ],
   };
 };
 

@@ -11,6 +11,7 @@ const date = (value) => {
 const absolute = (path, origin) => new URL(path, origin).toString();
 const versioned = (path, version='') => version ? `${path}?v=${encodeURIComponent(String(version).slice(0,12))}` : path;
 const kind = (type, language='zh') => language==='en' ? ({general:'Article',research:'Research',script:'Script'}[type]||'Article') : ({general:'一般',research:'研究',script:'劇本'}[type]||'一般');
+const likeCutoff = '2026-09-18';
 
 export const htmlHeaders = {
   'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store, no-cache, must-revalidate, max-age=0','X-Content-Type-Options':'nosniff',
@@ -38,11 +39,30 @@ const head = ({ title, description='', canonicalPath, origin, image='', language
 const shell = ({ current, title, description, path, origin, main, image='', language='zh-Hant', extraScripts='', assetVersion='', settings={} }) => `${head({title,description,canonicalPath:path,origin,image,language,assetVersion,settings})}<body data-current="${current}"${language==='en'?' data-language="en"':''}>${main}<script defer src="${escapeHtml(versioned('/assets/academic/analytics.js',assetVersion))}"></script><script type="module" src="${escapeHtml(versioned('/assets/academic/public-site.js',assetVersion))}"></script>${extraScripts}</body></html>`;
 const cover = (url, alt, className='') => url ? `<span${className?` class="${className}"`:''}><img src="${escapeHtml(url)}" alt="${escapeHtml(alt)}"/></span>` : '';
 
+const articleEnd = (item, language='zh-Hant', previewMode=false) => {
+  const isEnglish=language==='en';
+  const source=item.sources?.[0]||null;
+  const sourceTitle=source?.title||item.metadata?.legacyIssue|| (isEnglish?'Independent article':'獨立文章');
+  const sourceHref=source?.href||'/issues';
+  const showLike=previewMode||date(item.publishedAt)>=likeCutoff;
+  return `<footer class="article-end" data-article-end>
+    <div class="article-end__links">
+      <a class="article-end__source" href="${escapeHtml(sourceHref)}"><span>${isEnglish?'From:':'來源於：'}</span>${escapeHtml(sourceTitle)}</a>
+      <a class="article-end__more" href="/articles">${isEnglish?'More reading':'更多閱讀'}<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h9M8.5 4.5 12 8l-3.5 3.5"/></svg></a>
+    </div>
+    <div class="article-end__actions">
+      ${showLike?`<button class="article-like" type="button" data-article-like data-article-slug="${escapeHtml(item.slug)}" aria-pressed="false" aria-label="${isEnglish?'Like this article':'喜歡這篇文章'}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z"/></svg><span data-like-count>0</span></button>`:''}
+      <button class="article-share" type="button" data-article-share data-article-title="${escapeHtml(item.title)}" aria-label="${isEnglish?'Share this article':'分享這篇文章'}"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="m8.2 10.8 7.6-4.5M8.2 13.2l7.6 4.5"/></svg><span>${isEnglish?'Share':'分享'}</span></button>
+      <span class="article-share-status" data-share-status aria-live="polite"></span>
+    </div>
+  </footer>`;
+};
+
 const entry = (item) => `<li class="entry" data-kind="${kind(item.type)}"><time class="entry__date" datetime="${escapeHtml(date(item.publishedAt))}">${escapeHtml(date(item.publishedAt).slice(5).replace('-','.'))}</time><h3 class="entry__title"><a href="/articles/${encodeURIComponent(item.slug)}">${escapeHtml(item.title)}</a></h3></li>`;
 export const renderArticles = ({items,origin,assetVersion,settings}) => {
   const groups=[...new Set(items.map(x=>date(x.publishedAt).slice(0,4)||'未標日期'))].map(year=>`<section class="year-group"><h2 class="year-label">${year}</h2><ol class="entry-list">${items.filter(x=>(date(x.publishedAt).slice(0,4)||'未標日期')===year).map(entry).join('')}</ol></section>`).join('');
   const counts={全部:items.length,一般:items.filter(x=>kind(x.type)==='一般').length,研究:items.filter(x=>kind(x.type)==='研究').length,劇本:items.filter(x=>kind(x.type)==='劇本').length};
-  return shell({current:'articles',title:'收錄',description:'CRIVU 收錄的文章、研究與劇本。',path:'/articles',origin,assetVersion,settings,main:`<main class="page-main articles-main"><nav class="category-nav" aria-label="收錄分類">${Object.entries(counts).map(([label,count],index)=>`<button${index===0?' class="is-active"':''} data-filter="${label}" data-count="${count}" aria-label="${label}，共 ${count} 篇">${label}</button>`).join('')}</nav>${groups}</main>`});
+  return shell({current:'articles',title:'收錄',description:'CRIVU 收錄的文章、研究與劇本。',path:'/articles',origin,assetVersion,settings,main:`<main class="page-main articles-main"><nav class="category-nav" aria-label="收錄分類">${Object.entries(counts).map(([label,count],index)=>`<button${index===0?' class="is-active"':''} data-filter="${label}" data-count="${count}" aria-label="${label}，共 ${count} 篇"><span>${label}</span></button>`).join('')}</nav>${groups}</main>`});
 };
 
 const scriptBody = (source) => {
@@ -98,13 +118,15 @@ const researchMarkdown = (markdown) => {
 
 export const renderArticle = ({item,origin,assetVersion}) => {
   const language=item.language||'zh-Hant', isEnglish=language==='en', meta=item.metadata||{}, description=item.seoDescription||item.summary||clean(stripMarkdown(item.bodyMarkdown)).slice(0,155);
+  const previewMode=/^https?:\/\/(?:127\.0\.0\.1|localhost)(?::\d+)?$/i.test(origin);
+  const articleEndScript=`<script type="module" src="${escapeHtml(versioned('/assets/academic/article-actions.js',assetVersion))}"></script>`;
   if(item.type==='research'){
     const content=meta.format==='html'?item.bodyMarkdown:researchMarkdown(item.bodyMarkdown);
     const translations=(item.translations||[]).map(x=>`<a href="/articles/${encodeURIComponent(x.slug)}" lang="${escapeHtml(x.hreflang)}">${escapeHtml(x.language)}</a>`).join('');
-    return shell({current:'articles',title:item.seoTitle||item.title,description,path:`/articles/${item.slug}`,origin,image:item.coverUrl,language,assetVersion,main:`<main class="research-page"><header class="research-head"><h1>${escapeHtml(item.title)}</h1><p class="article-meta">${escapeHtml(date(item.publishedAt))} · ${kind(item.type,language)}</p>${item.summary?`<p class="article-deck">${escapeHtml(item.summary)}</p>`:''}<nav class="research-actions" aria-label="研究操作">${meta.exhibition?`<a href="${escapeHtml(meta.exhibition)}">${isEnglish?'Enter exhibition':'進入展覽'}</a>`:''}${meta.gallery?`<a href="${escapeHtml(meta.gallery)}">${isEnglish?'Image gallery':'圖片展示'}</a>`:''}${translations?`<details class="language-switch"><summary>${isEnglish?'Language':'語言'}</summary><div>${translations}</div></details>`:''}</nav></header><div class="research-body" data-research-content>${content}</div></main>`});
+    return shell({current:'articles',title:item.seoTitle||item.title,description,path:`/articles/${item.slug}`,origin,image:item.coverUrl,language,assetVersion,extraScripts:articleEndScript,main:`<main class="research-page"><header class="research-head"><h1>${escapeHtml(item.title)}</h1><p class="article-meta">${escapeHtml(date(item.publishedAt))} · ${kind(item.type,language)}</p>${item.summary?`<p class="article-deck">${escapeHtml(item.summary)}</p>`:''}<nav class="research-actions" aria-label="研究操作">${meta.exhibition?`<a href="${escapeHtml(meta.exhibition)}">${isEnglish?'Enter exhibition':'進入展覽'}</a>`:''}${meta.gallery?`<a href="${escapeHtml(meta.gallery)}">${isEnglish?'Image gallery':'圖片展示'}</a>`:''}${translations?`<details class="language-switch"><summary>${isEnglish?'Language':'語言'}</summary><div>${translations}</div></details>`:''}</nav></header><div class="research-body" data-research-content>${content}</div>${articleEnd(item,language,previewMode)}</main>`});
   }
-  if(item.type==='script') return shell({current:'articles',title:item.title,description,path:`/articles/${item.slug}`,origin,image:item.coverUrl,language,assetVersion,main:`<main class="script-page migrated-script" data-script-template="opera-v1"><header class="script-head"><h1>${escapeHtml(item.title)}</h1><p class="article-meta">${escapeHtml(date(item.publishedAt))} · 劇本</p>${item.summary?`<p class="article-deck">${escapeHtml(item.summary)}</p>`:''}</header><div class="script-layout"><article class="script-body">${scriptBody(item.bodyMarkdown)}</article><aside class="script-side">${item.coverUrl?`<figure class="script-cover"><img src="${escapeHtml(item.coverUrl)}" alt="${escapeHtml(item.title)}"/></figure>`:''}</aside></div></main>`});
-  return shell({current:'articles',title:item.title,description,path:`/articles/${item.slug}`,origin,image:item.coverUrl,language,assetVersion,main:`<main class="page-main article-page"><article class="article-simple"><header class="article-header"><h1>${escapeHtml(item.title)}</h1><p class="article-meta">${escapeHtml(date(item.publishedAt))} · ${kind(item.type,language)}</p>${item.summary?`<p class="article-deck">${escapeHtml(item.summary)}</p>`:''}${item.coverUrl?`<figure class="article-cover"><img src="${escapeHtml(item.coverUrl)}" alt="${escapeHtml(item.title)}"/></figure>`:''}</header><div class="prose">${simpleMarkdown(item.bodyMarkdown||'')}</div></article></main>`});
+  if(item.type==='script') return shell({current:'articles',title:item.title,description,path:`/articles/${item.slug}`,origin,image:item.coverUrl,language,assetVersion,extraScripts:articleEndScript,main:`<main class="script-page migrated-script" data-script-template="opera-v1"><header class="script-head"><h1>${escapeHtml(item.title)}</h1><p class="article-meta">${escapeHtml(date(item.publishedAt))} · 劇本</p>${item.summary?`<p class="article-deck">${escapeHtml(item.summary)}</p>`:''}</header><div class="script-layout"><article class="script-body">${scriptBody(item.bodyMarkdown)}</article><aside class="script-side">${item.coverUrl?`<figure class="script-cover"><img src="${escapeHtml(item.coverUrl)}" alt="${escapeHtml(item.title)}"/></figure>`:''}</aside></div>${articleEnd(item,language,previewMode)}</main>`});
+  return shell({current:'articles',title:item.title,description,path:`/articles/${item.slug}`,origin,image:item.coverUrl,language,assetVersion,extraScripts:articleEndScript,main:`<main class="page-main article-page"><article class="article-simple"><header class="article-header"><h1>${escapeHtml(item.title)}</h1><p class="article-meta">${escapeHtml(date(item.publishedAt))} · ${kind(item.type,language)}</p>${item.summary?`<p class="article-deck">${escapeHtml(item.summary)}</p>`:''}${item.coverUrl?`<figure class="article-cover"><img src="${escapeHtml(item.coverUrl)}" alt="${escapeHtml(item.title)}"/></figure>`:''}</header><div class="prose">${simpleMarkdown(item.bodyMarkdown||'')}</div>${articleEnd(item,language,previewMode)}</article></main>`});
 };
 
 export const renderCollections = ({items,projects=[],origin,assetVersion}) => {

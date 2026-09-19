@@ -10,10 +10,11 @@ const defaultNav = [
   ['articles', pageLanguage === 'en' ? 'Archive' : '收錄', '/articles'],
   ['issues', pageLanguage === 'en' ? 'Projects' : '專項', '/issues'],
   ['about', pageLanguage === 'en' ? 'About' : '關於', '/about'],
+  ['reading', pageLanguage === 'en' ? 'Reading' : '書房', '/reading'],
   ['rss', 'RSS', '/rss.xml'],
 ];
 const meta = (name) => document.querySelector(`meta[name="${name}"]`)?.content || '';
-const navId = (href) => href.startsWith('/articles') ? 'articles' : href.startsWith('/issues') ? 'issues' : href.startsWith('/records') ? 'records' : href.startsWith('/about') ? 'about' : href.includes('rss') ? 'rss' : '';
+const navId = (href) => href.startsWith('/articles') ? 'articles' : href.startsWith('/issues') ? 'issues' : href.startsWith('/records') ? 'records' : href.startsWith('/about') ? 'about' : href.startsWith('/reading') || href.startsWith('/books') ? 'reading' : href.includes('rss') ? 'rss' : '';
 const configuredNavigation = (() => {
   if (pageLanguage === 'en' || !meta('crivu-navigation')) return [];
   try {
